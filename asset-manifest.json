@@ -1,0 +1,10 @@
+{
+  "files": {
+    "main.js": "/savings-planner/static/js/main.00afcf0f.js",
+    "index.html": "/savings-planner/index.html",
+    "main.00afcf0f.js.map": "/savings-planner/static/js/main.00afcf0f.js.map"
+  },
+  "entrypoints": [
+    "static/js/main.00afcf0f.js"
+  ]
+}
