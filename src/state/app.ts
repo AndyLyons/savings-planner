@@ -1,20 +1,23 @@
 import { DependencyList, useCallback } from 'react'
 import create, { EqualityChecker } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { YYYYMMDD } from "../utils/date"
 import { removeArrayItem } from '../utils/fn'
-import { YYYYMMDD } from '../utils/date'
-import { immer } from './middleware'
 import { useBind } from '../utils/hooks'
+import { immer } from './middleware'
+import { migrate } from './migrate'
 
 export type PersonId = string
+
 export interface Person {
     id: PersonId
     name: string
     dob: YYYYMMDD
 }
+
 export type PersonDetails = Omit<Person, 'id'>
 
-export interface AppState {
+export interface State {
     peopleNextId: number
     peopleIds: Array<PersonId>
     people: Record<PersonId, Person>
@@ -24,7 +27,7 @@ export interface AppState {
     editPerson: (id: PersonId, details: Partial<PersonDetails>) => void
 }
 
-export const useApp = create<AppState>(
+export const useApp = create<State>(
     persist(
         immer((set, get) => ({
             peopleNextId: 0,
@@ -58,13 +61,15 @@ export const useApp = create<AppState>(
             }
         })),
         {
-            name: 'app-storage'
+            name: 'app-storage',
+            version: 1,
+            migrate
         }
     )
 )
 
 export const useSelector = <T>(
-    selector: (state: AppState) => T,
+    selector: (state: State) => T,
     deps: DependencyList = [],
     equalityFn?: EqualityChecker<T>
 ) => useApp(
@@ -78,7 +83,7 @@ export const useAction = <
     Params extends readonly any[],
     R
 >(
-    actionSelector: (state: AppState) => (...params: [...Deps, ...Params]) => R,
+    actionSelector: (state: State) => (...params: [...Deps, ...Params]) => R,
     ...deps: Deps
 ) => useBind(
     useSelector(actionSelector),
