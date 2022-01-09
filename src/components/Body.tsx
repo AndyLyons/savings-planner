@@ -9,7 +9,7 @@ export function Body({ children, sx }: Props) {
   return (
     <Container maxWidth='lg' sx={sx}>
       <Toolbar />
-      <Paper sx={{ m: 2, p: 2 }}>
+      <Paper sx={{ mt: 2, p: 2 }}>
         {children}
       </Paper>
     </Container>
