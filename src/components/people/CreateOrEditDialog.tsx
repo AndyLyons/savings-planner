@@ -1,7 +1,10 @@
 import { ChangeEvent, KeyboardEventHandler, useState, useCallback } from 'react'
-import { Box, IconButton, ListItem, ListItemIcon, TextField, TextFieldProps } from '@mui/material';
+import {
+  Button, Dialog, DialogActions, DialogContent,
+  DialogTitle, TextField, TextFieldProps
+} from '@mui/material';
 import { DatePicker } from '@mui/lab'
-import { Close, Done, Person } from '@mui/icons-material';
+import { Close, Done } from '@mui/icons-material';
 import { PersonDetails } from '../../state/app';
 import { toYYYYMMDD, isDate, fromYYYYMMDD, YYYYMMDD } from '../../utils/date';
 import { useNavigateTo } from '../../utils/router';
@@ -9,12 +12,13 @@ import { useNavigateTo } from '../../utils/router';
 interface Props {
     initialName?: string
     initialDob?: YYYYMMDD | null
-    onDone: (details: PersonDetails) => void
+    onDone: (details: PersonDetails) => void,
+    title: string
 }
 
-export function CreateOrEditListItem({ initialName = '', initialDob = null, onDone }: Props) {
+export function CreateOrEditDialog({ initialName = '', initialDob = null, onDone, title }: Props) {
   const [name, setName] = useState(initialName)
-  const [dateOfBirth, setDateOfBirth] = useState<Date | null>(initialDob ? fromYYYYMMDD(initialDob) : initialDob)
+  const [dateOfBirth, setDateOfBirth] = useState<Date | null>(initialDob ? fromYYYYMMDD(initialDob) : null)
 
   const isValidName = name !== ''
   const isValidDate = isDate(dateOfBirth)
@@ -38,11 +42,8 @@ export function CreateOrEditListItem({ initialName = '', initialDob = null, onDo
     case 'Enter':
       onDoneClick()
       break
-    case 'Escape':
-      navigateToPeople()
-      break
     }
-  }, [onDoneClick, navigateToPeople])
+  }, [onDoneClick])
 
   const renderDatePickerInput = useCallback((props: TextFieldProps) => (
     <TextField
@@ -55,35 +56,31 @@ export function CreateOrEditListItem({ initialName = '', initialDob = null, onDo
   ), [isValidDate, onKeyDown])
 
   return (
-    <ListItem sx={{ pl: 4, pt: 1.7, pb: 1.7 }}>
-      <ListItemIcon>
-        <Person />
-      </ListItemIcon>
-      <TextField
-        autoFocus={true}
-        error={!isValidName}
-        label='Name'
-        onChange={onNameChange}
-        onKeyDown={onKeyDown}
-        size='small'
-        value={name}
-        variant='standard'
-      />
-      <Box sx={{ mr: 4 }}>
+    <Dialog open onClose={navigateToPeople}>
+      <DialogTitle>{title}</DialogTitle>
+      <DialogContent sx={{ display: 'flex', flexDirection: 'column' }}>
+        <TextField
+          autoFocus={true}
+          error={!isValidName}
+          label='Name'
+          onChange={onNameChange}
+          onKeyDown={onKeyDown}
+          size='small'
+          value={name}
+          variant='standard'
+          sx={{ mb: 2 }}
+        />
         <DatePicker
           label='Date of birth'
           onChange={setDateOfBirth}
           renderInput={renderDatePickerInput}
           value={dateOfBirth}
         />
-      </Box>
-      <Box sx={{ flexGrow: 1 }} />
-      <ListItemIcon>
-        <IconButton onClick={onDoneClick} disabled={!isValid}><Done /></IconButton>
-      </ListItemIcon>
-      <ListItemIcon>
-        <IconButton onClick={navigateToPeople}><Close /></IconButton>
-      </ListItemIcon>
-    </ListItem>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={navigateToPeople} startIcon={<Close />}>Cancel</Button>
+        <Button onClick={onDoneClick} disabled={!isValid} startIcon={<Done />}>Done</Button>
+      </DialogActions>
+    </Dialog>
   )
 }

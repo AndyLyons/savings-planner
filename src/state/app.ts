@@ -8,7 +8,7 @@ import { useBind } from '../utils/hooks'
 import { immer } from './middleware'
 import { migrate } from './migrate'
 
-export type PersonId = string
+export type PersonId = string & { __personId__: never }
 
 export interface Person {
     id: PersonId
@@ -34,7 +34,7 @@ export const useApp = create<State>(
       people: {},
 
       createPerson(details) {
-        const id = nanoid(10)
+        const id = nanoid(10) as PersonId
 
         set(state => {
           state.peopleIds.push(id)
@@ -86,4 +86,12 @@ export const useAction = <
   ) => useBind(
     useSelector(actionSelector),
     ...deps
+  )
+
+export const useIsPersonId = (
+  personId?: string
+): personId is PersonId =>
+  useSelector(
+    state => Boolean(personId && Object.prototype.hasOwnProperty.call(state.people, personId)),
+    [personId]
   )

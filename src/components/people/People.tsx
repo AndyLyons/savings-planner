@@ -1,8 +1,10 @@
 import { Route, Routes } from 'react-router-dom';
-import { Box, List, Typography } from '@mui/material';
+import { Box, Divider, List } from '@mui/material';
+import { People as PeopleIcon } from '@mui/icons-material';
 import { useSelector } from '../../state/app';
-import { CreatePersonListItem } from './CreatePersonListItem';
-import { EditPersonListItem } from './EditPersonListItem';
+import { Title } from '../mui/Title';
+import { CreatePersonDialog } from './CreatePersonDialog';
+import { EditPersonDialogOrError } from './EditPersonDialog';
 import { PersonListItem } from './PersonListItem';
 import { FooterListItem } from './FooterListItem';
 
@@ -11,19 +13,18 @@ export function People() {
 
   return (
     <Box>
-      <Typography variant='h6' component='h2'>People</Typography>
+      <Title>People</Title>
       <List>
         {peopleIds.map(id => (
-          <Routes key={id}>
-            <Route path='*' element={<PersonListItem id={id} />} />
-            <Route path={`${id}`} element={<EditPersonListItem id={id} />} />
-          </Routes>
+          <PersonListItem key={id} id={id} />
         ))}
-        <Routes>
-          <Route path='*' element={<FooterListItem />} />
-          <Route path='add' element={<CreatePersonListItem />} />
-        </Routes>
       </List>
+      <Divider />
+      <FooterListItem />
+      <Routes>
+        <Route path='add' element={<CreatePersonDialog />} />
+        <Route path=':personId' element={<EditPersonDialogOrError />} />
+      </Routes>
     </Box>
   )
 }
