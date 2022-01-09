@@ -1,15 +1,15 @@
-import { DependencyList, useCallback, useRef } from "react";
+import { DependencyList, useCallback, useRef } from 'react';
 
 type Cleanup = () => void
 type CallbackRef<E extends Element> = (element: E) => Cleanup | undefined
 
 export function useCallbackRef<E extends Element>(callback: CallbackRef<E>, deps: DependencyList) {
-    const cleanup = useRef<Cleanup>()
-    return useCallback((e) => {
-        cleanup.current?.()
-        cleanup.current = callback(e)
+  const cleanup = useRef<Cleanup>()
+  return useCallback((e) => {
+    cleanup.current?.()
+    cleanup.current = callback(e)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, deps)
+  }, deps)
 }
 
 export function useBind<
@@ -17,6 +17,6 @@ export function useBind<
     P extends readonly any[],
     R
 >(callback: (...params: [...B, ...P]) => R, ...bound: B) {
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    return useCallback((...params: P) => callback(...bound, ...params), [callback, ...bound])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  return useCallback((...params: P) => callback(...bound, ...params), [callback, ...bound])
 }

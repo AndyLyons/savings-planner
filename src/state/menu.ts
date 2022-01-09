@@ -9,29 +9,29 @@ interface MenuState {
 }
 
 const useMenu = create<MenuState>(
-    immer((set) => ({
-        isOpen: false,
+  immer((set) => ({
+    isOpen: false,
 
-        toggleMenu(value) {
-            set(state => {
-                if (value === undefined) {
-                    state.isOpen = !state.isOpen
-                } else {
-                    state.isOpen = value
-                }
-            })
-        },
-    }))
+    toggleMenu(value) {
+      set(state => {
+        if (value === undefined) {
+          state.isOpen = !state.isOpen
+        } else {
+          state.isOpen = value
+        }
+      })
+    },
+  }))
 )
 
 const getIsOpen = (state: MenuState) => state.isOpen
 const getToggleMenu = (state: MenuState) => state.toggleMenu
 
 export function useMenuOpen() {
-    return useMenu(getIsOpen)
+  return useMenu(getIsOpen)
 }
 
 export function useToggleMenu(value?: boolean) {
-    const toggleMenu = useMenu(getToggleMenu)
-    return useCallback(() => toggleMenu(value), [toggleMenu, value])
+  const toggleMenu = useMenu(getToggleMenu)
+  return useCallback(() => toggleMenu(value), [toggleMenu, value])
 }

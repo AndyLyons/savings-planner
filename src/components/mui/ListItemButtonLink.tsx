@@ -1,26 +1,26 @@
-import React, { PropsWithChildren } from "react";
-import { Link as RouterLink, LinkProps as RouterLinkProps, To } from "react-router-dom";
-import { ListItemButton } from "@mui/material";
+import React, { PropsWithChildren } from 'react';
+import { Link as RouterLink, LinkProps as RouterLinkProps, To } from 'react-router-dom';
+import { ListItemButton } from '@mui/material';
 
 type Props = PropsWithChildren<{
     to: To
 }>
 
 export function ListItemButtonLink({ children, to }: Props) {
-    const renderLink = React.useMemo(
-        () =>
-          React.forwardRef<HTMLAnchorElement, Omit<RouterLinkProps, 'to'>>(function Link(
-            itemProps,
-            ref,
-          ) {
-            return <RouterLink to={to} ref={ref} {...itemProps} role={undefined} />;
-          }),
-        [to],
-      );
+  const renderLink = React.useMemo(
+    () =>
+      React.forwardRef<HTMLAnchorElement, Omit<RouterLinkProps, 'to'>>(function Link(
+        itemProps,
+        ref,
+      ) {
+        return <RouterLink to={to} ref={ref} {...itemProps} role={undefined} />;
+      }),
+    [to],
+  );
 
-    return (
-        <ListItemButton component={renderLink} >
-            {children}
-        </ListItemButton>
-    )
+  return (
+    <ListItemButton component={renderLink} >
+      {children}
+    </ListItemButton>
+  )
 }
