@@ -16,7 +16,7 @@ export function Header({ sx }: Props) {
     return (
         <AppBar position='fixed' sx={sx}>
             <Toolbar>
-                <Hidden smUp>
+                <Hidden mdUp>
                     <IconButton size="large" edge="start" color="inherit" onClick={toggleMenu} sx={{ mr: 2 }}>
                         {isMenuOpen ? <Close /> : <Menu />}
                     </IconButton>

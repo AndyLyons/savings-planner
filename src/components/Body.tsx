@@ -1,4 +1,4 @@
-import { Box, Paper, SxProps, Theme, Toolbar } from "@mui/material";
+import { Container, Paper, SxProps, Theme, Toolbar } from "@mui/material";
 import { PropsWithChildren } from "react";
 
 type Props = PropsWithChildren<{
@@ -7,11 +7,11 @@ type Props = PropsWithChildren<{
 
 export function Body({ children, sx }: Props) {
     return (
-        <Box sx={sx}>
+        <Container maxWidth='lg' sx={sx}>
             <Toolbar />
             <Paper sx={{ m: 2, p: 2 }}>
                 {children}
             </Paper>
-        </Box>
+        </Container>
     )
 }

@@ -17,7 +17,7 @@ interface Props {
 export function Menu({ sx }: Props) {
     const isOpen = useMenuOpen()
     const closeMenu = useToggleMenu(false)
-    const isDesktop = useMin('sm')
+    const isDesktop = useMin('md')
 
     useLocationChanged(closeMenu)
 

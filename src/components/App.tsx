@@ -11,7 +11,13 @@ import { Menu, MENU_WIDTH } from './Menu';
 import { Home } from './Home';
 import { People } from './people/People';
 
-const theme = createTheme()
+const theme = createTheme({
+  palette: {
+    background: {
+      default: '#f5f5f5'
+    }
+  }
+})
 
 export function App() {
   return (
@@ -29,15 +35,14 @@ export function App() {
 
             <Menu
               sx={{
-                mt: 30,
-                flexShrink: { sm: 0 },
-                width: { sm: MENU_WIDTH },
+                flexShrink: { md: 0 },
+                width: { md: MENU_WIDTH },
               }}
             />
 
             <Body sx={{
               flexGrow: 1,
-              width: { sm: `calc(100% - ${MENU_WIDTH}px)` }
+              width: { md: `calc(100% - ${MENU_WIDTH}px)` }
             }}>
               <Routes>
                 <Route path='/' element={<Home />} />
