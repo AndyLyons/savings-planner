@@ -1,4 +1,5 @@
 import { DependencyList, useCallback } from 'react'
+import { nanoid } from 'nanoid'
 import create, { EqualityChecker } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { YYYYMMDD } from '../utils/date'
@@ -18,7 +19,6 @@ export interface Person {
 export type PersonDetails = Omit<Person, 'id'>
 
 export interface State {
-    peopleNextId: number
     peopleIds: Array<PersonId>
     people: Record<PersonId, Person>
 
@@ -30,17 +30,15 @@ export interface State {
 export const useApp = create<State>(
   persist(
     immer((set, get) => ({
-      peopleNextId: 0,
       peopleIds: [],
       people: {},
 
       createPerson(details) {
-        const id = `${get().peopleNextId}`
+        const id = nanoid(10)
 
         set(state => {
           state.peopleIds.push(id)
           state.people[id] = { id, ...details }
-          state.peopleNextId += 1
         })
 
         return id
@@ -62,7 +60,7 @@ export const useApp = create<State>(
     })),
     {
       name: 'app-storage',
-      version: 1,
+      version: 2,
       migrate
     }
   )
