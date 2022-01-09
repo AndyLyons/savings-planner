@@ -1,7 +1,3 @@
-export function pipe<T>(...fns: Array<(param: T) => T>) {
-    return (param: T) => fns.reduce((value, fn) => fn(value), param)
-}
-
 export function removeArrayIndex<T>(arr: Array<T>, index: number) {
     if (index >= 0 && index < arr.length) {
         arr.splice(index, 1)

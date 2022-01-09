@@ -1,10 +1,17 @@
-import { Paper } from "@mui/material";
-import { PeopleEdit } from "./PeopleEdit";
+import { Box, Paper, SxProps, Theme, Toolbar } from "@mui/material";
+import { PropsWithChildren } from "react";
 
-export function Body() {
+type Props = PropsWithChildren<{
+    sx?: SxProps<Theme>
+}>
+
+export function Body({ children, sx }: Props) {
     return (
-        <Paper sx={{ m: 2, p: 2 }}>
-            <PeopleEdit />
-        </Paper>
+        <Box sx={sx}>
+            <Toolbar />
+            <Paper sx={{ m: 2, p: 2 }}>
+                {children}
+            </Paper>
+        </Box>
     )
 }
