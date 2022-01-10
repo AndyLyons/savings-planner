@@ -1,6 +1,5 @@
 import { Route, Routes } from 'react-router-dom';
 import { Box, Divider, List } from '@mui/material';
-import { People as PeopleIcon } from '@mui/icons-material';
 import { useSelector } from '../../state/app';
 import { Title } from '../mui/Title';
 import { CreatePersonDialog } from './CreatePersonDialog';
@@ -19,7 +18,7 @@ export function People() {
           <PersonListItem key={id} id={id} />
         ))}
       </List>
-      <Divider />
+      {peopleIds.length > 0 && <Divider />}
       <FooterListItem />
       <Routes>
         <Route path='add' element={<CreatePersonDialog />} />

@@ -4,7 +4,6 @@ import {
   DialogTitle, TextField, TextFieldProps
 } from '@mui/material';
 import { DatePicker } from '@mui/lab'
-import { Close, Done } from '@mui/icons-material';
 import { PersonDetails } from '../../state/app';
 import { toYYYYMMDD, isDate, fromYYYYMMDD, YYYYMMDD } from '../../utils/date';
 import { useNavigateTo } from '../../utils/router';
@@ -13,10 +12,10 @@ interface Props {
     initialName?: string
     initialDob?: YYYYMMDD | null
     onDone: (details: PersonDetails) => void,
-    title: string
+    action: string
 }
 
-export function CreateOrEditDialog({ initialName = '', initialDob = null, onDone, title }: Props) {
+export function CreateOrEditDialog({ initialName = '', initialDob = null, onDone, action }: Props) {
   const [name, setName] = useState(initialName)
   const [dateOfBirth, setDateOfBirth] = useState<Date | null>(initialDob ? fromYYYYMMDD(initialDob) : null)
 
@@ -57,7 +56,7 @@ export function CreateOrEditDialog({ initialName = '', initialDob = null, onDone
 
   return (
     <Dialog open onClose={navigateToPeople}>
-      <DialogTitle>{title}</DialogTitle>
+      <DialogTitle>{action} person</DialogTitle>
       <DialogContent sx={{ display: 'flex', flexDirection: 'column' }}>
         <TextField
           autoFocus={true}
@@ -78,8 +77,8 @@ export function CreateOrEditDialog({ initialName = '', initialDob = null, onDone
         />
       </DialogContent>
       <DialogActions>
-        <Button onClick={navigateToPeople} startIcon={<Close />}>Cancel</Button>
-        <Button onClick={onDoneClick} disabled={!isValid} startIcon={<Done />}>Done</Button>
+        <Button onClick={navigateToPeople}>Cancel</Button>
+        <Button onClick={onDoneClick} disabled={!isValid}>{action}</Button>
       </DialogActions>
     </Dialog>
   )

@@ -5,6 +5,6 @@ export function CreatePersonDialog() {
   const createPerson = useSelector((state) => state.createPerson)
 
   return (
-    <CreateOrEditDialog title='Create person' onDone={createPerson} />
+    <CreateOrEditDialog action='Create' onDone={createPerson} />
   )
 }

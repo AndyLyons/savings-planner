@@ -6,9 +6,11 @@ import LocalizationProvider from '@mui/lab/LocalizationProvider';
 
 import { Body } from './Body';
 import { Header } from './Header';
-import { Menu, MENU_WIDTH } from './Menu';
+import { Menu, FULL_MENU_WIDTH, COLLAPSED_MENU_WIDTH } from './Menu';
 import { Home } from './Home';
 import { People } from './people/People';
+import { Accounts } from './accounts/Accounts';
+import { useMenuOpen } from '../state/menu';
 
 const theme = createTheme({
   palette: {
@@ -19,6 +21,9 @@ const theme = createTheme({
 })
 
 export function App() {
+  const isMenuOpen = useMenuOpen()
+  const smMenuWidth = isMenuOpen ? FULL_MENU_WIDTH : COLLAPSED_MENU_WIDTH
+
   return (
     <ThemeProvider theme={theme}>
       <LocalizationProvider dateAdapter={AdapterDateFns} locale={enGB}>
@@ -35,17 +40,28 @@ export function App() {
             <Menu
               sx={{
                 flexShrink: { md: 0 },
-                width: { md: MENU_WIDTH },
+                width: {
+                  sm: smMenuWidth,
+                  md: FULL_MENU_WIDTH
+                },
+                transition: theme => theme.transitions.create('width', {
+                  easing: theme.transitions.easing.sharp,
+                  duration: theme.transitions.duration.enteringScreen
+                })
               }}
             />
 
             <Body sx={{
               flexGrow: 1,
-              width: { md: `calc(100% - ${MENU_WIDTH}px)` }
+              width: {
+                sm: `calc(100% - ${smMenuWidth}px)`,
+                md: `calc(100% - ${FULL_MENU_WIDTH}px)`
+              }
             }}>
               <Routes>
                 <Route path='/' element={<Home />} />
                 <Route path='/people/*' element={<People />} />
+                <Route path='/accounts' element={<Accounts />} />
               </Routes>
             </Body>
           </Box>

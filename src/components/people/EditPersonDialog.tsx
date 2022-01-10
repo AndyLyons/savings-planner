@@ -11,7 +11,7 @@ function EditPersonDialog({ id }: Props) {
   const editPerson = useAction(state => state.editPerson, id)
 
   return (
-    <CreateOrEditDialog title='Edit person' initialName={person.name} initialDob={person.dob} onDone={editPerson} />
+    <CreateOrEditDialog action='Edit' initialName={person.name} initialDob={person.dob} onDone={editPerson} />
   )
 }
 
