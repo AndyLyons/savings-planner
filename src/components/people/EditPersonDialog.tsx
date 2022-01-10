@@ -1,5 +1,6 @@
 import { useParams } from 'react-router-dom';
-import { PersonId, useAction, useIsPersonId, useSelector } from '../../state/app';
+import { useAction, useSelector } from '../../state/app';
+import { PersonId, useIsPersonId } from '../../state/slices/people';
 import { CreateOrEditDialog } from './CreateOrEditDialog';
 
 interface Props {

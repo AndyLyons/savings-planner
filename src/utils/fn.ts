@@ -14,3 +14,9 @@ export function removeArrayItem<T>(arr: Array<T>, item: T) {
 export function removeArrayFind<T>(arr: Array<T>, by: (value: T, index: number, arr: Array<T>) => boolean) {
   return removeArrayIndex(arr, arr.findIndex(by))
 }
+
+export function assign<T, S extends Partial<T>>(to: T, from: S) {
+  Object.entries(from).forEach(([key, value]) => {
+    to[key as keyof T] = value as T[keyof T]
+  })
+}

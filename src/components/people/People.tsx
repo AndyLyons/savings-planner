@@ -8,7 +8,7 @@ import { PersonListItem } from './PersonListItem';
 import { FooterListItem } from './FooterListItem';
 
 export function People() {
-  const peopleIds = useSelector(state => state.peopleIds, [])
+  const peopleIds = useSelector(state => state.personIds, [])
 
   return (
     <Box>

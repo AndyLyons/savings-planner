@@ -4,14 +4,14 @@ import {
   DialogTitle, TextField, TextFieldProps
 } from '@mui/material';
 import { DatePicker } from '@mui/lab'
-import { PersonDetails } from '../../state/app';
+import { Person } from '../../state/slices/people';
 import { toYYYYMMDD, isDate, fromYYYYMMDD, YYYYMMDD } from '../../utils/date';
 import { useNavigateTo } from '../../utils/router';
 
 interface Props {
     initialName?: string
     initialDob?: YYYYMMDD | null
-    onDone: (details: PersonDetails) => void,
+    onDone: (details: Person) => void,
     action: string
 }
 

@@ -27,6 +27,20 @@ const MIGRATIONS = [
       state.people[newId].id = newId
       delete state.people[id]
     })
+  },
+
+  /**
+   * v2 => v3
+   *   - Removed id property from people state objects
+   *   - Renamed peopleIds to personIds for consistency
+   */
+  (state: any) => {
+    state.peopleIds.forEach((id: string) => {
+      delete state.people[id].id
+    })
+
+    state.personIds = state.peopleIds
+    delete state.peopleIds
   }
 ]
 
