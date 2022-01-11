@@ -14,13 +14,14 @@ export function AccountListItem({ id }: Props) {
 
   const removeAccount = useAction(state => state.removeAccount, id)
 
-  const navigateToAccount = useNavigateTo(id)
+  const navigateToEditAccount = useNavigateTo(id)
+  const navigateToAccount = useNavigateTo(`/account/${id}`)
 
   return (
-    <ListItemButton sx={{ pl: 4 }}>
+    <ListItemButton onClick={navigateToAccount} sx={{ pl: 4 }}>
       <ListItemText primary={name} secondary={ownerName} />
       <ListItemIcon>
-        <IconButton onClick={navigateToAccount}><Edit /></IconButton>
+        <IconButton onClick={navigateToEditAccount}><Edit /></IconButton>
       </ListItemIcon>
       <ListItemIcon>
         <IconButton onClick={removeAccount}><Delete /></IconButton>

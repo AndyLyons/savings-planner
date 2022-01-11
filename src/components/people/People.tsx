@@ -1,8 +1,11 @@
 import { Route, Routes } from 'react-router-dom';
-import { Box, Divider, List, ListItem, ListItemIcon, ListItemText } from '@mui/material';
+import {
+  Box, Breadcrumbs, Divider, List, ListItem,
+  ListItemIcon, ListItemText, Typography
+} from '@mui/material';
 import { Add } from '@mui/icons-material';
+import { ListItemButtonLink } from '../mui';
 import { useSelector } from '../../state/app';
-import { ListItemButtonLink, Title } from '../mui';
 import { useIsDesktop } from '../../utils/breakpoints';
 import { CreatePersonDialog } from './CreatePersonDialog';
 import { EditPersonDialog } from './EditPersonDialog';
@@ -14,7 +17,9 @@ export function People() {
 
   return (
     <Box>
-      <Title>People</Title>
+      <Breadcrumbs>
+        <Typography variant='h6' component='h2'>People</Typography>
+      </Breadcrumbs>
       <List dense={isDesktop}>
         {peopleIds.map(id => (
           <PersonListItem key={id} id={id} />

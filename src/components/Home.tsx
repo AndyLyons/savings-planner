@@ -1,7 +1,9 @@
-import { Typography } from '@mui/material';
+import { Breadcrumbs, Typography } from '@mui/material';
 
 export function Home() {
   return (
-    <Typography variant='h6' component='h2'>Home</Typography>
+    <Breadcrumbs>
+      <Typography variant='h6' component='h2'>Home</Typography>
+    </Breadcrumbs>
   )
 }

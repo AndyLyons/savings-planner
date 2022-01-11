@@ -10,6 +10,7 @@ import { Menu, FULL_MENU_WIDTH, COLLAPSED_MENU_WIDTH } from './Menu';
 import { Home } from './Home';
 import { People } from './people/People';
 import { Accounts } from './accounts/Accounts';
+import { Account } from './account/Account';
 import { useMenuOpen } from '../state/menu';
 
 const theme = createTheme({
@@ -62,6 +63,7 @@ export function App() {
                 <Route path='/' element={<Home />} />
                 <Route path='/people/*' element={<People />} />
                 <Route path='/accounts/*' element={<Accounts />} />
+                <Route path='/account/:accountId' element={<Account />} />
               </Routes>
             </Body>
           </Box>
