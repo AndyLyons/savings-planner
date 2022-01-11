@@ -1,10 +1,10 @@
 {
   "files": {
-    "main.js": "/savings-planner/static/js/main.90906a7b.js",
+    "main.js": "/savings-planner/static/js/main.0a39f8f0.js",
     "index.html": "/savings-planner/index.html",
-    "main.90906a7b.js.map": "/savings-planner/static/js/main.90906a7b.js.map"
+    "main.0a39f8f0.js.map": "/savings-planner/static/js/main.0a39f8f0.js.map"
   },
   "entrypoints": [
-    "static/js/main.90906a7b.js"
+    "static/js/main.0a39f8f0.js"
   ]
 }
