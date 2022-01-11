@@ -1,4 +1,4 @@
-import { ChangeEvent, KeyboardEventHandler, useState, useCallback } from 'react'
+import { useState, useCallback } from 'react'
 import {
   Button, Dialog, DialogActions, DialogContent,
   DialogTitle, TextField, TextFieldProps
@@ -25,7 +25,7 @@ export function CreateOrEditPerson({ initialName = '', initialDob = null, onDone
 
   const navigateToPeople = useNavigateTo('/people')
 
-  const onNameChange = useCallback((e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const onNameChange = useCallback((e: { target: { value: string } }) => {
     setName(e.target.value)
   }, [])
 
@@ -36,7 +36,7 @@ export function CreateOrEditPerson({ initialName = '', initialDob = null, onDone
     }
   }, [onDone, name, navigateToPeople, dateOfBirth, isValid])
 
-  const onKeyDown: KeyboardEventHandler<HTMLDivElement> = useCallback(({ key }) => {
+  const onKeyDown = useCallback(({ key }: { key: string }) => {
     switch (key) {
     case 'Enter':
       onDoneClick()
@@ -55,7 +55,7 @@ export function CreateOrEditPerson({ initialName = '', initialDob = null, onDone
   ), [isValidDate, onKeyDown])
 
   return (
-    <Dialog open onClose={navigateToPeople}>
+    <Dialog fullWidth maxWidth='lg' open onClose={navigateToPeople}>
       <DialogTitle>{action} person</DialogTitle>
       <DialogContent sx={{ display: 'flex', flexDirection: 'column' }}>
         <TextField

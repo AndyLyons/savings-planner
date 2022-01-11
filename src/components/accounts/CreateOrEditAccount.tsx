@@ -1,11 +1,11 @@
-import { ChangeEvent, KeyboardEventHandler, useState, useCallback } from 'react'
+import { useState, useCallback } from 'react'
 import {
   Button, Dialog, DialogActions, DialogContent,
   DialogTitle, FormControl, InputLabel, MenuItem,
-  Select, SelectChangeEvent, TextField
+  NativeSelect, Select, TextField
 } from '@mui/material';
 import { Account } from '../../state/slices/accounts';
-import { PersonId, useIsPersonId } from '../../state/slices/people';
+import { useIsPersonId } from '../../state/slices/people';
 import { useIsDesktop } from '../../utils/breakpoints';
 import { useNavigateTo } from '../../utils/router';
 import { useSelector } from '../../state/app';
@@ -32,11 +32,11 @@ export function CreateOrEditAccount({ initialName = '', initialOwner = '', onDon
 
   const navigateToAccounts = useNavigateTo('/accounts')
 
-  const onNameChange = useCallback((e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const onNameChange = useCallback((e: { target: { value: string } }) => {
     setName(e.target.value)
   }, [])
 
-  const onOwnerChange = useCallback((e: SelectChangeEvent<PersonId | ''>) => {
+  const onOwnerChange = useCallback((e: { target: { value: string } }) => {
     setOwner(e.target.value)
   }, [])
 
@@ -47,7 +47,7 @@ export function CreateOrEditAccount({ initialName = '', initialOwner = '', onDon
     }
   }, [onDone, name, owner, navigateToAccounts, isValid])
 
-  const onKeyDown: KeyboardEventHandler<HTMLDivElement> = useCallback(({ key }) => {
+  const onKeyDown = useCallback(({ key }: { key: string }) => {
     switch (key) {
     case 'Enter':
       onDoneClick()
@@ -56,7 +56,7 @@ export function CreateOrEditAccount({ initialName = '', initialOwner = '', onDon
   }, [onDoneClick])
 
   return (
-    <Dialog open onClose={navigateToAccounts}>
+    <Dialog fullWidth maxWidth='lg' open onClose={navigateToAccounts}>
       <DialogTitle>{action} account</DialogTitle>
       <DialogContent sx={{ display: 'flex', flexDirection: 'column' }}>
         <TextField
@@ -78,17 +78,31 @@ export function CreateOrEditAccount({ initialName = '', initialOwner = '', onDon
           size='small'
           variant='standard'
         >
-          <InputLabel id="owner-select-label">Owner</InputLabel>
-          <Select
-            id='owner-select'
-            labelId='owner-select-label'
-            label='Owner'
-            native={!isDesktop}
-            onChange={onOwnerChange}
-            value={isValidOwner ? owner : ''}
-          >
-            {peopleIds.map((id) => <MenuItem key={id} value={id}>{people[id].name}</MenuItem>)}
-          </Select>
+          <InputLabel id="owner-select-label" htmlFor='native-owner-select'>Owner</InputLabel>
+          {isDesktop
+            ? (
+              <Select
+                id='owner-select'
+                labelId='owner-select-label'
+                label='Owner'
+                onChange={onOwnerChange}
+                value={isValidOwner ? owner : ''}
+              >
+                {peopleIds.map((id) => <MenuItem key={id} value={id}>{people[id].name}</MenuItem>)}
+              </Select>
+            ) : (
+              <NativeSelect
+                onChange={onOwnerChange}
+                inputProps={{
+                  id: 'native-owner-select'
+                }}
+                value={isValidOwner ? owner : ''}
+              >
+                {owner === '' && <option hidden value='' style={{ display: 'none' }}></option>}
+                {peopleIds.map((id) => <option key={id} value={id}>{people[id].name}</option>)}
+              </NativeSelect>
+            )
+          }
         </FormControl>
       </DialogContent>
       <DialogActions>
