@@ -2,7 +2,7 @@ import {
   Box, Divider, Drawer, List, ListItemIcon,
   ListItemText, SxProps, Theme, Toolbar
 } from '@mui/material';
-import { Home, People } from '@mui/icons-material';
+import { Home, People, Savings } from '@mui/icons-material';
 import { ListItemButtonLink } from './mui/ListItemButtonLink';
 import { useMin } from '../utils/breakpoints';
 import { useLocationChanged } from '../utils/router';
@@ -57,6 +57,10 @@ export function Menu({ sx }: Props) {
           <ListItemButtonLink to='/people' selected={pathname.startsWith('/people')}>
             <ListItemIcon><People color='primary' /></ListItemIcon>
             <ListItemText>People</ListItemText>
+          </ListItemButtonLink>
+          <ListItemButtonLink to='/accounts' selected={pathname.startsWith('/accounts')}>
+            <ListItemIcon><Savings color='primary' /></ListItemIcon>
+            <ListItemText>Accounts</ListItemText>
           </ListItemButtonLink>
         </List>
       </Drawer>

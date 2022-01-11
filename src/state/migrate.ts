@@ -41,6 +41,40 @@ const MIGRATIONS = [
 
     state.personIds = state.peopleIds
     delete state.peopleIds
+  },
+
+  /**
+   * v3 => v4
+   *   - Reverting v2 => v3 changes; it was better before
+   */
+  (state: any) => {
+    state.personIds.forEach((id: string) => {
+      state.people[id].id = id
+    })
+
+    state.peopleIds = state.personIds
+    delete state.personIds
+
+    state.accountIds.forEach((id: string) => {
+      state.accounts[id].id = id
+    })
+
+    state.accountsIds = state.accountIds
+    delete state.accountIds
+  },
+
+  /**
+   * v4 => v5
+   *   - Removing id properties from state objects again, it cleans things up
+   */
+  (state: any) => {
+    state.peopleIds.forEach((id: string) => {
+      delete state.people[id].id
+    })
+
+    state.accountsIds.forEach((id: string) => {
+      delete state.accounts[id].id
+    })
   }
 ]
 

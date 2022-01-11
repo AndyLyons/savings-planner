@@ -61,7 +61,7 @@ export function App() {
               <Routes>
                 <Route path='/' element={<Home />} />
                 <Route path='/people/*' element={<People />} />
-                <Route path='/accounts' element={<Accounts />} />
+                <Route path='/accounts/*' element={<Accounts />} />
               </Routes>
             </Body>
           </Box>

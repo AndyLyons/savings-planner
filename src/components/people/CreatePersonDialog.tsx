@@ -1,10 +1,10 @@
 import { useSelector } from '../../state/app';
-import { CreateOrEditDialog } from './CreateOrEditDialog';
+import { CreateOrEditPerson } from './CreateOrEditPerson';
 
 export function CreatePersonDialog() {
   const createPerson = useSelector((state) => state.createPerson)
 
   return (
-    <CreateOrEditDialog action='Create' onDone={createPerson} />
+    <CreateOrEditPerson action='Create' onDone={createPerson} />
   )
 }

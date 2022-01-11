@@ -1,28 +1,35 @@
 import { Route, Routes } from 'react-router-dom';
-import { Box, Divider, List } from '@mui/material';
+import { Box, Divider, List, ListItem, ListItemIcon, ListItemText } from '@mui/material';
+import { Add } from '@mui/icons-material';
 import { useSelector } from '../../state/app';
-import { Title } from '../mui/Title';
+import { ListItemButtonLink, Title } from '../mui';
+import { useIsDesktop } from '../../utils/breakpoints';
 import { CreatePersonDialog } from './CreatePersonDialog';
-import { EditPersonDialogOrError } from './EditPersonDialog';
+import { EditPersonDialog } from './EditPersonDialog';
 import { PersonListItem } from './PersonListItem';
-import { FooterListItem } from './FooterListItem';
 
 export function People() {
-  const peopleIds = useSelector(state => state.personIds, [])
+  const isDesktop = useIsDesktop()
+  const peopleIds = useSelector(state => state.peopleIds, [])
 
   return (
     <Box>
       <Title>People</Title>
-      <List>
+      <List dense={isDesktop}>
         {peopleIds.map(id => (
           <PersonListItem key={id} id={id} />
         ))}
+        {peopleIds.length > 0 && <Divider />}
+        <ListItem>
+          <ListItemButtonLink to='add'>
+            <ListItemIcon><Add /></ListItemIcon>
+            <ListItemText>Add a person</ListItemText>
+          </ListItemButtonLink>
+        </ListItem>
       </List>
-      {peopleIds.length > 0 && <Divider />}
-      <FooterListItem />
       <Routes>
         <Route path='add' element={<CreatePersonDialog />} />
-        <Route path=':personId' element={<EditPersonDialogOrError />} />
+        <Route path=':personId' element={<EditPersonDialog />} />
       </Routes>
     </Box>
   )

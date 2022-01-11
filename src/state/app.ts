@@ -5,17 +5,19 @@ import { useBind } from '../utils/hooks'
 import { immer } from './middleware'
 import { migrate } from './migrate'
 import { createPeopleSlice, PeopleState } from './slices/people'
+import { AccountsState, createAccountsSlice } from './slices/accounts'
 
-export type State = PeopleState
+export type State = PeopleState & AccountsState
 
 export const useApp = create<State>(
   persist(
     immer((set, get) => ({
-      ...createPeopleSlice(set, get)
+      ...createPeopleSlice(set, get),
+      ...createAccountsSlice(set, get)
     })),
     {
       name: 'app-storage',
-      version: 3,
+      version: 5,
       migrate
     }
   )

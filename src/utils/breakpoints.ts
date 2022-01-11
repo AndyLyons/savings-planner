@@ -23,3 +23,7 @@ export function useBetween(from: Breakpoint, to: Breakpoint) {
   const isEqual = useEqual(to)
   return isBetween || isEqual
 }
+
+export function useIsDesktop() {
+  return useMediaQuery('(pointer: fine)', { noSsr: true })
+}

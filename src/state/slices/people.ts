@@ -12,7 +12,7 @@ export interface Person {
 }
 
 export interface PeopleState {
-  personIds: Array<PersonId>
+  peopleIds: Array<PersonId>
   people: Record<PersonId, Person>
 
   createPerson: (details: Person) => PersonId
@@ -30,14 +30,14 @@ export const useIsPersonId = (
 
 export function createPeopleSlice(set: SetState<State>, get: GetState<State>): PeopleState {
   return ({
-    personIds: [],
+    peopleIds: [],
     people: {},
 
     createPerson(details) {
       const id = nanoid(10) as PersonId
 
       set(state => {
-        state.personIds.push(id)
+        state.peopleIds.push(id)
         state.people[id] = { ...details }
       })
 
@@ -45,7 +45,7 @@ export function createPeopleSlice(set: SetState<State>, get: GetState<State>): P
     },
     removePerson(id) {
       set(state => {
-        removeArrayItem(state.personIds, id)
+        removeArrayItem(state.peopleIds, id)
         delete state.people[id]
       })
     },

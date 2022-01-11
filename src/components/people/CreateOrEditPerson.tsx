@@ -15,7 +15,7 @@ interface Props {
     action: string
 }
 
-export function CreateOrEditDialog({ initialName = '', initialDob = null, onDone, action }: Props) {
+export function CreateOrEditPerson({ initialName = '', initialDob = null, onDone, action }: Props) {
   const [name, setName] = useState(initialName)
   const [dateOfBirth, setDateOfBirth] = useState<Date | null>(initialDob ? fromYYYYMMDD(initialDob) : null)
 
