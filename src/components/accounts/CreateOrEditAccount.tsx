@@ -2,7 +2,6 @@ import { ChangeEvent, KeyboardEventHandler, useState, useCallback } from 'react'
 import {
   Button, Dialog, DialogActions, DialogContent,
   DialogTitle, FormControl, InputLabel, MenuItem,
-  NativeSelect,
   Select, SelectChangeEvent, TextField
 } from '@mui/material';
 import { Account } from '../../state/slices/accounts';
