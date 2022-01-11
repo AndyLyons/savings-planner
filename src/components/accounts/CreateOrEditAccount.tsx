@@ -2,10 +2,12 @@ import { ChangeEvent, KeyboardEventHandler, useState, useCallback } from 'react'
 import {
   Button, Dialog, DialogActions, DialogContent,
   DialogTitle, FormControl, InputLabel, MenuItem,
+  NativeSelect,
   Select, SelectChangeEvent, TextField
 } from '@mui/material';
 import { Account } from '../../state/slices/accounts';
 import { PersonId, useIsPersonId } from '../../state/slices/people';
+import { useIsDesktop } from '../../utils/breakpoints';
 import { useNavigateTo } from '../../utils/router';
 import { useSelector } from '../../state/app';
 
@@ -17,6 +19,8 @@ interface Props {
 }
 
 export function CreateOrEditAccount({ initialName = '', initialOwner = '', onDone, action }: Props) {
+  const isDesktop = useIsDesktop()
+
   const [name, setName] = useState(initialName)
   const [owner, setOwner] = useState<string>(initialOwner)
 
@@ -80,6 +84,7 @@ export function CreateOrEditAccount({ initialName = '', initialOwner = '', onDon
             id='owner-select'
             labelId='owner-select-label'
             label='Owner'
+            native={!isDesktop}
             onChange={onOwnerChange}
             value={isValidOwner ? owner : ''}
           >
