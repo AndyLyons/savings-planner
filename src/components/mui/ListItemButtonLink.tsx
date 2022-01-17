@@ -1,13 +1,10 @@
-import React, { PropsWithChildren } from 'react';
-import { Link as RouterLink, LinkProps as RouterLinkProps, To } from 'react-router-dom';
-import { ListItemButton } from '@mui/material';
+import React from 'react';
+import { Link as RouterLink, LinkProps as RouterLinkProps } from 'react-router-dom';
+import { ListItemButton, ListItemButtonProps } from '@mui/material';
 
-type Props = PropsWithChildren<{
-  selected?: boolean
-  to: To
-}>
+export function ListItemButtonLink(props: ListItemButtonProps<typeof RouterLink>) {
+  const { to, ...otherProps } = props
 
-export function ListItemButtonLink({ children, selected, to }: Props) {
   const renderLink = React.useMemo(
     () =>
       React.forwardRef<HTMLAnchorElement, Omit<RouterLinkProps, 'to'>>(function Link(
@@ -20,8 +17,6 @@ export function ListItemButtonLink({ children, selected, to }: Props) {
   );
 
   return (
-    <ListItemButton component={renderLink} selected={selected}>
-      {children}
-    </ListItemButton>
+    <ListItemButton component={renderLink} {...otherProps} />
   )
 }
