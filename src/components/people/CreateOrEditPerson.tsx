@@ -1,11 +1,12 @@
-import { useState, useCallback } from 'react'
+import { DatePicker } from '@mui/lab';
 import {
   Button, Dialog, DialogActions, DialogContent,
   DialogTitle, TextField, TextFieldProps
 } from '@mui/material';
-import { DatePicker } from '@mui/lab'
+import { useCallback, useState } from 'react';
 import { Person } from '../../state/slices/people';
-import { toYYYYMMDD, isDate, fromYYYYMMDD, YYYYMMDD } from '../../utils/date';
+import { fromYYYYMMDD, isDate, toYYYYMMDD, YYYYMMDD } from '../../utils/date';
+import { useStopPropagation } from '../../utils/hooks';
 import { useNavigateTo } from '../../utils/router';
 
 interface Props {
@@ -29,20 +30,22 @@ export function CreateOrEditPerson({ initialName = '', initialDob = null, onDone
     setName(e.target.value)
   }, [])
 
-  const onDoneClick = useCallback(() => {
+  const savePerson = useCallback(() => {
     if (isValid) {
       onDone({ name, dob: toYYYYMMDD(dateOfBirth) })
       navigateToPeople()
     }
   }, [onDone, name, navigateToPeople, dateOfBirth, isValid])
 
+  const onDoneClick = useStopPropagation(savePerson)
+
   const onKeyDown = useCallback(({ key }: { key: string }) => {
     switch (key) {
     case 'Enter':
-      onDoneClick()
+      savePerson()
       break
     }
-  }, [onDoneClick])
+  }, [savePerson])
 
   const renderDatePickerInput = useCallback((props: TextFieldProps) => (
     <TextField
