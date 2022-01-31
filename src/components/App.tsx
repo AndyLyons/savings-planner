@@ -1,17 +1,17 @@
-import { HashRouter, Route, Routes } from 'react-router-dom';
-import { enGB } from 'date-fns/locale'
-import { Box, createTheme, CssBaseline, ThemeProvider } from '@mui/material';
 import AdapterDateFns from '@mui/lab/AdapterDateFns';
 import LocalizationProvider from '@mui/lab/LocalizationProvider';
-
+import { Box, createTheme, CssBaseline, ThemeProvider } from '@mui/material';
+import { enGB } from 'date-fns/locale';
+import { HashRouter, Route, Routes } from 'react-router-dom';
+import { useMenuOpen } from '../state/menu';
+import { Account } from './account/Account';
+import { Accounts } from './accounts/Accounts';
 import { Body } from './Body';
 import { Header } from './Header';
-import { Menu, FULL_MENU_WIDTH, COLLAPSED_MENU_WIDTH } from './Menu';
 import { Home } from './Home';
+import { COLLAPSED_MENU_WIDTH, FULL_MENU_WIDTH, Menu } from './Menu';
 import { People } from './people/People';
-import { Accounts } from './accounts/Accounts';
-import { Account } from './account/Account';
-import { useMenuOpen } from '../state/menu';
+
 
 const theme = createTheme({
   palette: {

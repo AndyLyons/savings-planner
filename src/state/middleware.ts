@@ -1,5 +1,5 @@
-import { State, StateCreator } from 'zustand'
 import produce from 'immer'
+import { State, StateCreator } from 'zustand'
 
 export function immer<T extends State>(configure: StateCreator<T>): StateCreator<T> {
   return (set, get, api) => {

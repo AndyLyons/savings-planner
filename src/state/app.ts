@@ -4,8 +4,8 @@ import { persist } from 'zustand/middleware'
 import { useBind } from '../utils/hooks'
 import { immer } from './middleware'
 import { migrate } from './migrate'
-import { createPeopleSlice, PeopleState } from './slices/people'
 import { AccountsState, createAccountsSlice } from './slices/accounts'
+import { createPeopleSlice, PeopleState } from './slices/people'
 
 export type State = PeopleState & AccountsState
 

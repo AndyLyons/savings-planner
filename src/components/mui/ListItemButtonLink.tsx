@@ -1,6 +1,6 @@
+import { ListItemButton, ListItemButtonProps } from '@mui/material';
 import React from 'react';
 import { Link as RouterLink, LinkProps as RouterLinkProps } from 'react-router-dom';
-import { ListItemButton, ListItemButtonProps } from '@mui/material';
 
 export function ListItemButtonLink(props: ListItemButtonProps<typeof RouterLink>) {
   const { to, ...otherProps } = props

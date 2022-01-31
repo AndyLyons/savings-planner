@@ -1,5 +1,5 @@
-import { IconButton, ListItem, ListItemIcon, ListItemText } from '@mui/material';
 import { Delete, Edit, Person } from '@mui/icons-material';
+import { IconButton, ListItem, ListItemIcon, ListItemText } from '@mui/material';
 import { useAction, useSelector } from '../../state/app';
 import { PersonId } from '../../state/slices/people';
 import { formatYYYYMMDD } from '../../utils/date';

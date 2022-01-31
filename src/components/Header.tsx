@@ -1,8 +1,8 @@
+import { Close, Menu, ShowChart } from '@mui/icons-material';
 import {
   AppBar, Hidden, Icon, IconButton,
   SxProps, Theme, Toolbar, Typography
 } from '@mui/material';
-import { Close, Menu, ShowChart } from '@mui/icons-material';
 import { useMenuOpen, useToggleMenu } from '../state/menu';
 import { useNavigateTo } from '../utils/router';
 

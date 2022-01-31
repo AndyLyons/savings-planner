@@ -12,7 +12,12 @@ function ValidEditPersonDialog({ id }: Props) {
   const editPerson = useAction(state => state.editPerson, id)
 
   return (
-    <CreateOrEditPerson action='Edit' initialName={person.name} initialDob={person.dob} onDone={editPerson} />
+    <CreateOrEditPerson
+      action='Edit'
+      initialName={person.name}
+      initialDob={person.dob}
+      onDone={editPerson}
+    />
   )
 }
 

@@ -1,12 +1,12 @@
-import { Route, Routes } from 'react-router-dom';
+import { Add } from '@mui/icons-material';
 import {
   Box, Breadcrumbs, Divider, List, ListItem,
   ListItemIcon, ListItemText, Typography
 } from '@mui/material';
-import { Add } from '@mui/icons-material';
-import { ListItemButtonLink } from '../mui';
+import { Route, Routes } from 'react-router-dom';
 import { useSelector } from '../../state/app';
 import { useIsDesktop } from '../../utils/breakpoints';
+import { ListItemButtonLink } from '../mui';
 import { CreatePersonDialog } from './CreatePersonDialog';
 import { EditPersonDialog } from './EditPersonDialog';
 import { PersonListItem } from './PersonListItem';

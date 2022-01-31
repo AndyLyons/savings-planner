@@ -1,8 +1,8 @@
 import { nanoid } from 'nanoid'
 import { GetState, SetState } from 'zustand'
-import { State, useSelector } from '../app'
 import { YYYYMMDD } from '../../utils/date'
-import { removeArrayItem, assign } from '../../utils/fn'
+import { assign, removeArrayItem } from '../../utils/fn'
+import { State, useSelector } from '../app'
 
 export type PersonId = string & { __personId__: never }
 

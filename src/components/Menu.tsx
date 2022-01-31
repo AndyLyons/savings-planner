@@ -1,13 +1,13 @@
+import { Home, People, Savings } from '@mui/icons-material';
 import {
   Box, Divider, Drawer, List, ListItemIcon,
   ListItemText, SxProps, Theme, Toolbar
 } from '@mui/material';
-import { Home, People, Savings } from '@mui/icons-material';
-import { ListItemButtonLink } from './mui/ListItemButtonLink';
+import { useLocation } from 'react-router-dom';
+import { useMenuOpen, useToggleMenu } from '../state/menu';
 import { useMin } from '../utils/breakpoints';
 import { useLocationChanged } from '../utils/router';
-import { useMenuOpen, useToggleMenu } from '../state/menu';
-import { useLocation } from 'react-router-dom';
+import { ListItemButtonLink } from './mui/ListItemButtonLink';
 
 export const FULL_MENU_WIDTH = 250
 export const COLLAPSED_MENU_WIDTH = 57
