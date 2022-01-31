@@ -12,7 +12,11 @@ function ValidEditAccountDialog({ id }: Props) {
   const editAccount = useAction(state => state.editAccount, id)
 
   return (
-    <CreateOrEditAccount action='Edit' initialName={account.name} initialOwner={account.owner} onDone={editAccount} />
+    <CreateOrEditAccount
+      action='Edit'
+      initialAccount={account}
+      onDone={editAccount}
+    />
   )
 }
 

@@ -75,7 +75,17 @@ const MIGRATIONS = [
     state.accountsIds.forEach((id: string) => {
       delete state.accounts[id].id
     })
-  }
+  },
+
+  /**
+   * v5 => v6
+   *   - Added growth to accounts
+   */
+  (state: any) => {
+    state.accountsIds.forEach((id: string) => {
+      state.accounts[id].growth = 0
+    })
+  },
 ]
 
 export const migrate: (state: any, version: number) => State = produce((state, version) => {

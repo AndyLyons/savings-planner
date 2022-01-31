@@ -17,7 +17,7 @@ export const useApp = create<State>(
     })),
     {
       name: 'app-storage',
-      version: 5,
+      version: 6,
       migrate
     }
   )

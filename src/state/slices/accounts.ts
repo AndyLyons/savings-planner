@@ -8,6 +8,7 @@ export type AccountId = string & { __accountId__: never }
 
 export interface Account {
   name: string
+  growth: number
   owner: PersonId
 }
 
@@ -24,7 +25,7 @@ export const useIsAccountId = (
   accountId?: string
 ): accountId is AccountId =>
   useSelector(
-    state => Boolean(accountId && Object.prototype.hasOwnProperty.call(state.accounts, accountId)),
+    state => Boolean(accountId && accountId in state.accounts),
     [accountId]
   )
 
@@ -38,7 +39,7 @@ export function createAccountsSlice(set: SetState<State>, get: GetState<State>):
 
       set(state => {
         state.accountsIds.push(id)
-        state.accounts[id] = { ...details }
+        state.accounts[id] = details
       })
 
       return id
