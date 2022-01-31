@@ -1,4 +1,4 @@
-import { Home, People, Savings } from '@mui/icons-material';
+import { AccountBalance, Home, People } from '@mui/icons-material';
 import {
   Box, Divider, Drawer, List, ListItemIcon,
   ListItemText, SxProps, Theme, Toolbar
@@ -54,13 +54,13 @@ export function Menu({ sx }: Props) {
             <ListItemText>Home</ListItemText>
           </ListItemButtonLink>
           <Divider />
+          <ListItemButtonLink to='/accounts' selected={pathname.startsWith('/accounts')}>
+            <ListItemIcon><AccountBalance color='primary' /></ListItemIcon>
+            <ListItemText>Accounts</ListItemText>
+          </ListItemButtonLink>
           <ListItemButtonLink to='/people' selected={pathname.startsWith('/people')}>
             <ListItemIcon><People color='primary' /></ListItemIcon>
             <ListItemText>People</ListItemText>
-          </ListItemButtonLink>
-          <ListItemButtonLink to='/accounts' selected={pathname.startsWith('/accounts')}>
-            <ListItemIcon><Savings color='primary' /></ListItemIcon>
-            <ListItemText>Accounts</ListItemText>
           </ListItemButtonLink>
         </List>
       </Drawer>
