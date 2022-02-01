@@ -8,9 +8,10 @@ import { Accounts } from './accounts/Accounts';
 import { Body } from './Body';
 import { Header } from './Header';
 import { Home } from './Home';
+import { Incomes } from './incomes/Incomes';
 import { COLLAPSED_MENU_WIDTH, FULL_MENU_WIDTH, Menu } from './Menu';
 import { People } from './people/People';
-
+import { Savings } from './savings/Savings';
 
 const theme = createTheme({
   palette: {
@@ -60,6 +61,8 @@ export function App() {
             }}>
               <Routes>
                 <Route path='/' element={<Home />} />
+                <Route path='/savings/*' element={<Savings />} />
+                <Route path='/incomes/*' element={<Incomes />} />
                 <Route path='/people/*' element={<People />} />
                 <Route path='/accounts/*' element={<Accounts />} />
               </Routes>
