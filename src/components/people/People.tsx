@@ -1,41 +1,28 @@
-import { Add } from '@mui/icons-material';
 import {
-  Box, Breadcrumbs, Divider, List, ListItem,
-  ListItemIcon, ListItemText, Typography
+  Box, List, Typography
 } from '@mui/material';
-import { Route, Routes } from 'react-router-dom';
 import { useSelector } from '../../state/app';
+import { PersonId } from '../../state/slices/people';
 import { useIsDesktop } from '../../utils/breakpoints';
-import { ListItemButtonLink } from '../mui';
-import { CreatePersonDialog } from './CreatePersonDialog';
-import { EditPersonDialog } from './EditPersonDialog';
 import { PersonListItem } from './PersonListItem';
 
-export function People() {
+interface Props {
+  onClick: (id: PersonId) => void
+}
+
+export function People({ onClick }: Props) {
   const isDesktop = useIsDesktop()
   const peopleIds = useSelector(state => state.peopleIds, [])
 
   return (
     <Box>
-      <Breadcrumbs>
-        <Typography variant='h6' component='h2'>People</Typography>
-      </Breadcrumbs>
+      <Typography variant='h6' component='h2'>People</Typography>
+      {peopleIds.length === 0 && <Typography sx={{ ml: 1, mt: 1 }}>No people yet</Typography>}
       <List dense={isDesktop}>
         {peopleIds.map(id => (
-          <PersonListItem key={id} id={id} />
+          <PersonListItem key={id} id={id} onClick={onClick} />
         ))}
-        {peopleIds.length > 0 && <Divider />}
-        <ListItem>
-          <ListItemButtonLink to='add'>
-            <ListItemIcon><Add /></ListItemIcon>
-            <ListItemText>Add a person</ListItemText>
-          </ListItemButtonLink>
-        </ListItem>
       </List>
-      <Routes>
-        <Route path='add' element={<CreatePersonDialog />} />
-        <Route path=':personId' element={<EditPersonDialog />} />
-      </Routes>
     </Box>
   )
 }

@@ -61,12 +61,20 @@ interface ChangeEvent {
 
 type InitialState<T> = T | (() => T)
 
-export function useEventState<P extends readonly any[], T>(
+export function useEventState<T, P extends readonly any[]>(
   initialState: InitialState<T>,
-  getEventState: (...params: P) => T
+  getEventState: (...params: P) => T | undefined
 ) {
   const [state, setState] = useState(initialState)
-  return [state, useCallback((...params: P) => setState(getEventState(...params)), [getEventState]), setState] as const
+
+  const onEvent = useCallback((...params: P) => {
+    const value = getEventState(...params)
+    if (value !== undefined) {
+      setState(value)
+    }
+  }, [getEventState])
+
+  return [state, onEvent, setState] as const
 }
 
 const getChangeEventState = (e: ChangeEvent) => e.target.value

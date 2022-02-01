@@ -4,22 +4,22 @@ import {
 } from '@mui/material';
 import { useSelector } from '../../state/app';
 import { AccountId } from '../../state/slices/accounts';
-import { useStopEvent } from '../../utils/hooks';
-import { useNavigateTo } from '../../utils/router';
+import { useBind } from '../../utils/hooks';
 
 interface Props {
-    id: AccountId
+    id: AccountId,
+    onClick: (id: AccountId) => void
 }
 
-export function AccountListItem({ id }: Props) {
+export function AccountListItem({ id, onClick }: Props) {
   const { name, owner, growth } = useSelector(state => state.accounts[id], [id])
   const { name: ownerName } = useSelector(state => state.people[owner], [owner])
+  const onClickWithId = useBind(onClick, id)
 
-  const navigateToEditAccount = useStopEvent(useNavigateTo(id))
 
   return (
     <>
-      <ListItemButton onClick={navigateToEditAccount} sx={{ pl: 4, justifyContent: 'flex-start' }}>
+      <ListItemButton onClick={onClickWithId} sx={{ pl: 4, justifyContent: 'flex-start' }}>
         <ListItemIcon>
           <AccountBalance />
         </ListItemIcon>

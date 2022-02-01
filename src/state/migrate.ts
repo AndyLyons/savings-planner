@@ -86,6 +86,11 @@ const MIGRATIONS = [
       state.accounts[id].growth = 0
     })
   },
+
+  /**
+   * v6 => v7
+   *   - Adding period, showAges
+   */
 ]
 
 export const migrate: (state: any, version: number) => State = produce((state, version) => {

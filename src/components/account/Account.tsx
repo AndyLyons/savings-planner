@@ -1,9 +1,11 @@
+import { CurrencyPound } from '@mui/icons-material';
+import { Box, Breadcrumbs, SpeedDial, SpeedDialAction, SpeedDialIcon, Typography } from '@mui/material';
 import { PropsWithChildren } from 'react';
 import { useParams } from 'react-router-dom';
-import { Box, Breadcrumbs, Typography } from '@mui/material';
-import { Link } from '../mui';
 import { useSelector } from '../../state/app';
 import { AccountId, useIsAccountId } from '../../state/slices/accounts';
+import { Link } from '../mui';
+import './index.css';
 
 function Title({ children }: PropsWithChildren<{}>) {
   return (
@@ -26,7 +28,18 @@ function ValidAccount({ id }: { id: AccountId }) {
   return (
     <Box>
       <Title>{account.name} ({owner.name})</Title>
-      <Typography align='center' variant='body1' sx={{ mt: 4, mb: 4 }}></Typography>
+      <SpeedDial
+        ariaLabel='account-actions'
+        icon={<SpeedDialIcon />}
+        sx={{ position: 'absolute', bottom: 16, right: 16 }}
+      >
+        <SpeedDialAction
+          classes={{ staticTooltipLabel: 'account-speedDial-tooltipLabel' }}
+          icon={<CurrencyPound />}
+          tooltipOpen
+          tooltipTitle='Value'
+        />
+      </SpeedDial>
     </Box>
   )
 }
@@ -41,7 +54,10 @@ export function Account() {
       : (
         <Box>
           <Title>Invalid account</Title>
-          <Typography align='center' variant='body1' sx={{ mt: 4, mb: 4 }}>Sorry, this account could not be found :(</Typography>
+          <Box sx={{ mt: 4, mb: 4 }}>
+            <Typography align='center' variant='body1'>Whoops, this account doesn't exist!</Typography>
+            <Typography align='center' variant='body1'><Link to='/accounts' underline='hover'>Go back to the Accounts screen</Link> to select an account</Typography>
+          </Box>
         </Box>
       )
   )

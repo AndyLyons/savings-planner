@@ -1,17 +1,16 @@
-import { Add } from '@mui/icons-material';
 import {
-  Box, Breadcrumbs, Divider, List, ListItem,
-  ListItemIcon, ListItemText, Typography
+  Box, Breadcrumbs, List, Typography
 } from '@mui/material';
-import { Route, Routes } from 'react-router-dom';
 import { useSelector } from '../../state/app';
+import { AccountId } from '../../state/slices/accounts';
 import { useIsDesktop } from '../../utils/breakpoints';
-import { ListItemButtonLink } from '../mui';
 import { AccountListItem } from './AccountListItem';
-import { CreateAccountDialog } from './CreateAccountDialog';
-import { EditAccountDialog } from './EditAccountDialog';
 
-export function Accounts() {
+interface Props {
+  onClick: (id: AccountId) => void
+}
+
+export function Accounts({ onClick }: Props) {
   const isDesktop = useIsDesktop()
   const accounts = useSelector(state => state.accountsIds)
 
@@ -20,22 +19,12 @@ export function Accounts() {
       <Breadcrumbs>
         <Typography variant='h6' component='h2'>Accounts</Typography>
       </Breadcrumbs>
+      {accounts.length === 0 && <Typography sx={{ ml: 1, mt: 1 }}>No accounts yet</Typography>}
       <List dense={isDesktop}>
         {accounts.map(id => (
-          <AccountListItem key={id} id={id} />
+          <AccountListItem key={id} id={id} onClick={onClick} />
         ))}
-        {accounts.length > 0 && <Divider />}
-        <ListItem>
-          <ListItemButtonLink to='add'>
-            <ListItemIcon><Add /></ListItemIcon>
-            <ListItemText>Add an account</ListItemText>
-          </ListItemButtonLink>
-        </ListItem>
       </List>
-      <Routes>
-        <Route path='add' element={<CreateAccountDialog />} />
-        <Route path=':accountId' element={<EditAccountDialog />} />
-      </Routes>
     </Box>
   )
 }

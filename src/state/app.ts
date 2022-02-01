@@ -1,19 +1,65 @@
 import { DependencyList, useCallback } from 'react'
 import create, { EqualityChecker } from 'zustand'
+import shallow from 'zustand/shallow'
 import { persist } from 'zustand/middleware'
 import { useBind } from '../utils/hooks'
 import { immer } from './middleware'
 import { migrate } from './migrate'
 import { AccountsState, createAccountsSlice } from './slices/accounts'
 import { createPeopleSlice, PeopleState } from './slices/people'
+import { YYYYMM } from '../utils/date'
 
-export type State = PeopleState & AccountsState
+export enum Period {
+  MONTH = 'month',
+  YEAR ='year'
+}
+
+interface Balance {
+  date: YYYYMM
+}
+
+export interface GlobalState {
+  period: Period
+  showAges: boolean
+  showAccounts: boolean
+
+  balances: Array<Balance>
+
+  setPeriod: (period: Period) => void
+  toggleShowAges: () => void
+  toggleShowAccounts: () => void
+}
+
+export type State = PeopleState & AccountsState & GlobalState
 
 export const useApp = create<State>(
   persist(
     immer((set, get) => ({
       ...createPeopleSlice(set, get),
-      ...createAccountsSlice(set, get)
+      ...createAccountsSlice(set, get),
+
+      period: Period.YEAR,
+      showAges: false,
+      showAccounts: false,
+      balances: [],
+
+      setPeriod(period) {
+        set(state => {
+          state.period = period
+        })
+      },
+
+      toggleShowAges() {
+        set(state => {
+          state.showAges = !state.showAges
+        })
+      },
+
+      toggleShowAccounts() {
+        set(state => {
+          state.showAccounts = !state.showAccounts
+        })
+      }
     })),
     {
       name: 'app-storage',
@@ -32,6 +78,11 @@ export const useSelector = <T>(
     useCallback(selector, deps),
     equalityFn
   )
+
+export const useSelectorShallow = <T>(
+  selector: (state: State) => T,
+  deps: DependencyList = []
+) => useSelector(selector, deps, shallow)
 
 export const useBindSelector = <
     Deps extends DependencyList,

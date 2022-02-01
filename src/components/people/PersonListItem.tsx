@@ -3,20 +3,19 @@ import { ListItemButton, ListItemIcon, ListItemText, Typography } from '@mui/mat
 import { useSelector } from '../../state/app';
 import { PersonId } from '../../state/slices/people';
 import { formatYYYYMMDD } from '../../utils/date';
-import { useStopEvent } from '../../utils/hooks';
-import { useNavigateTo } from '../../utils/router';
+import { useBind } from '../../utils/hooks';
 
 interface Props {
     id: PersonId
+    onClick: (id: PersonId) => void
 }
 
-export function PersonListItem({ id }: Props) {
+export function PersonListItem({ id, onClick }: Props) {
   const { name, dob } = useSelector(state => state.people[id], [id])
-
-  const navigateToPerson = useStopEvent(useNavigateTo(id))
+  const onClickWithId = useBind(onClick, id)
 
   return (
-    <ListItemButton onClick={navigateToPerson} sx={{ pl: 4 }}>
+    <ListItemButton onClick={onClickWithId} sx={{ pl: 4 }}>
       <ListItemIcon>
         <Person />
       </ListItemIcon>

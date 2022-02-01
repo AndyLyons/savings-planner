@@ -1,30 +1,21 @@
-import { useParams } from 'react-router-dom';
 import { useBindSelector } from '../../state/app';
-import { AccountId, useIsAccountId } from '../../state/slices/accounts';
+import { AccountId } from '../../state/slices/accounts';
 import { CreateOrEditAccount } from './CreateOrEditAccount';
 
 interface Props {
     id: AccountId
+    onClose: () => void
 }
 
-function ValidEditAccountDialog({ id }: Props) {
+export function EditAccountDialog({ id, onClose }: Props) {
   const editAccount = useBindSelector(state => state.editAccount, id)
 
   return (
     <CreateOrEditAccount
       action='Edit'
       id={id}
+      onClose={onClose}
       onDone={editAccount}
     />
-  )
-}
-
-export function EditAccountDialog() {
-  const { accountId } = useParams()
-  const isAccount = useIsAccountId(accountId)
-
-  return (
-    // Specify key here to wipe the dialogs state when the id changes
-    <>{isAccount && <ValidEditAccountDialog key={accountId} id={accountId} />}</>
   )
 }

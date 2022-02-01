@@ -1,10 +1,14 @@
 import { useSelector } from '../../state/app';
 import { CreateOrEditAccount } from './CreateOrEditAccount';
 
-export function CreateAccountDialog() {
+interface Props {
+  onClose: () => void
+}
+
+export function CreateAccountDialog({ onClose }: Props) {
   const createAccount = useSelector((state) => state.createAccount)
 
   return (
-    <CreateOrEditAccount action='Create' onDone={createAccount} />
+    <CreateOrEditAccount action='Create' onClose={onClose} onDone={createAccount} />
   )
 }

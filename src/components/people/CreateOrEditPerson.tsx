@@ -9,19 +9,22 @@ import { useSelector } from '../../state/app';
 import { Person, PersonId } from '../../state/slices/people';
 import { fromYYYYMMDD, isDate, toYYYYMMDD } from '../../utils/date';
 import { useChangeEventState, useKeyPress, useStopEvent } from '../../utils/hooks';
-import { useNavigateTo } from '../../utils/router';
 import { IconField } from '../mui';
 
 interface Props {
-    id?: PersonId,
-    onDone: (details: Person) => void,
-    action: string
+  action: string,
+  id?: PersonId,
+  onClose: () => void,
+  onDone: (details: Person) => void
 }
 
-export function CreateOrEditPerson({ id, onDone, action }: Props) {
+export function CreateOrEditPerson({ id, onClose, onDone, action }: Props) {
   const person = useSelector(state => id ? state.people[id] : null, [id])
+  const hasAccounts = useSelector(
+    state => id && state.accountsIds.some(accountId => state.accounts[accountId].owner === id),
+    [id]
+  )
   const removePerson = useSelector(state => state.removePerson)
-  const navigateToPeople = useNavigateTo('/people')
 
   const [name, onNameChange] = useChangeEventState(person?.name ?? '')
   const [dateOfBirth, setDateOfBirth] = useState<Date | null>(person?.dob ? fromYYYYMMDD(person?.dob) : null)
@@ -33,9 +36,9 @@ export function CreateOrEditPerson({ id, onDone, action }: Props) {
   const savePerson = useCallback(() => {
     if (isValid) {
       onDone({ name, dob: toYYYYMMDD(dateOfBirth) })
-      navigateToPeople()
+      onClose()
     }
-  }, [onDone, name, navigateToPeople, dateOfBirth, isValid])
+  }, [onDone, name, onClose, dateOfBirth, isValid])
 
   const onDoneClick = useStopEvent(savePerson)
   const onEnterKey = useKeyPress('Enter', onDoneClick)
@@ -43,9 +46,9 @@ export function CreateOrEditPerson({ id, onDone, action }: Props) {
     useCallback(() => {
       if (id) {
         removePerson(id)
-        navigateToPeople()
+        onClose()
       }
-    }, [id, navigateToPeople, removePerson])
+    }, [id, onClose, removePerson])
   )
 
   const renderDatePickerInput = useCallback((props: TextFieldProps) => (
@@ -59,7 +62,7 @@ export function CreateOrEditPerson({ id, onDone, action }: Props) {
 
   return (
     <>
-      <Dialog fullWidth maxWidth='xs' open onClose={navigateToPeople}>
+      <Dialog fullWidth maxWidth='xs' open onClose={onClose}>
         <DialogTitle>{action} person</DialogTitle>
         <DialogContent sx={{ display: 'flex', flexDirection: 'column' }}>
           <IconField icon={<ShortText />} sx={{ mt: 1 }}>
@@ -84,8 +87,8 @@ export function CreateOrEditPerson({ id, onDone, action }: Props) {
           </IconField>
         </DialogContent>
         <DialogActions sx={{ ml: 2, mr: 2 }}>
-          {id && <Button color='error' endIcon={<Delete />} onClick={onDeleteClick} sx={{ marginRight: 'auto' }}>Delete</Button>}
-          <Button onClick={navigateToPeople}>Cancel</Button>
+          {id && <Button color='error' disabled={hasAccounts} endIcon={<Delete />} onClick={onDeleteClick} sx={{ marginRight: 'auto' }}>Delete</Button>}
+          <Button onClick={onClose}>Cancel</Button>
           <Button onClick={onDoneClick} disabled={!isValid} variant='contained'>{action}</Button>
         </DialogActions>
       </Dialog>

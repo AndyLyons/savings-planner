@@ -1,9 +1,11 @@
-import { Breadcrumbs, Typography } from '@mui/material';
+import { Breadcrumbs, Paper, Typography } from '@mui/material';
 
 export function Home() {
   return (
-    <Breadcrumbs>
-      <Typography variant='h6' component='h2'>Home</Typography>
-    </Breadcrumbs>
+    <Paper sx={{ p: 2 }}>
+      <Breadcrumbs>
+        <Typography variant='h6' component='h2'>Home</Typography>
+      </Breadcrumbs>
+    </Paper>
   )
 }

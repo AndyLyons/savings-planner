@@ -1,17 +1,15 @@
 import AdapterDateFns from '@mui/lab/AdapterDateFns';
 import LocalizationProvider from '@mui/lab/LocalizationProvider';
-import { Box, createTheme, CssBaseline, ThemeProvider } from '@mui/material';
+import { Box, Container, createTheme, CssBaseline, ThemeProvider, Toolbar } from '@mui/material';
 import { enGB } from 'date-fns/locale';
 import { HashRouter, Route, Routes } from 'react-router-dom';
 import { useMenuOpen } from '../state/menu';
-import { Accounts } from './accounts/Accounts';
-import { Body } from './Body';
 import { Header } from './Header';
 import { Home } from './Home';
 import { Incomes } from './incomes/Incomes';
 import { COLLAPSED_MENU_WIDTH, FULL_MENU_WIDTH, Menu } from './Menu';
-import { People } from './people/People';
 import { Savings } from './savings/Savings';
+import { Settings } from './Settings';
 
 const theme = createTheme({
   palette: {
@@ -52,21 +50,21 @@ export function App() {
               }}
             />
 
-            <Body sx={{
+            <Container maxWidth='md' sx={{
               flexGrow: 1,
               width: {
                 sm: `calc(100% - ${smMenuWidth}px)`,
                 md: `calc(100% - ${FULL_MENU_WIDTH}px)`
               }
             }}>
+              <Toolbar sx={{ mb: 2 }}/>
               <Routes>
                 <Route path='/' element={<Home />} />
-                <Route path='/savings/*' element={<Savings />} />
-                <Route path='/incomes/*' element={<Incomes />} />
-                <Route path='/people/*' element={<People />} />
-                <Route path='/accounts/*' element={<Accounts />} />
+                <Route path='/savings' element={<Savings />} />
+                <Route path='/incomes' element={<Incomes />} />
+                <Route path='/settings' element={<Settings />} />
               </Routes>
-            </Body>
+            </Container>
           </Box>
         </HashRouter>
       </LocalizationProvider>

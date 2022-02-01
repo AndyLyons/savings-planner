@@ -1,7 +1,8 @@
 import { format, parse } from 'date-fns'
 
-// Represents a string guaranteed to be in the YYYYMMDD format
+// Represents a string guaranteed to be in the YYYYMMDD/YYYYMM format
 export type YYYYMMDD = string & { __ymd__: never }
+export type YYYYMM = string & { __ym__: never }
 
 export const isDate = (date: Date | null | undefined): date is Date => date instanceof Date && !Number.isNaN(date.getTime())
 
