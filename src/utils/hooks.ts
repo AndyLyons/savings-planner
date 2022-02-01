@@ -1,4 +1,4 @@
-import { DependencyList, useCallback, useRef } from 'react';
+import { DependencyList, useCallback, useRef, useState } from 'react';
 
 type Cleanup = () => void
 type CallbackRef<E extends Element> = (element: E) => Cleanup | undefined
@@ -21,13 +21,53 @@ export function useBind<
   return useCallback((...params: P) => callback(...bound, ...params), [callback, ...bound])
 }
 
-type PreventableEvent = {
+interface PreventableEvent {
   stopPropagation: () => void
+  preventDefault: () => void
 }
 
-export function useStopPropagation<E extends PreventableEvent>(callback: (event: E) => void) {
-  return useCallback((e: E) => {
+export function useStopEvent<E>(callback: (event: E) => void) {
+  return useCallback((e: PreventableEvent & E) => {
     e.stopPropagation()
+    e.preventDefault()
     callback(e)
   }, [callback])
 }
+
+interface KeyEvent {
+  key: string
+}
+
+export function useKeyPress<E>(key: string, callback: (event: E) => void) {
+  return useCallback((e: KeyEvent & E) => {
+    if (e.key === key) {
+      callback(e)
+    }
+  }, [callback, key])
+}
+
+export function useBoolean(initialValue: boolean | (() => boolean)) {
+  const [value, setValue] = useState(initialValue)
+  const setTrue = useCallback(() => setValue(true), [])
+  const setFalse = useCallback(() => setValue(false), [])
+  return [value, setTrue, setFalse] as const
+}
+
+interface ChangeEvent {
+  target: {
+    value: string
+  }
+}
+
+type InitialState<T> = T | (() => T)
+
+export function useEventState<P extends readonly any[], T>(
+  initialState: InitialState<T>,
+  getEventState: (...params: P) => T
+) {
+  const [state, setState] = useState(initialState)
+  return [state, useCallback((...params: P) => setState(getEventState(...params)), [getEventState]), setState] as const
+}
+
+const getChangeEventState = (e: ChangeEvent) => e.target.value
+export const useChangeEventState = (initialState: InitialState<string>) => useEventState(initialState, getChangeEventState)

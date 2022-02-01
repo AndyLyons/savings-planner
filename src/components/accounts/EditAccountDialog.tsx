@@ -1,5 +1,5 @@
 import { useParams } from 'react-router-dom';
-import { useAction, useSelector } from '../../state/app';
+import { useBindSelector } from '../../state/app';
 import { AccountId, useIsAccountId } from '../../state/slices/accounts';
 import { CreateOrEditAccount } from './CreateOrEditAccount';
 
@@ -8,13 +8,12 @@ interface Props {
 }
 
 function ValidEditAccountDialog({ id }: Props) {
-  const account = useSelector(state => state.accounts[id], [id])
-  const editAccount = useAction(state => state.editAccount, id)
+  const editAccount = useBindSelector(state => state.editAccount, id)
 
   return (
     <CreateOrEditAccount
       action='Edit'
-      initialAccount={account}
+      id={id}
       onDone={editAccount}
     />
   )
@@ -25,9 +24,7 @@ export function EditAccountDialog() {
   const isAccount = useIsAccountId(accountId)
 
   return (
-    isAccount
     // Specify key here to wipe the dialogs state when the id changes
-      ? <ValidEditAccountDialog key={accountId} id={accountId} />
-      : <div>Oops! Something went wrong</div>
+    <>{isAccount && <ValidEditAccountDialog key={accountId} id={accountId} />}</>
   )
 }

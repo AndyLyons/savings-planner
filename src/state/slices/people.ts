@@ -20,11 +20,17 @@ export interface PeopleState {
   editPerson: (id: PersonId, details: Partial<Person>) => void
 }
 
+export const isPersonId = (
+  personId: string | undefined,
+  people: PeopleState['people'],
+): personId is PersonId =>
+  Boolean(personId && personId in people)
+
 export const useIsPersonId = (
   personId?: string
 ): personId is PersonId =>
   useSelector(
-    state => Boolean(personId && Object.prototype.hasOwnProperty.call(state.people, personId)),
+    state => isPersonId(personId, state.people),
     [personId]
   )
 

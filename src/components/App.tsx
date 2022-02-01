@@ -4,7 +4,6 @@ import { Box, createTheme, CssBaseline, ThemeProvider } from '@mui/material';
 import { enGB } from 'date-fns/locale';
 import { HashRouter, Route, Routes } from 'react-router-dom';
 import { useMenuOpen } from '../state/menu';
-import { Account } from './account/Account';
 import { Accounts } from './accounts/Accounts';
 import { Body } from './Body';
 import { Header } from './Header';
@@ -63,7 +62,6 @@ export function App() {
                 <Route path='/' element={<Home />} />
                 <Route path='/people/*' element={<People />} />
                 <Route path='/accounts/*' element={<Accounts />} />
-                <Route path='/account/:accountId' element={<Account />} />
               </Routes>
             </Body>
           </Box>

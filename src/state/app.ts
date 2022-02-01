@@ -33,8 +33,8 @@ export const useSelector = <T>(
     equalityFn
   )
 
-export const useAction = <
-    Deps extends readonly any[],
+export const useBindSelector = <
+    Deps extends DependencyList,
     Params extends readonly any[],
     R
 >(

@@ -1,5 +1,5 @@
 import { useParams } from 'react-router-dom';
-import { useAction, useSelector } from '../../state/app';
+import { useBindSelector } from '../../state/app';
 import { PersonId, useIsPersonId } from '../../state/slices/people';
 import { CreateOrEditPerson } from './CreateOrEditPerson';
 
@@ -8,14 +8,12 @@ interface Props {
 }
 
 function ValidEditPersonDialog({ id }: Props) {
-  const person = useSelector(state => state.people[id], [id])
-  const editPerson = useAction(state => state.editPerson, id)
+  const editPerson = useBindSelector(state => state.editPerson, id)
 
   return (
     <CreateOrEditPerson
       action='Edit'
-      initialName={person.name}
-      initialDob={person.dob}
+      id={id}
       onDone={editPerson}
     />
   )
@@ -26,9 +24,7 @@ export function EditPersonDialog() {
   const isPerson = useIsPersonId(personId)
 
   return (
-    isPerson
     // Specify key here to wipe the dialogs state when the id changes
-      ? <ValidEditPersonDialog key={personId} id={personId} />
-      : <div>Oops! Something went wrong</div>
+    <>{isPerson && <ValidEditPersonDialog key={personId} id={personId} />}</>
   )
 }
