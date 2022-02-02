@@ -1,7 +1,8 @@
 import {
-  Box, Breadcrumbs, Paper, SxProps, Table, TableBody, TableCell,
-  TableContainer, TableHead, TableRow, Theme, Typography
+  Box, Breadcrumbs, Paper, Table, TableBody, TableCell,
+  TableContainer, TableHead, TableRow, Typography
 } from '@mui/material'
+import { ComponentProps } from 'react'
 import { Period, useSelector } from '../../state/app'
 import { PeriodToggle } from '../common/PeriodToggle'
 import { ShowAccountsToggle } from '../common/ShowAccountsToggle'
@@ -9,18 +10,26 @@ import { ShowAgesToggle } from '../common/ShowAgesToggle'
 
 // Empty cell which takes up all remaining space, causing other cells to
 // compress to the minimum width needed to fit their contents
-function Spacer() {
+function SpacerCell() {
   return <TableCell sx={{ p: 0 }} width='100%' />
 }
 
-const STICKY_COLUMN: SxProps<Theme> = {
-  backgroundClip: 'padding-box',
-  backgroundColor: 'white',
-  left: 0,
-  position: 'sticky'
+function StickyCell(props: ComponentProps<typeof TableCell>) {
+  return (
+    <TableCell
+      {...props}
+      sx={{
+        backgroundClip: 'padding-box',
+        backgroundColor: 'white',
+        left: 0,
+        position: 'sticky',
+        ...props.sx
+      }}
+    />
+  )
 }
 
-export function Incomes() {
+export function Withdrawals() {
   const period = useSelector(state => state.period)
   const showAges = useSelector(state => state.showAges)
   const showAccounts = useSelector(state => state.showAccounts)
@@ -32,7 +41,7 @@ export function Incomes() {
   return (
     <Paper sx={{ p: 2 }}>
       <Breadcrumbs>
-        <Typography variant='h6' component='h2'>Incomes</Typography>
+        <Typography variant='h6' component='h2'>Withdrawals</Typography>
       </Breadcrumbs>
       <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center', rowGap: 2, mb: 1, mt: 1 }}>
         <PeriodToggle sx={{ mr: 2 }} />
@@ -43,20 +52,20 @@ export function Incomes() {
         <Table size='small' sx={{ whiteSpace: 'nowrap' }}>
           <TableHead>
             <TableRow>
-              <TableCell sx={STICKY_COLUMN}>Period</TableCell>
+              <StickyCell>Period</StickyCell>
               {showAges && peopleIds.map(id =>
                 <TableCell key={id}>{people[id].name}</TableCell>
               )}
-              <TableCell>Balance</TableCell>
+              <TableCell>Withdrawn</TableCell>
               {showAccounts && accountsIds.map(id =>
                 <TableCell key={id}>{accounts[id].name} ({people[accounts[id].owner].name})</TableCell>
               )}
-              <Spacer />
+              <SpacerCell />
             </TableRow>
           </TableHead>
           <TableBody>
             <TableRow>
-              <TableCell sx={STICKY_COLUMN}>{period === Period.MONTH && 'Jan '}2022</TableCell>
+              <StickyCell>{period === Period.MONTH && 'Jan '}2022</StickyCell>
               {showAges && peopleIds.map(id =>
                 <TableCell key={id}>35</TableCell>
               )}
@@ -64,10 +73,10 @@ export function Incomes() {
               {showAccounts && accountsIds.map(id =>
                 <TableCell key={id}>£10</TableCell>
               )}
-              <Spacer />
+              <SpacerCell />
             </TableRow>
             <TableRow>
-              <TableCell sx={STICKY_COLUMN}>{period === Period.MONTH && 'Feb '}2022</TableCell>
+              <StickyCell>{period === Period.MONTH && 'Feb '}2022</StickyCell>
               {showAges && peopleIds.map(id =>
                 <TableCell key={id}>35</TableCell>
               )}
@@ -75,7 +84,7 @@ export function Incomes() {
               {showAccounts && accountsIds.map(id =>
                 <TableCell key={id}>£10</TableCell>
               )}
-              <Spacer />
+              <SpacerCell />
             </TableRow>
           </TableBody>
         </Table>

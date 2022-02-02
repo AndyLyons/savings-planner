@@ -1,4 +1,4 @@
-import { Delete, Percent, Person, ShortText } from '@mui/icons-material';
+import { AccountBalance, Delete, Percent, Person, ShortText } from '@mui/icons-material';
 import {
   Autocomplete,
   Button, Dialog, DialogActions,
@@ -62,11 +62,10 @@ export function CreateOrEditAccount({ id, onClose, onDone, action }: Props) {
   return (
     <>
       <Dialog fullWidth maxWidth='xs' open onClose={onClose}>
-        <DialogTitle sx={{ pb: 1 }}>{action} account</DialogTitle>
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center' }}><AccountBalance sx={{ mr: 2 }} /> {action} account</DialogTitle>
         <DialogContent sx={{ display: 'flex', flexDirection: 'column' }}>
           <IconField icon={<ShortText />} sx={{ mt: 1, mb: 2 }}>
             <TextField
-              autoFocus
               fullWidth
               label='Name'
               onChange={onNameChange}

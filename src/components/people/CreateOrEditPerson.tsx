@@ -1,4 +1,4 @@
-import { Delete, Event, ShortText } from '@mui/icons-material';
+import { Delete, Event, Person as PersonIcon, ShortText } from '@mui/icons-material';
 import { DatePicker } from '@mui/lab';
 import {
   Button, Dialog, DialogActions, DialogContent,
@@ -63,18 +63,16 @@ export function CreateOrEditPerson({ id, onClose, onDone, action }: Props) {
   return (
     <>
       <Dialog fullWidth maxWidth='xs' open onClose={onClose}>
-        <DialogTitle>{action} person</DialogTitle>
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center' }}><PersonIcon sx={{ mr: 2 }} /> {action} person</DialogTitle>
         <DialogContent sx={{ display: 'flex', flexDirection: 'column' }}>
-          <IconField icon={<ShortText />} sx={{ mt: 1 }}>
+          <IconField icon={<ShortText />} sx={{ mb: 2, mt: 1 }}>
             <TextField
-              autoFocus
               fullWidth
               label='Name'
               onChange={onNameChange}
               onKeyDown={onEnterKey}
               size='small'
               value={name}
-              sx={{ mb: 2 }}
             />
           </IconField>
           <IconField icon={<Event />}>

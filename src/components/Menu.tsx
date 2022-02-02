@@ -1,4 +1,4 @@
-import { CurrencyPound, Home, Savings, Settings } from '@mui/icons-material';
+import { CurrencyPound, Home, Outbound, Savings, Settings } from '@mui/icons-material';
 import {
   Box, Divider, Drawer, List, ListItemIcon,
   ListItemText, SxProps, Theme, Toolbar
@@ -58,8 +58,8 @@ export function Menu({ sx }: Props) {
             <ListItemText>Savings</ListItemText>
           </ListItemButtonLink>
           <ListItemButtonLink to='/incomes' selected={pathname === '/incomes'}>
-            <ListItemIcon><CurrencyPound color='primary' /></ListItemIcon>
-            <ListItemText>Incomes</ListItemText>
+            <ListItemIcon><Outbound color='primary' /></ListItemIcon>
+            <ListItemText>Withdrawals</ListItemText>
           </ListItemButtonLink>
           <Divider />
           <ListItemButtonLink to='/settings' selected={pathname.startsWith('/settings')}>

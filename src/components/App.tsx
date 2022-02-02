@@ -6,7 +6,7 @@ import { HashRouter, Route, Routes } from 'react-router-dom';
 import { useMenuOpen } from '../state/menu';
 import { Header } from './Header';
 import { Home } from './Home';
-import { Incomes } from './incomes/Incomes';
+import { Withdrawals } from './withdrawals/Wtihdrawals';
 import { COLLAPSED_MENU_WIDTH, FULL_MENU_WIDTH, Menu } from './Menu';
 import { Savings } from './savings/Savings';
 import { Settings } from './Settings';
@@ -61,7 +61,7 @@ export function App() {
               <Routes>
                 <Route path='/' element={<Home />} />
                 <Route path='/savings' element={<Savings />} />
-                <Route path='/incomes' element={<Incomes />} />
+                <Route path='/incomes' element={<Withdrawals />} />
                 <Route path='/settings' element={<Settings />} />
               </Routes>
             </Container>
