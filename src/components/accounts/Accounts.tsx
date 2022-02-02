@@ -1,5 +1,5 @@
 import {
-  Box, Breadcrumbs, List, Typography
+  Box, List, Typography
 } from '@mui/material';
 import { useSelector } from '../../state/app';
 import { AccountId } from '../../state/slices/accounts';
@@ -16,9 +16,7 @@ export function Accounts({ onClick }: Props) {
 
   return (
     <Box>
-      <Breadcrumbs>
-        <Typography variant='h6' component='h2'>Accounts</Typography>
-      </Breadcrumbs>
+      <Typography variant='h6' component='h2'>Accounts</Typography>
       {accounts.length === 0 && <Typography sx={{ ml: 1, mt: 1 }}>No accounts yet</Typography>}
       <List dense={isDesktop}>
         {accounts.map(id => (

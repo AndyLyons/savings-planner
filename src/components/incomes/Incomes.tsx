@@ -34,8 +34,7 @@ export function Incomes() {
       <Breadcrumbs>
         <Typography variant='h6' component='h2'>Incomes</Typography>
       </Breadcrumbs>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1, mt: 1 }}>
-        <Typography sx={{ mr: 2 }}>Columns:</Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center', rowGap: 2, mb: 1, mt: 1 }}>
         <PeriodToggle sx={{ mr: 2 }} />
         <ShowAgesToggle sx={{ mr: 2 }} />
         <ShowAccountsToggle />

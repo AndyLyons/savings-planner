@@ -21,16 +21,27 @@ export function useBind<
   return useCallback((...params: P) => callback(...bound, ...params), [callback, ...bound])
 }
 
+export function useIf<P extends readonly any[]>(
+  predicate: (...params: P) => boolean,
+  callback?: (...params: P) => void
+) {
+  return useCallback((...params: P) => {
+    if (predicate(...params)) {
+      callback?.(...params)
+    }
+  }, [callback, predicate])
+}
+
 interface PreventableEvent {
   stopPropagation: () => void
   preventDefault: () => void
 }
 
-export function useStopEvent<E>(callback: (event: E) => void) {
+export function useStopEvent<E>(callback?: (event: E) => void) {
   return useCallback((e: PreventableEvent & E) => {
     e.stopPropagation()
     e.preventDefault()
-    callback(e)
+    callback?.(e)
   }, [callback])
 }
 
