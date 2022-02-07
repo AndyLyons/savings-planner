@@ -6,10 +6,14 @@ export type YYYYMM = string & { __ym__: never }
 
 export const isDate = (date: Date | null | undefined): date is Date => date instanceof Date && !Number.isNaN(date.getTime())
 
-export const toYYYYMMDD = (date: Date): YYYYMMDD => format(date, 'yyyyMMdd') as String as YYYYMMDD
+export const toYYYYMM = (date: Date): YYYYMM => format(date, 'yyyyMM') as YYYYMM
 
-export const fromYYYYMMDD = (date: YYYYMMDD): Date => parse(date.toString(), 'yyyyMMdd', new Date())
+export const fromYYYYMM = (date: YYYYMM): Date => parse(date, 'yyyyMM', new Date())
 
-export const formatDate = (date: Date) => format(date, 'dd/MM/yyyy')
+export const toYYYYMMDD = (date: Date): YYYYMMDD => format(date, 'yyyyMMdd') as YYYYMMDD
+
+export const fromYYYYMMDD = (date: YYYYMMDD): Date => parse(date, 'yyyyMMdd', new Date())
 
 export const formatYYYYMMDD = (date: YYYYMMDD) => formatDate(fromYYYYMMDD(date))
+
+export const formatDate = (date: Date): string => format(date, 'dd/MM/yyyy')

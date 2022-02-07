@@ -5,10 +5,12 @@ import {
 } from '@mui/material'
 import { ComponentProps } from 'react'
 import { Period, useSelector } from '../../state/app'
-import { ShowHistoryToggle } from '../common/ShowHistoryToggle'
+import { useBoolean } from '../../utils/hooks'
+import { CreateBalanceDialog } from '../balance/CreateBalanceDialog'
 import { PeriodToggle } from '../common/PeriodToggle'
 import { ShowAccountsToggle } from '../common/ShowAccountsToggle'
 import { ShowAgesToggle } from '../common/ShowAgesToggle'
+import { ShowHistoryToggle } from '../common/ShowHistoryToggle'
 import { SpeedDial } from '../mui/SpeedDial'
 
 // Empty cell which takes up all remaining space, causing other cells to
@@ -33,6 +35,8 @@ function StickyCell(props: ComponentProps<typeof TableCell>) {
 }
 
 export function Savings() {
+  const [isAddingBalance, openAddBalance, closeAddBalance] = useBoolean(false)
+
   const period = useSelector(state => state.period)
   const showAges = useSelector(state => state.showAges)
   const showAccounts = useSelector(state => state.showAccounts)
@@ -49,10 +53,13 @@ export function Savings() {
       <SpeedDial ariaLabel='savings-actions'>
         <SpeedDialAction
           icon={<CurrencyPound />}
-          onClick={() => undefined}
+          onClick={openAddBalance}
           tooltipTitle='Balance'
         />
       </SpeedDial>
+      {isAddingBalance && (
+        <CreateBalanceDialog onClose={closeAddBalance} />
+      )}
       <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center', rowGap: 2, mb: 1, mt: 1 }}>
         <ShowHistoryToggle sx={{ mr: 2 }} />
         <PeriodToggle sx={{ mr: 2 }} />

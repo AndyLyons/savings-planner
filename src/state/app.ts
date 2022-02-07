@@ -5,21 +5,16 @@ import { persist } from 'zustand/middleware'
 import { useBind } from '../utils/hooks'
 import { immer } from './middleware'
 import { migrate } from './migrate'
-import { AccountsState, createAccountsSlice } from './slices/accounts'
+import {  AccountsState, createAccountsSlice } from './slices/accounts'
 import { createPeopleSlice, PeopleState } from './slices/people'
-import { YYYYMM } from '../utils/date'
+import { BalancesState, createBalancesSlice } from './slices/balances'
 
 export enum Period {
   MONTH = 'month',
   YEAR ='year'
 }
 
-interface Balance {
-  date: YYYYMM
-}
-
 export interface GlobalState {
-  balances: Array<Balance>
   period: Period
   showAges: boolean
   showAccounts: boolean
@@ -31,15 +26,15 @@ export interface GlobalState {
   toggleShowHistory: () => void
 }
 
-export type State = PeopleState & AccountsState & GlobalState
+export type State =  AccountsState & BalancesState & PeopleState & GlobalState
 
 export const useApp = create<State>(
   persist(
     immer((set, get) => ({
       ...createPeopleSlice(set, get),
       ...createAccountsSlice(set, get),
+      ...createBalancesSlice(set, get),
 
-      balances: [],
       period: Period.YEAR,
       showAges: false,
       showAccounts: false,
