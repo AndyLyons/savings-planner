@@ -23,8 +23,8 @@ export function PeriodToggle({ sx }: Props) {
       sx={sx}
       value={period}
     >
-      <ToggleButton value={Period.MONTH}>Months</ToggleButton>
-      <ToggleButton value={Period.YEAR}>Years</ToggleButton>
+      <ToggleButton value={Period.MONTH}>Monthly</ToggleButton>
+      <ToggleButton value={Period.YEAR}>Yearly</ToggleButton>
     </ToggleButtonGroup>
   )
 }

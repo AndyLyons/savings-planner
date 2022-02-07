@@ -19,15 +19,16 @@ interface Balance {
 }
 
 export interface GlobalState {
+  balances: Array<Balance>
   period: Period
   showAges: boolean
   showAccounts: boolean
-
-  balances: Array<Balance>
+  showHistory: boolean
 
   setPeriod: (period: Period) => void
   toggleShowAges: () => void
   toggleShowAccounts: () => void
+  toggleShowHistory: () => void
 }
 
 export type State = PeopleState & AccountsState & GlobalState
@@ -38,10 +39,11 @@ export const useApp = create<State>(
       ...createPeopleSlice(set, get),
       ...createAccountsSlice(set, get),
 
+      balances: [],
       period: Period.YEAR,
       showAges: false,
       showAccounts: false,
-      balances: [],
+      showHistory: true,
 
       setPeriod(period) {
         set(state => {
@@ -58,6 +60,12 @@ export const useApp = create<State>(
       toggleShowAccounts() {
         set(state => {
           state.showAccounts = !state.showAccounts
+        })
+      },
+
+      toggleShowHistory() {
+        set(state => {
+          state.showHistory = !state.showHistory
         })
       }
     })),
