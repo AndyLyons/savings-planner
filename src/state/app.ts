@@ -14,7 +14,7 @@ export enum Period {
   YEAR ='year'
 }
 
-export interface GlobalState {
+export type GlobalState = {
   period: Period
   showAges: boolean
   showAccounts: boolean

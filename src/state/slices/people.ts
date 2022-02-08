@@ -6,12 +6,12 @@ import { State, useSelector } from '../app'
 
 export type PersonId = string & { __personId__: never }
 
-export interface Person {
+export type Person = {
   name: string
   dob: YYYYMMDD
 }
 
-export interface PeopleState {
+export type PeopleState = {
   peopleIds: Array<PersonId>
   people: Record<PersonId, Person>
 

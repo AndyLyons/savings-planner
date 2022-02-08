@@ -7,13 +7,13 @@ import { AccountId } from './accounts'
 
 export type BalanceId = string & { __balanceId__: never }
 
-export interface Balance {
+export type Balance = {
   account: AccountId
   value: number
   date: YYYYMM
 }
 
-export interface BalancesState {
+export type BalancesState = {
   balancesIds: Array<BalanceId>
   balances: Record<BalanceId, Balance>
 

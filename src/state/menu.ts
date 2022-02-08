@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 import create from 'zustand'
 import { immer } from './middleware'
 
-interface MenuState {
+type MenuState = {
     isOpen: boolean
 
     toggleMenu: (value?: boolean) => void

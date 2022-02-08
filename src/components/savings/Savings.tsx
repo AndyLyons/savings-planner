@@ -6,7 +6,7 @@ import {
 import { ComponentProps } from 'react'
 import { Period, useSelector } from '../../state/app'
 import { useBoolean } from '../../utils/hooks'
-import { CreateBalanceDialog } from '../balance/CreateBalanceDialog'
+import { CreateBalance } from '../balance/BalanceDialog'
 import { PeriodToggle } from '../common/PeriodToggle'
 import { ShowAccountsToggle } from '../common/ShowAccountsToggle'
 import { ShowAgesToggle } from '../common/ShowAgesToggle'
@@ -58,7 +58,7 @@ export function Savings() {
         />
       </SpeedDial>
       {isAddingBalance && (
-        <CreateBalanceDialog onClose={closeAddBalance} />
+        <CreateBalance onClose={closeAddBalance} />
       )}
       <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center', rowGap: 2, mb: 1, mt: 1 }}>
         <ShowHistoryToggle sx={{ mr: 2 }} />

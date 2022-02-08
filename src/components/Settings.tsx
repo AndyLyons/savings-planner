@@ -4,8 +4,7 @@ import { useCallback, useState } from 'react';
 import { AccountId } from '../state/slices/accounts';
 import { PersonId } from '../state/slices/people';
 import { Accounts } from './accounts/Accounts';
-import { CreateAccountDialog } from './accounts/CreateAccountDialog';
-import { EditAccountDialog } from './accounts/EditAccountDialog';
+import { CreateAccount, EditAccount } from './accounts/AccountDialog';
 import { SpeedDial } from './mui/SpeedDial';
 import { CreatePersonDialog } from './people/CreatePersonDialog';
 import { EditPersonDialog } from './people/EditPersonDialog';
@@ -82,9 +81,9 @@ export function Settings() {
         />
       </SpeedDial>
       {mode.action === Action.EDIT && mode.entity === Entity.PERSON && <EditPersonDialog id={mode.id} onClose={cancel} />}
-      {mode.action === Action.EDIT && mode.entity === Entity.ACCOUNT && <EditAccountDialog id={mode.id} onClose={cancel} />}
+      {mode.action === Action.EDIT && mode.entity === Entity.ACCOUNT && <EditAccount id={mode.id} onClose={cancel} />}
       {mode.action === Action.CREATE && mode.entity === Entity.PERSON && <CreatePersonDialog onClose={cancel} />}
-      {mode.action === Action.CREATE && mode.entity === Entity.ACCOUNT && <CreateAccountDialog onClose={cancel} />}
+      {mode.action === Action.CREATE && mode.entity === Entity.ACCOUNT && <CreateAccount onClose={cancel} />}
     </>
   )
 }

@@ -6,13 +6,13 @@ import { PersonId } from './people'
 
 export type AccountId = string & { __accountId__: never }
 
-export interface Account {
+export type Account = {
   name: string
   growth: number
   owner: PersonId
 }
 
-export interface AccountsState {
+export type AccountsState = {
   accountsIds: Array<AccountId>
   accounts: Record<AccountId, Account>
 

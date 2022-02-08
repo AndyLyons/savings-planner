@@ -86,5 +86,5 @@ export function useEventState<T, P extends readonly any[]>(
   return [state, onEvent, setState] as const
 }
 
-const getChangeEventState = (e: ChangeEvent) => e.target.value
+export const getChangeEventState = (e: ChangeEvent) => e.target.value
 export const useChangeEventState = (initialState: InitialState<string>) => useEventState(initialState, getChangeEventState)
