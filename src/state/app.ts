@@ -19,16 +19,19 @@ export type GlobalState = {
   showAges: boolean
   showAccounts: boolean
   showHistory: boolean
+  logs: Array<string>
 
   setPeriod: (period: Period) => void
   toggleShowAges: () => void
   toggleShowAccounts: () => void
   toggleShowHistory: () => void
+  log: (...params: unknown[]) => void
+  clearLogs: () => void
 }
 
 export type State =  AccountsState & BalancesState & PeopleState & GlobalState
 
-export const useApp = create<State>(
+export const useStore = create<State>(
   persist(
     immer((set, get) => ({
       ...createPeopleSlice(set, get),
@@ -39,6 +42,21 @@ export const useApp = create<State>(
       showAges: false,
       showAccounts: false,
       showHistory: true,
+
+      logs: [],
+
+      log(...params) {
+        set(state => {
+          const message = params.map(param => JSON.stringify(param)).join('\n\t')
+          state.logs = [...state.logs, message]
+        })
+      },
+
+      clearLogs() {
+        set(state => {
+          state.logs = []
+        })
+      },
 
       setPeriod(period) {
         set(state => {
@@ -76,7 +94,7 @@ export const useSelector = <T>(
   selector: (state: State) => T,
   deps: DependencyList = [],
   equalityFn?: EqualityChecker<T>
-) => useApp(
+) => useStore(
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useCallback(selector, deps),
     equalityFn
@@ -98,3 +116,7 @@ export const useBindSelector = <
     useSelector(actionSelector),
     ...deps
   )
+
+export const log = (...params: unknown[]) => {
+  useStore.getState().log(params)
+}

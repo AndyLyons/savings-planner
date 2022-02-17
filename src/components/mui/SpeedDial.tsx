@@ -28,7 +28,7 @@ export function SpeedDial({ children, sx, ...otherProps }: Props) {
       onOpen={openSpeedDial}
       onClose={closeSpeedDialExceptClick}
       open={isSpeedDialOpen}
-      sx={{ position: 'absolute', bottom: 16, right: 16, ...sx }}
+      sx={{ position: 'fixed', bottom: 16, right: 16, ...sx }}
       {...otherProps}
     >
       {childrenWithTooltip}

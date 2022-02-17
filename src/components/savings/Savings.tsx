@@ -4,7 +4,8 @@ import {
   TableContainer, TableHead, TableRow, Typography
 } from '@mui/material'
 import { ComponentProps } from 'react'
-import { Period, useSelector } from '../../state/app'
+import { getSavingsTable } from '../../selectors/savings'
+import { Period, useSelector, useStore } from '../../state/app'
 import { useBoolean } from '../../utils/hooks'
 import { CreateBalance } from '../balance/BalanceDialog'
 import { PeriodToggle } from '../common/PeriodToggle'
@@ -45,10 +46,12 @@ export function Savings() {
   const accountsIds = useSelector(state => state.accountsIds)
   const accounts = useSelector(state => state.accounts)
 
+  const savingsTable = useStore(getSavingsTable)
+
   return (
     <Paper sx={{ p: 2 }}>
       <Breadcrumbs>
-        <Typography variant='h6' component='h2'>Savings</Typography>
+        <Typography variant='h6' component='h2'>Balances</Typography>
       </Breadcrumbs>
       <SpeedDial ariaLabel='savings-actions'>
         <SpeedDialAction
@@ -82,28 +85,21 @@ export function Savings() {
             </TableRow>
           </TableHead>
           <TableBody>
-            <TableRow>
-              <StickyCell>{period === Period.MONTH && 'Jan '}2022</StickyCell>
-              {showAges && peopleIds.map(id =>
-                <TableCell key={id}>35</TableCell>
-              )}
-              <TableCell>£0</TableCell>
-              {showAccounts && accountsIds.map(id =>
-                <TableCell key={id}>£10</TableCell>
-              )}
-              <SpacerCell />
-            </TableRow>
-            <TableRow>
-              <StickyCell>{period === Period.MONTH && 'Feb '}2022</StickyCell>
-              {showAges && peopleIds.map(id =>
-                <TableCell key={id}>35</TableCell>
-              )}
-              <TableCell>£0</TableCell>
-              {showAccounts && accountsIds.map(id =>
-                <TableCell key={id}>£10</TableCell>
-              )}
-              <SpacerCell />
-            </TableRow>
+            {savingsTable.map(row =>
+              (period === Period.MONTH || row.month === 'Jan') && (
+                <TableRow>
+                  <StickyCell>{period === Period.MONTH ? `${row.month} ${row.year}` : row.year}</StickyCell>
+                  {showAges && row.ages.map(({ id, age }) =>
+                    <TableCell key={id}>{age}</TableCell>
+                  )}
+                  <TableCell>£{row.balance}</TableCell>
+                  {showAccounts && row.accounts.map(({ id, balance }) =>
+                    <TableCell key={id}>£{balance}</TableCell>
+                  )}
+                  <SpacerCell />
+                </TableRow>
+              )
+            )}
           </TableBody>
         </Table>
       </TableContainer>

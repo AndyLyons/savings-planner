@@ -60,7 +60,7 @@ export function App() {
               <Toolbar sx={{ mb: 2 }}/>
               <Routes>
                 <Route path='/' element={<Home />} />
-                <Route path='/savings' element={<Savings />} />
+                <Route path='/balances' element={<Savings />} />
                 <Route path='/incomes' element={<Withdrawals />} />
                 <Route path='/settings' element={<Settings />} />
               </Routes>

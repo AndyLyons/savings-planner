@@ -53,9 +53,9 @@ export function Menu({ sx }: Props) {
             <ListItemIcon><Home color='primary' /></ListItemIcon>
             <ListItemText>Home</ListItemText>
           </ListItemButtonLink>
-          <ListItemButtonLink to='/savings' selected={pathname === '/savings'}>
+          <ListItemButtonLink to='/balances' selected={pathname === '/balances'}>
             <ListItemIcon><Savings color='primary' /></ListItemIcon>
-            <ListItemText>Savings</ListItemText>
+            <ListItemText>Balances</ListItemText>
           </ListItemButtonLink>
           <ListItemButtonLink to='/incomes' selected={pathname === '/incomes'}>
             <ListItemIcon><Outbound color='primary' /></ListItemIcon>

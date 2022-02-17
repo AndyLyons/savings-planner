@@ -59,7 +59,8 @@ export function useKeyPress<E>(key: string, callback: (event: E) => void) {
 
 export function useBoolean(initialValue: boolean | (() => boolean)) {
   const [value, setValue] = useState(initialValue)
-  return [value, useBind(setValue, true), useBind(setValue, false)] as const
+  const toggle = useCallback(() => setValue(value => !value), [])
+  return [value, useBind(setValue, true), useBind(setValue, false), toggle] as const
 }
 
 interface ChangeEvent {

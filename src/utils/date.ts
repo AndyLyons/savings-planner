@@ -4,7 +4,8 @@ import { format, parse } from 'date-fns'
 export type YYYYMMDD = string & { __ymd__: never }
 export type YYYYMM = string & { __ym__: never }
 
-export const isDate = (date: Date | null | undefined): date is Date => date instanceof Date && !Number.isNaN(date.getTime())
+export const isDate = (date: Date | null | undefined): date is Date =>
+  date instanceof Date && !Number.isNaN(date.getTime())
 
 export const toYYYYMM = (date: Date): YYYYMM => format(date, 'yyyyMM') as YYYYMM
 
