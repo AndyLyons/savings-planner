@@ -3,12 +3,11 @@ import { Paper, SpeedDialAction } from '@mui/material';
 import { useCallback, useState } from 'react';
 import { AccountId } from '../state/slices/accounts';
 import { PersonId } from '../state/slices/people';
-import { Accounts } from './accounts/Accounts';
 import { CreateAccount, EditAccount } from './accounts/AccountDialog';
+import { Accounts } from './accounts/Accounts';
 import { SpeedDial } from './mui/SpeedDial';
-import { CreatePersonDialog } from './people/CreatePersonDialog';
-import { EditPersonDialog } from './people/EditPersonDialog';
 import { People } from './people/People';
+import { CreatePerson, EditPerson } from './people/PersonDialog';
 
 enum Action {
   CREATE = 'CREATE',
@@ -21,23 +20,23 @@ enum Entity {
   PERSON = 'PERSON'
 }
 
-interface CreatePerson {
+interface ModeCreatePerson {
   action: Action.CREATE,
   entity: Entity.PERSON
 }
 
-interface CreateAccount {
+interface ModeCreateAccount {
   action: Action.CREATE
   entity: Entity.ACCOUNT
 }
 
-interface EditPerson {
+interface ModeEditPerson {
   action: Action.EDIT
   entity: Entity.PERSON
   id: PersonId
 }
 
-interface EditAccount {
+interface ModeEditAccount {
   action: Action.EDIT
   entity: Entity.ACCOUNT
   id: AccountId
@@ -49,7 +48,7 @@ interface None {
 
 const NO_MODE = { action: Action.NONE } as const
 
-type Mode = CreatePerson | CreateAccount | EditPerson | EditAccount | None
+type Mode = ModeCreatePerson | ModeCreateAccount | ModeEditPerson | ModeEditAccount | None
 
 export function Settings() {
   const [mode, setMode] = useState<Mode>(NO_MODE)
@@ -80,9 +79,9 @@ export function Settings() {
           tooltipTitle='Person'
         />
       </SpeedDial>
-      {mode.action === Action.EDIT && mode.entity === Entity.PERSON && <EditPersonDialog id={mode.id} onClose={cancel} />}
+      {mode.action === Action.EDIT && mode.entity === Entity.PERSON && <EditPerson id={mode.id} onClose={cancel} />}
       {mode.action === Action.EDIT && mode.entity === Entity.ACCOUNT && <EditAccount id={mode.id} onClose={cancel} />}
-      {mode.action === Action.CREATE && mode.entity === Entity.PERSON && <CreatePersonDialog onClose={cancel} />}
+      {mode.action === Action.CREATE && mode.entity === Entity.PERSON && <CreatePerson onClose={cancel} />}
       {mode.action === Action.CREATE && mode.entity === Entity.ACCOUNT && <CreateAccount onClose={cancel} />}
     </>
   )

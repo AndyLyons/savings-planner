@@ -1,0 +1,8 @@
+.period-year .row-not-jan {
+  display: none;
+}
+
+.hide-ages .column-age,
+.hide-accounts .column-account {
+  display: none;
+}

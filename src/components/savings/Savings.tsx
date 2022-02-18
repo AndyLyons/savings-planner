@@ -1,11 +1,14 @@
+import classNames from 'classnames'
 import { CurrencyPound } from '@mui/icons-material'
 import {
   Box, Breadcrumbs, Paper, SpeedDialAction, Table, TableBody, TableCell,
   TableContainer, TableHead, TableRow, Typography
 } from '@mui/material'
-import { ComponentProps } from 'react'
+import { differenceInYears, format } from 'date-fns'
+import { ComponentProps, useMemo } from 'react'
 import { getSavingsTable } from '../../selectors/savings'
 import { Period, useSelector, useStore } from '../../state/app'
+import { toYYYYMM } from '../../utils/date'
 import { useBoolean } from '../../utils/hooks'
 import { CreateBalance } from '../balance/BalanceDialog'
 import { PeriodToggle } from '../common/PeriodToggle'
@@ -13,6 +16,10 @@ import { ShowAccountsToggle } from '../common/ShowAccountsToggle'
 import { ShowAgesToggle } from '../common/ShowAgesToggle'
 import { ShowHistoryToggle } from '../common/ShowHistoryToggle'
 import { SpeedDial } from '../mui/SpeedDial'
+import './Savings.css'
+
+const formatMonthYear = (date: Date) => format(date, 'MMM yyyy')
+const getAgeAtDate = (dob: Date, date: Date) => differenceInYears(date, dob)
 
 // Empty cell which takes up all remaining space, causing other cells to
 // compress to the minimum width needed to fit their contents
@@ -47,6 +54,24 @@ export function Savings() {
   const accounts = useSelector(state => state.accounts)
 
   const savingsTable = useStore(getSavingsTable)
+
+  const rows = useMemo(() => (
+    savingsTable.map(row =>
+      (
+        <TableRow key={toYYYYMM(row.date)} className={row.date.getMonth() === 0 ? 'row-jan' : 'row-not-jan'}>
+          <StickyCell>{formatMonthYear(row.date)}</StickyCell>
+          {row.ages.map(({ id, dob }) =>
+            <TableCell key={id} className='column-age'>{getAgeAtDate(dob, row.date)}</TableCell>
+          )}
+          <TableCell>£{row.balance}</TableCell>
+          {row.accounts.map(({ id, balance }) =>
+            <TableCell key={id}  className='column-account'>£{balance}</TableCell>
+          )}
+          <SpacerCell />
+        </TableRow>
+      )
+    )
+  ), [savingsTable])
 
   return (
     <Paper sx={{ p: 2 }}>
@@ -84,22 +109,13 @@ export function Savings() {
               <SpacerCell />
             </TableRow>
           </TableHead>
-          <TableBody>
-            {savingsTable.map(row =>
-              (period === Period.MONTH || row.month === 'Jan') && (
-                <TableRow>
-                  <StickyCell>{period === Period.MONTH ? `${row.month} ${row.year}` : row.year}</StickyCell>
-                  {showAges && row.ages.map(({ id, age }) =>
-                    <TableCell key={id}>{age}</TableCell>
-                  )}
-                  <TableCell>£{row.balance}</TableCell>
-                  {showAccounts && row.accounts.map(({ id, balance }) =>
-                    <TableCell key={id}>£{balance}</TableCell>
-                  )}
-                  <SpacerCell />
-                </TableRow>
-              )
-            )}
+          <TableBody className={classNames({
+            'period-month': period === Period.MONTH,
+            'period-year': period === Period.YEAR,
+            'hide-ages': !showAges,
+            'hide-accounts': !showAccounts
+          })}>
+            {rows}
           </TableBody>
         </Table>
       </TableContainer>

@@ -8,18 +8,21 @@ import { AccountId } from './accounts'
 export type BalanceId = string & { __balanceId__: never }
 
 export type Balance = {
+  id: BalanceId
   account: AccountId
   value: number
   date: YYYYMM
 }
 
+export type BalanceUpdate = Omit<Balance, 'id'>
+
 export type BalancesState = {
   balancesIds: Array<BalanceId>
   balances: Record<BalanceId, Balance>
 
-  createBalance: (details: Balance) => BalanceId
+  createBalance: (details: BalanceUpdate) => BalanceId
   removeBalance: (id: BalanceId) => void
-  editBalance: (id: BalanceId, details: Partial<Balance>) => void
+  editBalance: (id: BalanceId, details: Partial<BalanceUpdate>) => void
 }
 
 export const useIsBalanceId = (
@@ -40,7 +43,7 @@ export function createBalancesSlice(set: SetState<State>, get: GetState<State>):
 
       set(state => {
         state.balancesIds.push(id)
-        state.balances[id] = details
+        state.balances[id] = { id, ...details }
       })
 
       return id

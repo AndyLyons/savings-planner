@@ -7,17 +7,20 @@ import { State, useSelector } from '../app'
 export type PersonId = string & { __personId__: never }
 
 export type Person = {
+  id: PersonId
   name: string
   dob: YYYYMMDD
 }
+
+export type PersonUpdate = Omit<Person, 'id'>
 
 export type PeopleState = {
   peopleIds: Array<PersonId>
   people: Record<PersonId, Person>
 
-  createPerson: (details: Person) => PersonId
+  createPerson: (details: PersonUpdate) => PersonId
   removePerson: (id: PersonId) => void
-  editPerson: (id: PersonId, details: Partial<Person>) => void
+  editPerson: (id: PersonId, details: Partial<PersonUpdate>) => void
 }
 
 export const isPersonId = (
@@ -44,7 +47,7 @@ export function createPeopleSlice(set: SetState<State>, get: GetState<State>): P
 
       set(state => {
         state.peopleIds.push(id)
-        state.people[id] = { ...details }
+        state.people[id] = { id, ...details }
       })
 
       return id

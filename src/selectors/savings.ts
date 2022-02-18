@@ -1,59 +1,52 @@
-import { addMonths, differenceInYears, format, isBefore, min } from 'date-fns'
-import { log, Period, State } from '../state/app'
-import { AccountId } from '../state/slices/accounts'
-import { Balance, BalanceId } from '../state/slices/balances'
-import { PersonId } from '../state/slices/people'
-import { fromYYYYMM, fromYYYYMMDD, YYYYMMDD } from '../utils/date'
-import { getSortedBalances } from './balances'
+import { addMonths, isBefore, min } from 'date-fns';
+import memoize from 'proxy-memoize';
+import { State } from '../state/app';
+import { AccountId } from '../state/slices/accounts';
+import { Balance } from '../state/slices/balances';
+import { PersonId } from '../state/slices/people';
+import { fromYYYYMM, fromYYYYMMDD } from '../utils/date';
 
 type SavingsRow = {
-  month: string
-  year: string
-  ages: Array<{ id: PersonId, age: number }>
-  balance: number
   accounts: Array<{ id: AccountId, balance: number, interpolated: boolean }>
+  ages: Array<{ id: PersonId, dob: Date }>
+  balance: number
+  date: Date
 }
 
-const getAgeAtDate = (dob: YYYYMMDD, date: Date) =>
-  differenceInYears(date, fromYYYYMMDD(dob))
+const getSortedBalances = memoize(({ balances }: State) =>
+  Object.values(balances)
+    .sort((balanceA, balanceB) =>
+      Number.parseInt(balanceA.date) - Number.parseInt(balanceB.date)
+    )
+)
 
-const getStartDate = (balances: Array<[BalanceId, Balance]>, showHistory: boolean) =>
-  showHistory && balances.length >= 1
-    ? min([fromYYYYMM(balances[0][1].date), new Date()])
+const getEarliestDate = memoize((balances: Array<Balance>) =>
+  balances.length >= 1
+    ? min([fromYYYYMM(balances[0].date), new Date()])
     : new Date()
+)
 
 // For now hard coded until 2070
 const endDate = new Date(2070, 0, 1)
 
-export const getSavingsTable = (state: State) => {
-  const { accountsIds, peopleIds, people, period, showHistory } = state
+export const getSavingsTable = memoize((state: State) => {
+  const { accountsIds, peopleIds, people } = state
   const table = [] as Array<SavingsRow>
 
   const balances = getSortedBalances(state)
-
-  let date = getStartDate(balances, showHistory)
-  let count = 0
+  let date = getEarliestDate(balances)
 
   do {
-    if (count++ > 500) {
-      break
-    }
-
-    const year = format(date, 'yyyy')
-    const month = format(date, 'MMM')
-    log('rendering date', date, year, month)
-
     table.push({
-      year,
-      month,
+      date,
       balance: 0,
       accounts: accountsIds.map(id => ({ id, balance: 0, interpolated: true })),
       // eslint-disable-next-line no-loop-func
-      ages: peopleIds.map(id => ({ id, age: getAgeAtDate(people[id].dob, date) }))
+      ages: peopleIds.map(id => ({ id, dob: fromYYYYMMDD(people[id].dob) }))
     })
 
     date = addMonths(date, 1)
   } while (isBefore(date, endDate))
 
   return table
-}
+})

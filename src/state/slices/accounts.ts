@@ -7,18 +7,21 @@ import { PersonId } from './people'
 export type AccountId = string & { __accountId__: never }
 
 export type Account = {
+  id: AccountId
   name: string
   growth: number
   owner: PersonId
 }
 
+export type AccountUpdate = Omit<Account, 'id'>
+
 export type AccountsState = {
   accountsIds: Array<AccountId>
   accounts: Record<AccountId, Account>
 
-  createAccount: (details: Account) => AccountId
+  createAccount: (details: AccountUpdate) => AccountId
   removeAccount: (id: AccountId) => void
-  editAccount: (id: AccountId, details: Partial<Account>) => void
+  editAccount: (id: AccountId, details: Partial<AccountUpdate>) => void
 }
 
 export const isAccountId = (
@@ -45,7 +48,7 @@ export function createAccountsSlice(set: SetState<State>, get: GetState<State>):
 
       set(state => {
         state.accountsIds.push(id)
-        state.accounts[id] = details
+        state.accounts[id] = { id, ...details }
       })
 
       return id

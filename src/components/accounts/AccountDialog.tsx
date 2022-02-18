@@ -1,9 +1,9 @@
 import { AccountBalance, Percent, Person, ShortText } from '@mui/icons-material';
 import { useBindSelector, useSelector } from '../../state/app';
-import { Account, AccountId } from '../../state/slices/accounts';
+import { AccountId, AccountUpdate } from '../../state/slices/accounts';
 import { createEntityDialog } from '../entity/createEntityDialog';
 
-const AccountDialog = createEntityDialog<Account>('account', <AccountBalance />, [
+const AccountDialog = createEntityDialog<AccountUpdate>('account', <AccountBalance />, [
   {
     type: 'string',
     name: 'name',

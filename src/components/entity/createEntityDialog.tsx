@@ -5,7 +5,7 @@ import {
   DialogTitle, TextField, TextFieldProps
 } from '@mui/material';
 import { cloneElement, ReactElement, useCallback, useReducer } from 'react';
-import { isDate } from '../../utils/date';
+import { isDate, toYYYYMM, toYYYYMMDD } from '../../utils/date';
 import { getChangeEventState, useKeyPress, useStopEvent } from '../../utils/hooks';
 import { Autocomplete, IconField } from '../mui';
 
@@ -71,8 +71,8 @@ export function createEntityDialog<T>(name: string, icon: ReactElement, fields: 
         const parsed = parseFloat(value as string)
         return Number.isNaN(parsed) ? null : parsed
       },
-      yyyymm: (value) => isDate(value as Date | null) ? value : null,
-      yyyymmdd: (value) => isDate(value as Date | null) ? value : null,
+      yyyymm: (value) => isDate(value) ? toYYYYMM(value) : null,
+      yyyymmdd: (value) => isDate(value) ? toYYYYMMDD(value) : null,
       selectSearch: (value) => value === '' ? null : value
     } as Record<Field['type'], (value: unknown) => unknown>
 
@@ -111,13 +111,13 @@ export function createEntityDialog<T>(name: string, icon: ReactElement, fields: 
     return (
       <>
         <Dialog fullWidth maxWidth='xs' open onClose={onClose}>
-          <DialogTitle sx={{ display: 'flex', alignItems: 'center' }}>{iconWithMargin} Create {name}</DialogTitle>
+          <DialogTitle sx={{ display: 'flex', alignItems: 'center' }}>{iconWithMargin} {onDelete ? 'Edit' : 'Create'} {name}</DialogTitle>
           <DialogContent sx={{ display: 'flex', flexDirection: 'column' }}>
             {
               fields.map((field, index) => {
                 const { type, icon, label, name, required } = field
                 return (
-                  <IconField icon={icon} sx={{ mt: index === 0 ? 1 : 0, mb: index < fields.length ? 2 : 0 }}>
+                  <IconField key={name} icon={icon} sx={{ mt: index === 0 ? 1 : 0, mb: index < fields.length ? 2 : 0 }}>
                     {['string', 'number'].includes(type) && (
                       <TextField
                         fullWidth

@@ -52,6 +52,7 @@ export function App() {
 
             <Container maxWidth='md' sx={{
               flexGrow: 1,
+              mb: 2,
               width: {
                 sm: `calc(100% - ${smMenuWidth}px)`,
                 md: `calc(100% - ${FULL_MENU_WIDTH}px)`

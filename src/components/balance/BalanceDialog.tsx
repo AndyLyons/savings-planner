@@ -1,10 +1,10 @@
 import { AccountBalance, CurrencyPound, Event } from '@mui/icons-material';
 import { useBindSelector, useSelector } from '../../state/app';
-import { Balance, BalanceId } from '../../state/slices/balances';
+import { BalanceId, BalanceUpdate } from '../../state/slices/balances';
 import { fromYYYYMM } from '../../utils/date';
 import { createEntityDialog } from '../entity/createEntityDialog';
 
-const BalanceDialog = createEntityDialog<Balance>('balance', <CurrencyPound />, [
+const BalanceDialog = createEntityDialog<BalanceUpdate>('balance', <CurrencyPound />, [
   {
     type: 'selectSearch',
     name: 'account',
