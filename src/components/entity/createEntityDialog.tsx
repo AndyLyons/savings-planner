@@ -90,6 +90,8 @@ export function createEntityDialog<T>(name: string, icon: ReactElement, fields: 
   }
 
   return function EntityDialog({ initialValues, onClose, onDelete, onDone }: Props) {
+    const title = onDelete ? 'Edit' : 'Create'
+
     const [state, dispatch] = useReducer(reducer, initialValues)
     const normalisedState = normaliseState(state)
     const isValid = verifyState(normalisedState)
@@ -111,7 +113,7 @@ export function createEntityDialog<T>(name: string, icon: ReactElement, fields: 
     return (
       <>
         <Dialog fullWidth maxWidth='xs' open onClose={onClose}>
-          <DialogTitle sx={{ display: 'flex', alignItems: 'center' }}>{iconWithMargin} {onDelete ? 'Edit' : 'Create'} {name}</DialogTitle>
+          <DialogTitle sx={{ display: 'flex', alignItems: 'center' }}>{iconWithMargin} {title} {name}</DialogTitle>
           <DialogContent sx={{ display: 'flex', flexDirection: 'column' }}>
             {
               fields.map((field, index) => {
@@ -178,7 +180,7 @@ export function createEntityDialog<T>(name: string, icon: ReactElement, fields: 
           <DialogActions sx={{ ml: 2, mr: 2 }}>
             {onDelete && <Button color='error' endIcon={<Delete />} onClick={onDeleteClick} sx={{ marginRight: 'auto' }}>Delete</Button>}
             <Button onClick={onClose}>Cancel</Button>
-            <Button onClick={onDoneClick} disabled={!isValid} variant='contained'>Create</Button>
+            <Button onClick={onDoneClick} disabled={!isValid} variant='contained'>{title}</Button>
           </DialogActions>
         </Dialog>
       </>
