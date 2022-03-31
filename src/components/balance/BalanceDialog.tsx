@@ -1,5 +1,5 @@
 import { AccountBalance, CurrencyPound, Event } from '@mui/icons-material';
-import { useBindSelector, useSelector } from '../../state/app';
+import { useAction, useSelector } from '../../state/app';
 import { BalanceId, BalanceUpdate } from '../../state/slices/balances';
 import { fromYYYYMM } from '../../utils/date';
 import { createEntityDialog } from '../entity/createEntityDialog';
@@ -10,12 +10,11 @@ const BalanceDialog = createEntityDialog<BalanceUpdate>('balance', <CurrencyPoun
     name: 'account',
     label: 'Account',
     icon: <AccountBalance />,
-    useOptions: () => {
-      const accountIds = useSelector(state => state.accountsIds)
+    useOptions() {
       const accounts = useSelector(state => state.accounts)
       const people = useSelector(state => state.people)
-      return accountIds.map(id => {
-        const { name, owner } = accounts[id]
+      return Object.values(accounts).map(account => {
+        const { id, name, owner } = account
         return ({ id, label: `${name} (${people[owner].name})` })
       })
     },
@@ -63,7 +62,7 @@ interface EditProps {
 }
 
 export function EditBalance({ id, onClose }: EditProps) {
-  const editBalance = useBindSelector(state => state.editBalance, id)
+  const editBalance = useAction(state => state.editBalance, id)
   const { account, value, date } = useSelector(state => state.balances[id], [id])
 
   return (

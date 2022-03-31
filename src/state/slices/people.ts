@@ -1,7 +1,7 @@
 import { nanoid } from 'nanoid'
 import { GetState, SetState } from 'zustand'
 import { YYYYMMDD } from '../../utils/date'
-import { assign, removeArrayItem } from '../../utils/fn'
+import { assign } from '../../utils/fn'
 import { State, useSelector } from '../app'
 
 export type PersonId = string & { __personId__: never }
@@ -15,7 +15,6 @@ export type Person = {
 export type PersonUpdate = Omit<Person, 'id'>
 
 export type PeopleState = {
-  peopleIds: Array<PersonId>
   people: Record<PersonId, Person>
 
   createPerson: (details: PersonUpdate) => PersonId
@@ -39,14 +38,12 @@ export const useIsPersonId = (
 
 export function createPeopleSlice(set: SetState<State>, get: GetState<State>): PeopleState {
   return ({
-    peopleIds: [],
     people: {},
 
     createPerson(details) {
       const id = nanoid(10) as PersonId
 
       set(state => {
-        state.peopleIds.push(id)
         state.people[id] = { id, ...details }
       })
 
@@ -54,7 +51,6 @@ export function createPeopleSlice(set: SetState<State>, get: GetState<State>): P
     },
     removePerson(id) {
       set(state => {
-        removeArrayItem(state.peopleIds, id)
         delete state.people[id]
       })
     },

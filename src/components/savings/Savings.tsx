@@ -48,9 +48,7 @@ export function Savings() {
   const period = useSelector(state => state.period)
   const showAges = useSelector(state => state.showAges)
   const showAccounts = useSelector(state => state.showAccounts)
-  const peopleIds = useSelector(state => state.peopleIds)
   const people = useSelector(state => state.people)
-  const accountsIds = useSelector(state => state.accountsIds)
   const accounts = useSelector(state => state.accounts)
 
   const savingsTable = useStore(getSavingsTable)
@@ -99,12 +97,12 @@ export function Savings() {
           <TableHead>
             <TableRow>
               <StickyCell>Period</StickyCell>
-              {showAges && peopleIds.map(id =>
-                <TableCell key={id}>{people[id].name}</TableCell>
+              {showAges && Object.values(people).map(person =>
+                <TableCell key={person.id}>{person.name}</TableCell>
               )}
               <TableCell>Balance</TableCell>
-              {showAccounts && accountsIds.map(id =>
-                <TableCell key={id}>{accounts[id].name} ({people[accounts[id].owner].name})</TableCell>
+              {showAccounts && Object.values(accounts).map(account =>
+                <TableCell key={account.id}>{account.name} ({people[account.owner].name})</TableCell>
               )}
               <SpacerCell />
             </TableRow>

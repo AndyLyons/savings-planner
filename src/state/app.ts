@@ -1,13 +1,13 @@
 import { DependencyList, useCallback } from 'react'
 import create, { EqualityChecker } from 'zustand'
-import shallow from 'zustand/shallow'
 import { persist } from 'zustand/middleware'
+import shallow from 'zustand/shallow'
 import { useBind } from '../utils/hooks'
 import { immer } from './middleware'
 import { migrate } from './migrate'
-import {  AccountsState, createAccountsSlice } from './slices/accounts'
-import { createPeopleSlice, PeopleState } from './slices/people'
+import { AccountsState, createAccountsSlice } from './slices/accounts'
 import { BalancesState, createBalancesSlice } from './slices/balances'
+import { createPeopleSlice, PeopleState } from './slices/people'
 
 export enum Period {
   MONTH = 'month',
@@ -87,7 +87,7 @@ export const useSelectorShallow = <T>(
   deps: DependencyList = []
 ) => useSelector(selector, deps, shallow)
 
-export const useBindSelector = <
+export const useAction = <
     Deps extends DependencyList,
     Params extends readonly any[],
     R

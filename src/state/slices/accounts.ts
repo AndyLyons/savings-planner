@@ -1,6 +1,6 @@
 import { nanoid } from 'nanoid'
 import { GetState, SetState } from 'zustand'
-import { assign, removeArrayItem } from '../../utils/fn'
+import { assign } from '../../utils/fn'
 import { State, useSelector } from '../app'
 import { PersonId } from './people'
 
@@ -16,7 +16,6 @@ export type Account = {
 export type AccountUpdate = Omit<Account, 'id'>
 
 export type AccountsState = {
-  accountsIds: Array<AccountId>
   accounts: Record<AccountId, Account>
 
   createAccount: (details: AccountUpdate) => AccountId
@@ -40,14 +39,12 @@ export const useIsAccountId = (
 
 export function createAccountsSlice(set: SetState<State>, get: GetState<State>): AccountsState {
   return ({
-    accountsIds: [],
     accounts: {},
 
     createAccount(details) {
       const id = nanoid(10) as AccountId
 
       set(state => {
-        state.accountsIds.push(id)
         state.accounts[id] = { id, ...details }
       })
 
@@ -55,12 +52,10 @@ export function createAccountsSlice(set: SetState<State>, get: GetState<State>):
     },
     removeAccount(id) {
       set(state => {
-        removeArrayItem(state.accountsIds, id)
-        state.balancesIds
-          .filter(balanceId => state.balances[balanceId].account === id)
-          .forEach(balanceId => {
-            removeArrayItem(state.balancesIds, balanceId)
-            delete state.balances[balanceId]
+        Object.values(state.balances)
+          .filter(balance => balance.account === id)
+          .forEach(balance => {
+            delete state.balances[balance.id]
           })
         delete state.accounts[id]
       })

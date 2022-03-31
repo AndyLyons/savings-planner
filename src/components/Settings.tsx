@@ -3,6 +3,7 @@ import { Paper, SpeedDialAction } from '@mui/material';
 import { useCallback, useState } from 'react';
 import { AccountId } from '../state/slices/accounts';
 import { PersonId } from '../state/slices/people';
+import { useBind } from '../utils/hooks';
 import { CreateAccount, EditAccount } from './accounts/AccountDialog';
 import { Accounts } from './accounts/Accounts';
 import { SpeedDial } from './mui/SpeedDial';
@@ -47,15 +48,17 @@ interface None {
 }
 
 const NO_MODE = { action: Action.NONE } as const
+const CREATE_PERSON = { action: Action.CREATE, entity: Entity.PERSON } as const
+const CREATE_ACCOUNT = { action: Action.CREATE, entity: Entity.ACCOUNT } as const
 
 type Mode = ModeCreatePerson | ModeCreateAccount | ModeEditPerson | ModeEditAccount | None
 
 export function Settings() {
   const [mode, setMode] = useState<Mode>(NO_MODE)
 
-  const cancel = useCallback(() => setMode(NO_MODE), [])
-  const createPerson = useCallback(() => setMode({ action: Action.CREATE, entity: Entity.PERSON }), [])
-  const createAccount = useCallback(() => setMode({ action: Action.CREATE, entity: Entity.ACCOUNT }), [])
+  const cancel = useBind(setMode, NO_MODE)
+  const createPerson = useBind(setMode, CREATE_PERSON)
+  const createAccount = useBind(setMode, CREATE_ACCOUNT)
   const editPerson = useCallback((id: PersonId) => setMode({ action: Action.EDIT, entity: Entity.PERSON, id }), [])
   const editAccount = useCallback((id: AccountId) => setMode({ action: Action.EDIT, entity: Entity.ACCOUNT, id }), [])
 

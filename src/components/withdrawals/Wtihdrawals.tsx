@@ -34,10 +34,9 @@ export function Withdrawals() {
   const period = useSelector(state => state.period)
   const showAges = useSelector(state => state.showAges)
   const showAccounts = useSelector(state => state.showAccounts)
-  const peopleIds = useSelector(state => state.peopleIds)
   const people = useSelector(state => state.people)
-  const accountsIds = useSelector(state => state.accountsIds)
-  const accounts = useSelector(state => state.accounts)
+  const peopleList = Object.values(people)
+  const accountsList = Object.values(useSelector(state => state.accounts))
 
   return (
     <Paper sx={{ p: 2 }}>
@@ -55,12 +54,12 @@ export function Withdrawals() {
           <TableHead>
             <TableRow>
               <StickyCell>Period</StickyCell>
-              {showAges && peopleIds.map(id =>
-                <TableCell key={id}>{people[id].name}</TableCell>
+              {showAges && peopleList.map(person =>
+                <TableCell key={person.id}>{person.name}</TableCell>
               )}
               <TableCell>Withdrawn</TableCell>
-              {showAccounts && accountsIds.map(id =>
-                <TableCell key={id}>{accounts[id].name} ({people[accounts[id].owner].name})</TableCell>
+              {showAccounts && accountsList.map(account =>
+                <TableCell key={account.id}>{account.name} ({people[account.owner].name})</TableCell>
               )}
               <SpacerCell />
             </TableRow>
@@ -68,23 +67,23 @@ export function Withdrawals() {
           <TableBody>
             <TableRow>
               <StickyCell>{period === Period.MONTH && 'Jan '}2022</StickyCell>
-              {showAges && peopleIds.map(id =>
-                <TableCell key={id}>35</TableCell>
+              {showAges && peopleList.map(person =>
+                <TableCell key={person.id}>35</TableCell>
               )}
               <TableCell>£0</TableCell>
-              {showAccounts && accountsIds.map(id =>
-                <TableCell key={id}>£10</TableCell>
+              {showAccounts && accountsList.map(account =>
+                <TableCell key={account.id}>£10</TableCell>
               )}
               <SpacerCell />
             </TableRow>
             <TableRow>
               <StickyCell>{period === Period.MONTH && 'Feb '}2022</StickyCell>
-              {showAges && peopleIds.map(id =>
-                <TableCell key={id}>35</TableCell>
+              {showAges && peopleList.map(person =>
+                <TableCell key={person.id}>35</TableCell>
               )}
               <TableCell>£0</TableCell>
-              {showAccounts && accountsIds.map(id =>
-                <TableCell key={id}>£10</TableCell>
+              {showAccounts && accountsList.map(account =>
+                <TableCell key={account.id}>£10</TableCell>
               )}
               <SpacerCell />
             </TableRow>

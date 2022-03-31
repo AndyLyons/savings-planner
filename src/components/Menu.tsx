@@ -1,4 +1,4 @@
-import { CurrencyPound, Home, Outbound, Savings, Settings } from '@mui/icons-material';
+import { Home, Outbound, Savings, Settings } from '@mui/icons-material';
 import {
   Box, Divider, Drawer, List, ListItemIcon,
   ListItemText, SxProps, Theme, Toolbar

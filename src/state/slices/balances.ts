@@ -1,7 +1,7 @@
 import { nanoid } from 'nanoid'
 import { GetState, SetState } from 'zustand'
 import { YYYYMM } from '../../utils/date'
-import { assign, removeArrayItem } from '../../utils/fn'
+import { assign } from '../../utils/fn'
 import { State, useSelector } from '../app'
 import { AccountId } from './accounts'
 
@@ -17,7 +17,6 @@ export type Balance = {
 export type BalanceUpdate = Omit<Balance, 'id'>
 
 export type BalancesState = {
-  balancesIds: Array<BalanceId>
   balances: Record<BalanceId, Balance>
 
   createBalance: (details: BalanceUpdate) => BalanceId
@@ -35,14 +34,12 @@ export const useIsBalanceId = (
 
 export function createBalancesSlice(set: SetState<State>, get: GetState<State>): BalancesState {
   return ({
-    balancesIds: [],
     balances: {},
 
     createBalance(details) {
       const id = nanoid(10) as BalanceId
 
       set(state => {
-        state.balancesIds.push(id)
         state.balances[id] = { id, ...details }
       })
 
@@ -50,7 +47,6 @@ export function createBalancesSlice(set: SetState<State>, get: GetState<State>):
     },
     removeBalance(id) {
       set(state => {
-        removeArrayItem(state.balancesIds, id)
         delete state.balances[id]
       })
     },

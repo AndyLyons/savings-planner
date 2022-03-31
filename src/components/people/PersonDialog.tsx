@@ -1,5 +1,5 @@
 import { Event, Person, ShortText } from '@mui/icons-material'
-import { useBindSelector, useSelector } from '../../state/app'
+import { useAction, useSelector } from '../../state/app'
 import { PersonId, PersonUpdate } from '../../state/slices/people'
 import { fromYYYYMMDD } from '../../utils/date'
 import { createEntityDialog } from '../entity/createEntityDialog'
@@ -46,8 +46,8 @@ interface EditProps {
 }
 
 export function EditPerson({ id, onClose }: EditProps) {
-  const editPerson = useBindSelector(state => state.editPerson, id)
-  const removePerson = useBindSelector(state => state.removePerson, id)
+  const editPerson = useAction(state => state.editPerson, id)
+  const removePerson = useAction(state => state.removePerson, id)
   const person = useSelector(state => state.people[id], [id])
 
   return (
