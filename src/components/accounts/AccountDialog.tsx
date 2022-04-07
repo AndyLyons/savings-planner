@@ -1,9 +1,10 @@
-import { AccountBalance, Percent, Person, ShortText } from '@mui/icons-material';
-import { useBindSelector, useSelector } from '../../state/app';
-import { AccountId, AccountUpdate } from '../../state/slices/accounts';
-import { createEntityDialog } from '../entity/createEntityDialog';
+import { AccountBalance, Percent, Person, ShortText } from '@mui/icons-material'
+import { observer } from 'mobx-react-lite'
+import { Account, AccountJSON } from '../../state/Account'
+import { useAction, useStore } from '../../utils/mobx'
+import { createEntityDialog } from '../entity/createEntityDialog'
 
-const AccountDialog = createEntityDialog<AccountUpdate>('account', <AccountBalance />, [
+const AccountDialog = createEntityDialog<AccountJSON>('account', <AccountBalance />, [
   {
     type: 'string',
     name: 'name',
@@ -16,11 +17,7 @@ const AccountDialog = createEntityDialog<AccountUpdate>('account', <AccountBalan
     name: 'owner',
     label: 'Owner',
     icon: <Person />,
-    useOptions: () => {
-      const peopleIds = useSelector(state => state.peopleIds)
-      const people = useSelector(state => state.people)
-      return peopleIds.map(id => ({ id, label: people[id].name }))
-    },
+    useOptions: () => useStore(store => store.people.values.map(({ id, name }) => ({ id, label: name }))),
     required: true
   },
   {
@@ -36,8 +33,11 @@ interface CreateProps {
   onClose: () => void
 }
 
-export function CreateAccount({ onClose }: CreateProps) {
-  const createAccount = useSelector(state => state.createAccount)
+export const CreateAccount = observer(function CreateAccount({ onClose }: CreateProps) {
+  const createAccount = useAction((store, details: AccountJSON) => {
+    const owner = store.people.getPerson(details.owner)
+    store.accounts.addAccount({ ...details, owner })
+  }, [])
 
   return (
     <AccountDialog
@@ -50,19 +50,25 @@ export function CreateAccount({ onClose }: CreateProps) {
       onDone={createAccount}
     />
   )
-}
+})
 
 interface EditProps {
-  id: AccountId,
+  account: Account,
   onClose: () => void
 }
 
-export function EditAccount({ id, onClose }: EditProps) {
-  const editAccount = useBindSelector(state => state.editAccount, id)
-  const removeAccount = useBindSelector(state => state.removeAccount, id)
-  const account = useSelector(state => state.accounts[id], [id])
+export const EditAccount = observer(function EditAccount({ account, onClose }: EditProps) {
+  const onEdit = useAction((store, details: AccountJSON) => {
+    account.name = details.name
+    account.growth = details.growth
+    account.owner = store.people.getPerson(details.owner)
+  }, [account])
+
+  const onDelete = useAction(store => {
+    store.accounts.removeAccount(account)
+  }, [account])
 
   return (
-    <AccountDialog initialValues={account} onClose={onClose} onDelete={removeAccount} onDone={editAccount} />
+    <AccountDialog initialValues={account.toJSON()} onClose={onClose} onDelete={onDelete} onDone={onEdit} />
   )
-}
+})

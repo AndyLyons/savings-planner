@@ -1,8 +1,8 @@
-import { AccountBalance, Person } from '@mui/icons-material';
+import { AccountBalance, Person as PersonIcon } from '@mui/icons-material';
 import { Paper, SpeedDialAction } from '@mui/material';
 import { useCallback, useState } from 'react';
-import { AccountId } from '../state/slices/accounts';
-import { PersonId } from '../state/slices/people';
+import type { Account } from '../state/Account';
+import type { Person } from '../state/Person';
 import { useBind } from '../utils/hooks';
 import { CreateAccount, EditAccount } from './accounts/AccountDialog';
 import { Accounts } from './accounts/Accounts';
@@ -34,13 +34,13 @@ interface ModeCreateAccount {
 interface ModeEditPerson {
   action: Action.EDIT
   entity: Entity.PERSON
-  id: PersonId
+  model: Person
 }
 
 interface ModeEditAccount {
   action: Action.EDIT
   entity: Entity.ACCOUNT
-  id: AccountId
+  model: Account
 }
 
 interface None {
@@ -59,8 +59,8 @@ export function Settings() {
   const cancel = useBind(setMode, NO_MODE)
   const createPerson = useBind(setMode, CREATE_PERSON)
   const createAccount = useBind(setMode, CREATE_ACCOUNT)
-  const editPerson = useCallback((id: PersonId) => setMode({ action: Action.EDIT, entity: Entity.PERSON, id }), [])
-  const editAccount = useCallback((id: AccountId) => setMode({ action: Action.EDIT, entity: Entity.ACCOUNT, id }), [])
+  const editPerson = useCallback((person: Person) => setMode({ action: Action.EDIT, entity: Entity.PERSON, model: person }), [])
+  const editAccount = useCallback((account: Account) => setMode({ action: Action.EDIT, entity: Entity.ACCOUNT, model: account }), [])
 
   return (
     <>
@@ -77,13 +77,13 @@ export function Settings() {
           tooltipTitle='Account'
         />
         <SpeedDialAction
-          icon={<Person />}
+          icon={<PersonIcon />}
           onClick={createPerson}
           tooltipTitle='Person'
         />
       </SpeedDial>
-      {mode.action === Action.EDIT && mode.entity === Entity.PERSON && <EditPerson id={mode.id} onClose={cancel} />}
-      {mode.action === Action.EDIT && mode.entity === Entity.ACCOUNT && <EditAccount id={mode.id} onClose={cancel} />}
+      {mode.action === Action.EDIT && mode.entity === Entity.PERSON && <EditPerson person={mode.model} onClose={cancel} />}
+      {mode.action === Action.EDIT && mode.entity === Entity.ACCOUNT && <EditAccount account={mode.model} onClose={cancel} />}
       {mode.action === Action.CREATE && mode.entity === Entity.PERSON && <CreatePerson onClose={cancel} />}
       {mode.action === Action.CREATE && mode.entity === Entity.ACCOUNT && <CreateAccount onClose={cancel} />}
     </>

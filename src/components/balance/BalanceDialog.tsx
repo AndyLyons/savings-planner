@@ -1,23 +1,16 @@
-import { AccountBalance, CurrencyPound, Event } from '@mui/icons-material';
-import { useAction, useSelector } from '../../state/app';
-import { BalanceId, BalanceUpdate } from '../../state/slices/balances';
-import { fromYYYYMM } from '../../utils/date';
-import { createEntityDialog } from '../entity/createEntityDialog';
+import { AccountBalance, CurrencyPound, Event } from '@mui/icons-material'
+import { observer } from 'mobx-react-lite'
+import type { Balance, BalanceJSON } from '../../state/Balance'
+import { useAction, useStore } from '../../utils/mobx'
+import { createEntityDialog } from '../entity/createEntityDialog'
 
-const BalanceDialog = createEntityDialog<BalanceUpdate>('balance', <CurrencyPound />, [
+const BalanceDialog = createEntityDialog<BalanceJSON>('balance', <CurrencyPound />, [
   {
     type: 'selectSearch',
     name: 'account',
     label: 'Account',
     icon: <AccountBalance />,
-    useOptions() {
-      const accounts = useSelector(state => state.accounts)
-      const people = useSelector(state => state.people)
-      return Object.values(accounts).map(account => {
-        const { id, name, owner } = account
-        return ({ id, label: `${name} (${people[owner].name})` })
-      })
-    },
+    useOptions: () => useStore(store => store.accounts.values.map(({ id, name, owner }) => ({ id, label: `${name} (${owner.name})` }))),
     required: true
   },
   {
@@ -40,8 +33,11 @@ interface CreateProps {
   onClose: () => void
 }
 
-export function CreateBalance({ onClose }: CreateProps) {
-  const createBalance = useSelector(state => state.createBalance)
+export const CreateBalance = observer(function CreateBalance({ onClose }: CreateProps) {
+  const createBalance = useAction((store, details: BalanceJSON) => {
+    const account = store.accounts.getAccount(details.account)
+    store.balances.addBalance({ ...details, account })
+  }, [])
 
   return (
     <BalanceDialog
@@ -54,26 +50,30 @@ export function CreateBalance({ onClose }: CreateProps) {
       onDone={createBalance}
     />
   )
-}
+})
 
 interface EditProps {
-  id: BalanceId
+  balance: Balance
   onClose: () => void
 }
 
-export function EditBalance({ id, onClose }: EditProps) {
-  const editBalance = useAction(state => state.editBalance, id)
-  const { account, value, date } = useSelector(state => state.balances[id], [id])
+export const EditBalance = observer(function EditBalance({ balance, onClose }: EditProps) {
+  const onEdit = useAction((store, details: BalanceJSON) => {
+    balance.value = details.value
+    balance.date = details.date
+    balance.account = store.accounts.getAccount(details.account)
+  }, [balance])
+
+  const onDelete = useAction(store => {
+    store.balances.removeBalance(balance)
+  }, [balance])
 
   return (
     <BalanceDialog
-      initialValues={{
-        account,
-        value,
-        date: fromYYYYMM(date)
-      }}
+      initialValues={balance.toJSON()}
       onClose={onClose}
-      onDone={editBalance}
+      onDelete={onDelete}
+      onDone={onEdit}
     />
   )
-}
+})

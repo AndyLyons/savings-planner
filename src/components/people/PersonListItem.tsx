@@ -1,32 +1,31 @@
-import { Person } from '@mui/icons-material';
-import { ListItemButton, ListItemIcon, ListItemText, Typography } from '@mui/material';
-import { useSelector } from '../../state/app';
-import { PersonId } from '../../state/slices/people';
-import { formatYYYYMMDD } from '../../utils/date';
-import { useBind } from '../../utils/hooks';
+import { Person as PersonIcon } from '@mui/icons-material'
+import { ListItemButton, ListItemIcon, ListItemText, Typography } from '@mui/material'
+import { observer } from 'mobx-react-lite'
+import type { Person } from '../../state/Person'
+import { formatYYYYMMDD } from '../../utils/date'
+import { useBind } from '../../utils/hooks'
 
 interface Props {
-    id: PersonId
-    onClick: (id: PersonId) => void
+    person: Person
+    onClick: (person: Person) => void
 }
 
-export function PersonListItem({ id, onClick }: Props) {
-  const { name, dob } = useSelector(state => state.people[id], [id])
-  const onClickWithId = useBind(onClick, id)
+export const PersonListItem = observer(function PersonListItem({ person, onClick }: Props) {
+  const onClickWithId = useBind(onClick, person)
 
   return (
     <ListItemButton onClick={onClickWithId} sx={{ pl: 4 }}>
       <ListItemIcon>
-        <Person />
+        <PersonIcon />
       </ListItemIcon>
       <ListItemText
         primary={
           <>
-            <Typography sx={{ fontWeight: 'bold' }} component='span'>{name}</Typography>
-            <Typography component='span'> - {formatYYYYMMDD(dob)}</Typography>
+            <Typography sx={{ fontWeight: 'bold' }} component='span'>{person.name}</Typography>
+            <Typography component='span'> - {formatYYYYMMDD(person.dob)}</Typography>
           </>
         }
       />
     </ListItemButton>
   )
-}
+})

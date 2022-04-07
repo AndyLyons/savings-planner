@@ -1,28 +1,27 @@
-import {
-  Box, List, Typography
-} from '@mui/material';
-import { useSelector } from '../../state/app';
-import { PersonId } from '../../state/slices/people';
-import { useIsDesktop } from '../../utils/breakpoints';
-import { PersonListItem } from './PersonListItem';
+import { Box, List, Typography } from '@mui/material'
+import { observer } from 'mobx-react-lite'
+import { Person } from '../../state/Person'
+import { useIsDesktop } from '../../utils/breakpoints'
+import { useStore } from '../../utils/mobx'
+import { PersonListItem } from './PersonListItem'
 
 interface Props {
-  onClick: (id: PersonId) => void
+  onClick: (person: Person) => void
 }
 
-export function People({ onClick }: Props) {
+export const People = observer(function People({ onClick }: Props) {
   const isDesktop = useIsDesktop()
-  const peopleIds = useSelector(state => state.peopleIds, [])
+  const people = useStore(store => store.people.values)
 
   return (
     <Box>
       <Typography variant='h6' component='h2'>People</Typography>
-      {peopleIds.length === 0 && <Typography sx={{ ml: 1, mt: 1 }}>No people yet</Typography>}
+      {people.length === 0 && <Typography sx={{ ml: 1, mt: 1 }}>No people yet</Typography>}
       <List dense={isDesktop}>
-        {peopleIds.map(id => (
-          <PersonListItem key={id} id={id} onClick={onClick} />
+        {people.map(person => (
+          <PersonListItem key={person.id} person={person} onClick={onClick} />
         ))}
       </List>
     </Box>
   )
-}
+})

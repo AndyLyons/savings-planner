@@ -2,14 +2,15 @@ import AdapterDateFns from '@mui/lab/AdapterDateFns';
 import LocalizationProvider from '@mui/lab/LocalizationProvider';
 import { Box, Container, createTheme, CssBaseline, ThemeProvider, Toolbar } from '@mui/material';
 import { enGB } from 'date-fns/locale';
+import { observer } from 'mobx-react-lite';
 import { HashRouter, Route, Routes } from 'react-router-dom';
-import { useMenuOpen } from '../state/menu';
+import { useStore } from '../utils/mobx';
 import { Header } from './Header';
 import { Home } from './Home';
-import { Withdrawals } from './withdrawals/Wtihdrawals';
 import { COLLAPSED_MENU_WIDTH, FULL_MENU_WIDTH, Menu } from './Menu';
 import { Savings } from './savings/Savings';
 import { Settings } from './Settings';
+import { Withdrawals } from './withdrawals/Wtihdrawals';
 
 const theme = createTheme({
   palette: {
@@ -19,9 +20,9 @@ const theme = createTheme({
   }
 })
 
-export function App() {
-  const isMenuOpen = useMenuOpen()
-  const smMenuWidth = isMenuOpen ? FULL_MENU_WIDTH : COLLAPSED_MENU_WIDTH
+export const App = observer(function App() {
+  const store = useStore()
+  const smMenuWidth = store.menu.isOpen ? FULL_MENU_WIDTH : COLLAPSED_MENU_WIDTH
 
   return (
     <ThemeProvider theme={theme}>
@@ -30,25 +31,19 @@ export function App() {
           <Box sx={{ display: 'flex' }}>
             <CssBaseline />
 
-            <Header
-              sx={{
-                zIndex: theme => theme.zIndex.drawer + 1
-              }}
-            />
+            <Header sx={{ zIndex: theme => theme.zIndex.drawer + 1 }} />
 
-            <Menu
-              sx={{
-                flexShrink: { md: 0 },
-                width: {
-                  sm: smMenuWidth,
-                  md: FULL_MENU_WIDTH
-                },
-                transition: theme => theme.transitions.create('width', {
-                  easing: theme.transitions.easing.sharp,
-                  duration: theme.transitions.duration.enteringScreen
-                })
-              }}
-            />
+            <Menu sx={{
+              flexShrink: { md: 0 },
+              width: {
+                sm: smMenuWidth,
+                md: FULL_MENU_WIDTH
+              },
+              transition: theme => theme.transitions.create('width', {
+                easing: theme.transitions.easing.sharp,
+                duration: theme.transitions.duration.enteringScreen
+              })
+            }} />
 
             <Container maxWidth='md' sx={{
               flexGrow: 1,
@@ -70,5 +65,5 @@ export function App() {
         </HashRouter>
       </LocalizationProvider>
     </ThemeProvider>
-  );
-}
+  )
+})

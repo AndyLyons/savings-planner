@@ -1,38 +1,35 @@
-import { AccountBalance } from '@mui/icons-material';
+import { AccountBalance } from '@mui/icons-material'
 import {
   ListItemButton, ListItemIcon, ListItemText, Typography
-} from '@mui/material';
-import { useSelector } from '../../state/app';
-import { AccountId } from '../../state/slices/accounts';
-import { useBind } from '../../utils/hooks';
+} from '@mui/material'
+import { observer } from 'mobx-react-lite'
+import { Account } from '../../state/Account'
+import { useBind } from '../../utils/hooks'
 
 interface Props {
-    id: AccountId,
-    onClick: (id: AccountId) => void
+    account: Account,
+    onClick: (account: Account) => void
 }
 
-export function AccountListItem({ id, onClick }: Props) {
-  const { name, owner, growth } = useSelector(state => state.accounts[id], [id])
-  const { name: ownerName } = useSelector(state => state.people[owner], [owner])
-  const onClickWithId = useBind(onClick, id)
-
+export const AccountListItem = observer(function AccountListItem({ account, onClick }: Props) {
+  const onClickAccount = useBind(onClick, account)
 
   return (
     <>
-      <ListItemButton onClick={onClickWithId} sx={{ pl: 4, justifyContent: 'flex-start' }}>
+      <ListItemButton onClick={onClickAccount} sx={{ pl: 4, justifyContent: 'flex-start' }}>
         <ListItemIcon>
           <AccountBalance />
         </ListItemIcon>
         <ListItemText
           primary={
             <>
-              <Typography sx={{ fontWeight: 'bold' }} component='span'>{name}</Typography>
+              <Typography sx={{ fontWeight: 'bold' }} component='span'>{account.name}</Typography>
               {' '}
-              <Typography component='span'>({ownerName}) - {growth}%</Typography>
+              <Typography component='span'>({account.owner.name}) - {account.growth}%</Typography>
             </>
           }
         />
       </ListItemButton>
     </>
   )
-}
+})

@@ -3,9 +3,10 @@ import {
   Box, Divider, Drawer, List, ListItemIcon,
   ListItemText, SxProps, Theme, Toolbar
 } from '@mui/material';
+import { observer } from 'mobx-react-lite';
 import { useLocation } from 'react-router-dom';
-import { useMenuOpen, useToggleMenu } from '../state/menu';
 import { useMin } from '../utils/breakpoints';
+import { useStore } from '../utils/mobx';
 import { useLocationChanged } from '../utils/router';
 import { ListItemButtonLink } from './mui/ListItemButtonLink';
 
@@ -16,26 +17,25 @@ interface Props {
     sx?: SxProps<Theme>
 }
 
-export function Menu({ sx }: Props) {
+export const Menu = observer(function Menu({ sx }: Props) {
+  const store = useStore()
   const { pathname } = useLocation()
-  const isOpen = useMenuOpen()
-  const closeMenu = useToggleMenu(false)
   const isDesktop = useMin('sm')
 
-  useLocationChanged(closeMenu)
+  useLocationChanged(store.menu.closeMenu)
 
   return (
     <Box component='nav' sx={sx}>
       <Drawer
         anchor='left'
-        onClose={closeMenu}
-        open={isOpen}
+        onClose={store.menu.closeMenu}
+        open={store.menu.isOpen}
         variant={isDesktop ? 'permanent' : 'temporary'}
         sx={{
           '& .MuiDrawer-paper': {
             width: {
               xs: FULL_MENU_WIDTH,
-              sm: isOpen ? FULL_MENU_WIDTH : COLLAPSED_MENU_WIDTH,
+              sm: store.menu.isOpen ? FULL_MENU_WIDTH : COLLAPSED_MENU_WIDTH,
               md: FULL_MENU_WIDTH
             },
             boxSizing: 'border-box',
@@ -70,4 +70,4 @@ export function Menu({ sx }: Props) {
       </Drawer>
     </Box>
   )
-}
+})

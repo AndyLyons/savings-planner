@@ -1,18 +1,19 @@
-import { ToggleButton, ToggleButtonGroup } from '@mui/material';
-import { ComponentProps, useCallback } from 'react';
-import { Period, useSelectorShallow } from '../../state/app';
+import { ToggleButton, ToggleButtonGroup } from '@mui/material'
+import { observer } from 'mobx-react-lite'
+import type { ComponentProps } from 'react'
+import { Period } from '../../state/Store'
+import { useAction, useStore } from '../../utils/mobx'
 
 interface Props {
   sx?: ComponentProps<typeof ToggleButtonGroup>['sx']
 }
 
-export function PeriodToggle({ sx }: Props) {
-  const [period, setPeriod] = useSelectorShallow(state => [state.period, state.setPeriod] as const)
-  const onPeriodToggle = useCallback((_: unknown, value: Period | null) => {
-    if (value) {
-      setPeriod(value)
-    }
-  }, [setPeriod])
+export const PeriodToggle = observer(function PeriodToggle({ sx }: Props) {
+  const period = useStore(store => store.period)
+
+  const onPeriodToggle = useAction((store, _: unknown, value: Period) => {
+    store.period = value
+  }, [])
 
   return (
     <ToggleButtonGroup
@@ -27,4 +28,4 @@ export function PeriodToggle({ sx }: Props) {
       <ToggleButton value={Period.YEAR}>Yearly</ToggleButton>
     </ToggleButtonGroup>
   )
-}
+})

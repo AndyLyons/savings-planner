@@ -1,13 +1,14 @@
-import { ToggleButton, ToggleButtonGroup } from '@mui/material';
-import { ComponentProps } from 'react';
-import { useSelectorShallow } from '../../state/app';
+import { ToggleButton, ToggleButtonGroup } from '@mui/material'
+import { observer } from 'mobx-react-lite'
+import type { ComponentProps } from 'react'
+import { useStore } from '../../utils/mobx'
 
 interface Props {
   sx?: ComponentProps<typeof ToggleButtonGroup>['sx']
 }
 
-export function ShowAccountsToggle({ sx }: Props) {
-  const [showAccounts, toggleShowAccounts] = useSelectorShallow(state => [state.showAccounts, state.toggleShowAccounts] as const)
+export const ShowAccountsToggle = observer(function ShowAccountsToggle({ sx }: Props) {
+  const { showAccounts, toggleShowAccounts } = useStore()
 
   return (
     <ToggleButtonGroup
@@ -21,4 +22,4 @@ export function ShowAccountsToggle({ sx }: Props) {
       <ToggleButton value={true}>Accounts</ToggleButton>
     </ToggleButtonGroup>
   )
-}
+})

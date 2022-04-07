@@ -1,11 +1,12 @@
-import { CurrencyPound } from '@mui/icons-material';
-import { Box, Breadcrumbs, SpeedDial, SpeedDialAction, SpeedDialIcon, Typography } from '@mui/material';
-import { PropsWithChildren } from 'react';
-import { useParams } from 'react-router-dom';
-import { useSelector } from '../../state/app';
-import { AccountId, useIsAccountId } from '../../state/slices/accounts';
-import { Link } from '../mui';
-import './index.css';
+import { CurrencyPound } from '@mui/icons-material'
+import { Box, Breadcrumbs, SpeedDial, SpeedDialAction, SpeedDialIcon, Typography } from '@mui/material'
+import { observer } from 'mobx-react-lite'
+import { PropsWithChildren } from 'react'
+import { useParams } from 'react-router-dom'
+import { AccountId } from '../../state/Account'
+import { useStore } from '../../utils/mobx'
+import { Link } from '../mui'
+import './index.css'
 
 function Title({ children }: PropsWithChildren<{}>) {
   return (
@@ -18,16 +19,12 @@ function Title({ children }: PropsWithChildren<{}>) {
   )
 }
 
-function ValidAccount({ id }: { id: AccountId }) {
-  const accounts = useSelector(state => state.accounts)
-  const people = useSelector(state => state.people)
-
-  const account = accounts[id]
-  const owner = people[account.owner]
+const ValidAccount = observer(function ValidAccount({ id }: { id: AccountId }) {
+  const account = useStore(store => store.accounts.getAccount(id))
 
   return (
     <Box>
-      <Title>{account.name} ({owner.name})</Title>
+      <Title>{account.name} ({account.owner.name})</Title>
       <SpeedDial
         ariaLabel='account-actions'
         icon={<SpeedDialIcon />}
@@ -42,14 +39,14 @@ function ValidAccount({ id }: { id: AccountId }) {
       </SpeedDial>
     </Box>
   )
-}
+})
 
-export function Account() {
+export const Account = observer(function Account() {
   const { accountId } = useParams()
-  const isValidAccount = useIsAccountId(accountId)
+  const isAccountId = useStore(store => store.accounts.isAccountId)
 
   return (
-    isValidAccount
+    isAccountId(accountId)
       ? <ValidAccount id={accountId} />
       : (
         <Box>
@@ -61,4 +58,4 @@ export function Account() {
         </Box>
       )
   )
-}
+})

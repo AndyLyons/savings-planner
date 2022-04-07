@@ -1,15 +1,17 @@
-import classNames from 'classnames'
 import { CurrencyPound } from '@mui/icons-material'
 import {
   Box, Breadcrumbs, Paper, SpeedDialAction, Table, TableBody, TableCell,
   TableContainer, TableHead, TableRow, Typography
 } from '@mui/material'
+import classNames from 'classnames'
 import { differenceInYears, format } from 'date-fns'
+import { observer } from 'mobx-react-lite'
 import { ComponentProps, useMemo } from 'react'
 import { getSavingsTable } from '../../selectors/savings'
-import { Period, useSelector, useStore } from '../../state/app'
+import { Period } from '../../state/Store'
 import { toYYYYMM } from '../../utils/date'
 import { useBoolean } from '../../utils/hooks'
+import { useComputed, useStore } from '../../utils/mobx'
 import { CreateBalance } from '../balance/BalanceDialog'
 import { PeriodToggle } from '../common/PeriodToggle'
 import { ShowAccountsToggle } from '../common/ShowAccountsToggle'
@@ -42,16 +44,13 @@ function StickyCell(props: ComponentProps<typeof TableCell>) {
   )
 }
 
-export function Savings() {
+export const Savings = observer(function Savings() {
   const [isAddingBalance, openAddBalance, closeAddBalance] = useBoolean(false)
 
-  const period = useSelector(state => state.period)
-  const showAges = useSelector(state => state.showAges)
-  const showAccounts = useSelector(state => state.showAccounts)
-  const people = useSelector(state => state.people)
-  const accounts = useSelector(state => state.accounts)
+  const store = useStore()
+  const { period, showAges, showAccounts } = store
 
-  const savingsTable = useStore(getSavingsTable)
+  const savingsTable = useComputed(getSavingsTable, [])
 
   const rows = useMemo(() => (
     savingsTable.map(row =>
@@ -63,7 +62,9 @@ export function Savings() {
           )}
           <TableCell>£{row.balance}</TableCell>
           {row.accounts.map(({ id, balance }) =>
-            <TableCell key={id}  className='column-account'>£{balance}</TableCell>
+            <TableCell key={id} className='column-account'>
+              £{balance}
+            </TableCell>
           )}
           <SpacerCell />
         </TableRow>
@@ -97,12 +98,12 @@ export function Savings() {
           <TableHead>
             <TableRow>
               <StickyCell>Period</StickyCell>
-              {showAges && Object.values(people).map(person =>
+              {showAges && store.people.values.map(person =>
                 <TableCell key={person.id}>{person.name}</TableCell>
               )}
               <TableCell>Balance</TableCell>
-              {showAccounts && Object.values(accounts).map(account =>
-                <TableCell key={account.id}>{account.name} ({people[account.owner].name})</TableCell>
+              {showAccounts && store.accounts.values.map(account =>
+                <TableCell key={account.id}>{account.name} ({account.owner.name})</TableCell>
               )}
               <SpacerCell />
             </TableRow>
@@ -119,4 +120,4 @@ export function Savings() {
       </TableContainer>
     </Paper>
   )
-}
+})

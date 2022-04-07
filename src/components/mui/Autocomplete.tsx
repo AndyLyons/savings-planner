@@ -1,6 +1,6 @@
-import { Autocomplete as MUIAutocomplete, TextField } from '@mui/material';
-import { ComponentProps, useCallback } from 'react';
-import { useBoolean } from '../../utils/hooks';
+import { Autocomplete as MUIAutocomplete, TextField } from '@mui/material'
+import { ComponentProps, useCallback } from 'react'
+import { useBoolean } from '../../utils/hooks'
 
 interface Props<T extends string> {
   getOptionLabel: (id: T) => string,

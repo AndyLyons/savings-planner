@@ -2,12 +2,13 @@ import {
   Box, Breadcrumbs, Paper, Table, TableBody, TableCell,
   TableContainer, TableHead, TableRow, Typography
 } from '@mui/material'
-import { ComponentProps } from 'react'
-import { Period, useSelector } from '../../state/app'
-import { ShowHistoryToggle } from '../common/ShowHistoryToggle'
+import type { ComponentProps } from 'react'
+import { Period } from '../../state/Store'
+import { useStore } from '../../utils/mobx'
 import { PeriodToggle } from '../common/PeriodToggle'
 import { ShowAccountsToggle } from '../common/ShowAccountsToggle'
 import { ShowAgesToggle } from '../common/ShowAgesToggle'
+import { ShowHistoryToggle } from '../common/ShowHistoryToggle'
 
 // Empty cell which takes up all remaining space, causing other cells to
 // compress to the minimum width needed to fit their contents
@@ -31,12 +32,8 @@ function StickyCell(props: ComponentProps<typeof TableCell>) {
 }
 
 export function Withdrawals() {
-  const period = useSelector(state => state.period)
-  const showAges = useSelector(state => state.showAges)
-  const showAccounts = useSelector(state => state.showAccounts)
-  const people = useSelector(state => state.people)
-  const peopleList = Object.values(people)
-  const accountsList = Object.values(useSelector(state => state.accounts))
+  const store = useStore()
+  const { period, showAges, showAccounts } = store
 
   return (
     <Paper sx={{ p: 2 }}>
@@ -54,12 +51,12 @@ export function Withdrawals() {
           <TableHead>
             <TableRow>
               <StickyCell>Period</StickyCell>
-              {showAges && peopleList.map(person =>
+              {showAges && store.people.values.map(person =>
                 <TableCell key={person.id}>{person.name}</TableCell>
               )}
               <TableCell>Withdrawn</TableCell>
-              {showAccounts && accountsList.map(account =>
-                <TableCell key={account.id}>{account.name} ({people[account.owner].name})</TableCell>
+              {showAccounts && store.accounts.values.map(account =>
+                <TableCell key={account.id}>{account.name} ({account.owner.name})</TableCell>
               )}
               <SpacerCell />
             </TableRow>
@@ -67,22 +64,22 @@ export function Withdrawals() {
           <TableBody>
             <TableRow>
               <StickyCell>{period === Period.MONTH && 'Jan '}2022</StickyCell>
-              {showAges && peopleList.map(person =>
+              {showAges && store.people.values.map(person =>
                 <TableCell key={person.id}>35</TableCell>
               )}
               <TableCell>£0</TableCell>
-              {showAccounts && accountsList.map(account =>
+              {showAccounts && store.accounts.values.map(account =>
                 <TableCell key={account.id}>£10</TableCell>
               )}
               <SpacerCell />
             </TableRow>
             <TableRow>
               <StickyCell>{period === Period.MONTH && 'Feb '}2022</StickyCell>
-              {showAges && peopleList.map(person =>
+              {showAges && store.people.values.map(person =>
                 <TableCell key={person.id}>35</TableCell>
               )}
               <TableCell>£0</TableCell>
-              {showAccounts && accountsList.map(account =>
+              {showAccounts && store.accounts.values.map(account =>
                 <TableCell key={account.id}>£10</TableCell>
               )}
               <SpacerCell />

@@ -1,13 +1,14 @@
-import { Delete } from '@mui/icons-material';
-import { DatePicker } from '@mui/lab';
+import { Delete } from '@mui/icons-material'
+import { DatePicker } from '@mui/lab'
 import {
   Button, Dialog, DialogActions, DialogContent,
   DialogTitle, TextField, TextFieldProps
-} from '@mui/material';
-import { cloneElement, ReactElement, useCallback, useReducer } from 'react';
-import { isDate, toYYYYMM, toYYYYMMDD } from '../../utils/date';
-import { getChangeEventState, useKeyPress, useStopEvent } from '../../utils/hooks';
-import { Autocomplete, IconField } from '../mui';
+} from '@mui/material'
+import { observer } from 'mobx-react-lite'
+import { cloneElement, ReactElement, useCallback, useReducer } from 'react'
+import { isDate, toYYYYMM, toYYYYMMDD } from '../../utils/date'
+import { getChangeEventState, useKeyPress, useStopEvent } from '../../utils/hooks'
+import { Autocomplete, IconField } from '../mui'
 
 type FieldType = 'string' | 'number' | 'selectSearch' | 'yyyymmdd' | 'yyyymm'
 
@@ -89,7 +90,7 @@ export function createEntityDialog<T>(name: string, icon: ReactElement, fields: 
     onDone: (details: T) => void
   }
 
-  return function EntityDialog({ initialValues, onClose, onDelete, onDone }: Props) {
+  const EntityDialog = observer(function EntityDialog({ initialValues, onClose, onDelete, onDone }: Props) {
     const title = onDelete ? 'Edit' : 'Create'
 
     const [state, dispatch] = useReducer(reducer, initialValues)
@@ -185,5 +186,7 @@ export function createEntityDialog<T>(name: string, icon: ReactElement, fields: 
         </Dialog>
       </>
     )
-  }
+  })
+
+  return EntityDialog
 }

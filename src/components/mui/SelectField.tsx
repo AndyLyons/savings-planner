@@ -1,6 +1,6 @@
-import { FormControl, InputLabel, MenuItem, NativeSelect, Select } from '@mui/material';
-import { ComponentProps, useCallback } from 'react';
-import { useIsDesktop } from '../../utils/breakpoints';
+import { FormControl, InputLabel, MenuItem, NativeSelect, Select } from '@mui/material'
+import { ComponentProps, useCallback } from 'react'
+import { useIsDesktop } from '../../utils/breakpoints'
 
 interface Props {
   allowEmpty?: boolean

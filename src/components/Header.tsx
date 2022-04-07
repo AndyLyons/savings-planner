@@ -3,24 +3,24 @@ import {
   AppBar, Hidden, Icon, IconButton,
   SxProps, Theme, Toolbar, Typography
 } from '@mui/material';
-import { useMenuOpen, useToggleMenu } from '../state/menu';
+import { observer } from 'mobx-react-lite';
+import { useStore } from '../utils/mobx';
 import { useNavigateTo } from '../utils/router';
 
 interface Props {
   sx?: SxProps<Theme>
 }
 
-export function Header({ sx }: Props) {
-  const isMenuOpen = useMenuOpen()
-  const toggleMenu = useToggleMenu()
+export const Header = observer(function Header({ sx }: Props) {
+  const menu = useStore(store => store.menu)
   const navigateHome = useNavigateTo('/')
 
   return (
     <AppBar position='fixed' sx={sx}>
       <Toolbar>
         <Hidden mdUp>
-          <IconButton size="large" edge="start" color="inherit" onClick={toggleMenu} sx={{ mr: 2 }}>
-            {isMenuOpen ? <Close /> : <Menu />}
+          <IconButton size="large" edge="start" color="inherit" onClick={menu.toggle} sx={{ mr: 2 }}>
+            {menu.isOpen ? <Close /> : <Menu />}
           </IconButton>
         </Hidden>
         <Icon sx={{ mr: 1 }}><ShowChart /></Icon>
@@ -28,4 +28,4 @@ export function Header({ sx }: Props) {
       </Toolbar>
     </AppBar>
   );
-}
+})

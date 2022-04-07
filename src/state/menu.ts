@@ -1,37 +1,22 @@
-import { useCallback } from 'react'
-import create from 'zustand'
-import { immer } from './middleware'
+import { makeAutoObservable } from 'mobx'
+import type { Store } from './Store'
 
-type MenuState = {
-    isOpen: boolean
+export class Menu {
+  store: Store
 
-    toggleMenu: (value?: boolean) => void
-}
+  isOpen: boolean = false
 
-const useMenu = create<MenuState>(
-  immer((set) => ({
-    isOpen: false,
+  constructor(store: Store) {
+    makeAutoObservable(this, { store: false }, { autoBind: true })
 
-    toggleMenu(value) {
-      set(state => {
-        if (value === undefined) {
-          state.isOpen = !state.isOpen
-        } else {
-          state.isOpen = value
-        }
-      })
-    },
-  }))
-)
+    this.store = store
+  }
 
-const getIsOpen = (state: MenuState) => state.isOpen
-const getToggleMenu = (state: MenuState) => state.toggleMenu
+  closeMenu() {
+    this.isOpen = false
+  }
 
-export function useMenuOpen() {
-  return useMenu(getIsOpen)
-}
-
-export function useToggleMenu(value?: boolean) {
-  const toggleMenu = useMenu(getToggleMenu)
-  return useCallback(() => toggleMenu(value), [toggleMenu, value])
+  toggle() {
+    this.isOpen = !this.isOpen
+  }
 }

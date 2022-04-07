@@ -1,10 +1,16 @@
-import { Event, Person, ShortText } from '@mui/icons-material'
-import { useAction, useSelector } from '../../state/app'
-import { PersonId, PersonUpdate } from '../../state/slices/people'
-import { fromYYYYMMDD } from '../../utils/date'
+import { Event, Person as PersonIcon, ShortText } from '@mui/icons-material'
+import { observer } from 'mobx-react-lite'
+import type { Person } from '../../state/Person'
+import { YYYYMMDD } from '../../utils/date'
+import { useAction } from '../../utils/mobx'
 import { createEntityDialog } from '../entity/createEntityDialog'
 
-const PersonDialog = createEntityDialog<PersonUpdate>('person', <Person />, [
+type PersonDialogValues = {
+  name: string,
+  dob: YYYYMMDD,
+}
+
+const PersonDialog = createEntityDialog<PersonDialogValues>('person', <PersonIcon />, [
   {
     type: 'string',
     name: 'name',
@@ -25,8 +31,10 @@ interface CreateProps {
   onClose: () => void
 }
 
-export function CreatePerson({ onClose }: CreateProps) {
-  const createPerson = useSelector(state => state.createPerson)
+export const CreatePerson = observer(function CreatePerson({ onClose }: CreateProps) {
+  const createPerson = useAction((store, details: PersonDialogValues) => {
+    store.people.addPerson(details)
+  }, [])
 
   return (
     <PersonDialog
@@ -38,19 +46,24 @@ export function CreatePerson({ onClose }: CreateProps) {
       onDone={createPerson}
     />
   )
-}
+})
 
 interface EditProps {
-  id: PersonId,
+  person: Person,
   onClose: () => void
 }
 
-export function EditPerson({ id, onClose }: EditProps) {
-  const editPerson = useAction(state => state.editPerson, id)
-  const removePerson = useAction(state => state.removePerson, id)
-  const person = useSelector(state => state.people[id], [id])
+export const EditPerson = observer(function EditPerson({ person, onClose }: EditProps) {
+  const onEdit = useAction((store, details: PersonDialogValues) => {
+    person.name = details.name
+    person.dob = details.dob
+  }, [person])
+
+  const onDelete = useAction(store => {
+    store.people.removePerson(person)
+  }, [person])
 
   return (
-    <PersonDialog initialValues={{ ...person, dob: fromYYYYMMDD(person.dob) }} onClose={onClose} onDelete={removePerson} onDone={editPerson} />
+    <PersonDialog initialValues={person.toJSON()} onClose={onClose} onDelete={onDelete} onDone={onEdit} />
   )
-}
+})
