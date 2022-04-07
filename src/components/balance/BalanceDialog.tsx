@@ -4,30 +4,27 @@ import type { Balance, BalanceJSON } from '../../state/Balance'
 import { useAction, useStore } from '../../utils/mobx'
 import { createEntityDialog } from '../entity/createEntityDialog'
 
-const BalanceDialog = createEntityDialog<BalanceJSON>('balance', <CurrencyPound />, [
-  {
-    type: 'selectSearch',
-    name: 'account',
+const BalanceDialog = createEntityDialog<BalanceJSON>('balance', <CurrencyPound />, {
+  account: {
+    type: 'string',
     label: 'Account',
     icon: <AccountBalance />,
     useOptions: () => useStore(store => store.accounts.values.map(({ id, name, owner }) => ({ id, label: `${name} (${owner.name})` }))),
     required: true
   },
-  {
+  value: {
     type: 'number',
-    name: 'value',
     label: 'Balance',
     icon: <CurrencyPound />,
     required: true
   },
-  {
+  date: {
     type: 'yyyymm',
-    name: 'date',
     label: 'Date',
     icon: <Event />,
     required: true
   }
-])
+})
 
 interface CreateProps {
   onClose: () => void
@@ -42,9 +39,7 @@ export const CreateBalance = observer(function CreateBalance({ onClose }: Create
   return (
     <BalanceDialog
       initialValues={{
-        account: '',
         value: 0,
-        date: null
       }}
       onClose={onClose}
       onDone={createBalance}

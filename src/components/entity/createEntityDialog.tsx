@@ -6,86 +6,48 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react-lite'
 import { cloneElement, ReactElement, useCallback, useReducer } from 'react'
-import { isDate, toYYYYMM, toYYYYMMDD } from '../../utils/date'
+import { fromYYYYMM, fromYYYYMMDD, isDate, toYYYYMM, toYYYYMMDD, YYYYMM, YYYYMMDD } from '../../utils/date'
+import { entries, KeyValues } from '../../utils/fn'
 import { getChangeEventState, useKeyPress, useStopEvent } from '../../utils/hooks'
 import { Autocomplete, IconField } from '../mui'
 
-type FieldType = 'string' | 'number' | 'selectSearch' | 'yyyymmdd' | 'yyyymm'
+type FieldType<T> =
+  T extends YYYYMMDD ? 'yyyymmdd' :
+  T extends YYYYMM ? 'yyyymm' :
+  T extends string ? 'string' :
+  T extends number ? 'number' :
+  never
 
-interface BaseField {
-  type: FieldType
-  icon: ReactElement
-  label: string
-  name: string
-  required?: boolean
+type Fields<T> = {
+  [P in keyof Partial<T>]: {
+    icon: ReactElement
+    label: string
+    required?: boolean
+    type: FieldType<T[P]>
+    useOptions?: () => Array<{ id: string, label: string }>
+  }
 }
 
-interface StringField extends BaseField {
-  type: 'string'
-}
+export function createEntityDialog<T>(name: string, icon: ReactElement, fields: Fields<T>) {
+  const fieldEntries = entries(fields)
 
-interface SelectSearchField<T extends string = string> extends BaseField {
-  type: 'selectSearch'
-  useOptions: () => Array<{ id: T, label: string }>
-}
-
-interface NumberField extends BaseField {
-  type: 'number'
-}
-
-interface YYYYMMDDField extends BaseField {
-  type: 'yyyymmdd'
-}
-
-interface YYYYMMField extends BaseField {
-  type: 'yyyymm'
-}
-
-type Field = StringField | SelectSearchField | NumberField | YYYYMMDDField | YYYYMMField
-
-interface Action {
-  fieldName: string
-  value: unknown
-}
-
-type FormState = Partial<{
-  [key: string]: unknown
-}>
-
-export function createEntityDialog<T>(name: string, icon: ReactElement, fields: Array<Field>) {
   const iconWithMargin = cloneElement(icon, { sx: { mr: 2, ...icon.props.sx } })
 
-  function reducer(state: FormState, action: Action) {
+  function reducer(state: Partial<T>, action: KeyValues<T>) {
     return {
       ...state,
-      [action.fieldName]: action.value
-    }
+      [action.key]: action.value
+    } as Partial<T>
   }
 
-  const verifyState = (state: FormState) =>
-    fields.every(({ name, required }) => !required || state[name] !== null)
-
-  function normaliseState(state: FormState) {
-    const normalise = {
-      string: (value) => value === '' ? null : value,
-      number: (value) => {
-        const parsed = parseFloat(value as string)
-        return Number.isNaN(parsed) ? null : parsed
-      },
-      yyyymm: (value) => isDate(value) ? toYYYYMM(value) : null,
-      yyyymmdd: (value) => isDate(value) ? toYYYYMMDD(value) : null,
-      selectSearch: (value) => value === '' ? null : value
-    } as Record<Field['type'], (value: unknown) => unknown>
-
-    return fields.reduce((acc, { name, type }) => {
-      acc[name] = normalise[type] ? normalise[type](state[name]) : state[name]
-      return acc
-    }, {} as FormState)
-  }
+  const verifyState = (state: Partial<T>): state is T =>
+    entries(fields).every(([name, config]) => {
+      return !config.required || state[name] != null
+    })
 
   interface Props {
-    initialValues: FormState,
-    onClose: () => void,
+    initialValues?: Partial<T>
+    onClose: () => void
     onDelete?: () => void
     onDone: (details: T) => void
   }
@@ -93,13 +55,12 @@ export function createEntityDialog<T>(name: string, icon: ReactElement, fields: 
   const EntityDialog = observer(function EntityDialog({ initialValues, onClose, onDelete, onDone }: Props) {
     const title = onDelete ? 'Edit' : 'Create'
 
-    const [state, dispatch] = useReducer(reducer, initialValues)
-    const normalisedState = normaliseState(state)
-    const isValid = verifyState(normalisedState)
+    const [state, dispatch] = useReducer(reducer, initialValues ?? {})
+    const isValid = verifyState(state)
 
     const onDoneClick = useStopEvent(() => {
       if (isValid) {
-        onDone(normalisedState as unknown as T)
+        onDone(state)
         onClose()
       }
     })
@@ -117,31 +78,73 @@ export function createEntityDialog<T>(name: string, icon: ReactElement, fields: 
           <DialogTitle sx={{ display: 'flex', alignItems: 'center' }}>{iconWithMargin} {title} {name}</DialogTitle>
           <DialogContent sx={{ display: 'flex', flexDirection: 'column' }}>
             {
-              fields.map((field, index) => {
-                const { type, icon, label, name, required } = field
+              fieldEntries.map(([name, field], index) => {
+                const { type, icon, label, required, useOptions } = field
                 return (
-                  <IconField key={name} icon={icon} sx={{ mt: index === 0 ? 1 : 0, mb: index < fields.length ? 2 : 0 }}>
-                    {['string', 'number'].includes(type) && (
+                  <IconField key={`${name}`} icon={icon} sx={{ mt: index === 0 ? 1 : 0, mb: index < fieldEntries.length ? 2 : 0 }}>
+                    {type === 'string' && useOptions && (() => {
+                      // This is OK because the fields can't change at runtime
+                      // and will always run in exactly the same order
+                      // eslint-disable-next-line react-hooks/rules-of-hooks
+                      const options = useOptions()
+                      return (
+                        <Autocomplete
+                          label={label}
+                          getOptionLabel={(optionId) => options.find(({ id }) => id === optionId)?.label ?? ''}
+                          onChange={(value) => dispatch({
+                            key: name,
+                            value: (value === '' ? undefined : value) as unknown as T[keyof T]
+                          })}
+                          onKeyDown={onEnterKey}
+                          options={options.map(({ id }) => id)}
+                          required={required}
+                          value={`${state[name] ?? ''}`}
+                        />
+                      )
+                    })()}
+                    {type === 'string' && !useOptions && (
                       <TextField
                         fullWidth
                         label={label}
-                        onChange={(e) => dispatch({
-                          fieldName: name,
-                          value: getChangeEventState(e)
-                        })}
+                        onChange={(e) => {
+                          const value = getChangeEventState(e)
+                          dispatch({
+                            key: name,
+                            value: (value === '' ? undefined : value) as unknown as T[keyof T]
+                          })
+                        }}
                         onKeyDown={onEnterKey}
                         required={required}
                         size='small'
-                        type={type === 'number' ? 'number' : 'text'}
-                        value={state[name]}
+                        type='text'
+                        value={state[name] ?? ''}
                       />
                     )}
-                    {['yyyymm', 'yyyymmdd'].includes(type) && (
+                    {type === 'number' && (
+                      <TextField
+                        fullWidth
+                        label={label}
+                        onChange={(e) => {
+                          const value = getChangeEventState(e)
+                          const parsed = parseFloat(value)
+                          dispatch({
+                            key: name,
+                            value: (Number.isNaN(parsed) ? undefined : parsed) as unknown as T[keyof T]
+                          })
+                        }}
+                        onKeyDown={onEnterKey}
+                        required={required}
+                        size='small'
+                        type='number'
+                        value={`${state[name] ?? ''}`}
+                      />
+                    )}
+                    {type === 'yyyymm' && (
                       <DatePicker
                         label={label}
                         onChange={(value) => dispatch({
-                          fieldName: name,
-                          value
+                          key: name,
+                          value: (isDate(value) ? toYYYYMM(value) : undefined) as unknown as T[keyof T]
                         })}
                         renderInput={(props: TextFieldProps) => (
                           <TextField
@@ -152,27 +155,29 @@ export function createEntityDialog<T>(name: string, icon: ReactElement, fields: 
                             size='small'
                           />
                         )}
-                        value={state[name]}
-                        views={type === 'yyyymm' ? ['year', 'month'] : undefined}
+                        value={state[name] ? fromYYYYMM(state[name] as unknown as YYYYMM) : null}
+                        views={['year', 'month']}
                       />
                     )}
-                    {type === 'selectSearch' && (() => {
-                      const options = field.useOptions()
-                      return (
-                        <Autocomplete
-                          label={label}
-                          getOptionLabel={(labelId) => options.find(({ id }) => id === labelId)?.label ?? ''}
-                          onChange={(value) => dispatch({
-                            fieldName: name,
-                            value
-                          })}
-                          onKeyDown={onEnterKey}
-                          options={options.map(({ id }) => id)}
-                          required={required}
-                          value={state[name] as string}
-                        />
-                      )
-                    })()}
+                    {type === 'yyyymmdd' && (
+                      <DatePicker
+                        label={label}
+                        onChange={(value) => dispatch({
+                          key: name,
+                          value: (isDate(value) ? toYYYYMMDD(value) : null) as unknown as T[keyof T]
+                        })}
+                        renderInput={(props: TextFieldProps) => (
+                          <TextField
+                            {...props}
+                            fullWidth
+                            onKeyDown={onEnterKey}
+                            required={required}
+                            size='small'
+                          />
+                        )}
+                        value={state[name] ? fromYYYYMMDD(state[name] as unknown as YYYYMMDD) : null}
+                      />
+                    )}
                   </IconField>
                 )
               })

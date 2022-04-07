@@ -1,47 +1,35 @@
 import { Event, Person as PersonIcon, ShortText } from '@mui/icons-material'
 import { observer } from 'mobx-react-lite'
-import type { Person } from '../../state/Person'
-import { YYYYMMDD } from '../../utils/date'
+import type { Person, PersonJSON } from '../../state/Person'
 import { useAction } from '../../utils/mobx'
 import { createEntityDialog } from '../entity/createEntityDialog'
 
-type PersonDialogValues = {
-  name: string,
-  dob: YYYYMMDD,
-}
-
-const PersonDialog = createEntityDialog<PersonDialogValues>('person', <PersonIcon />, [
-  {
-    type: 'string',
-    name: 'name',
+const PersonDialog = createEntityDialog<PersonJSON>('person', <PersonIcon />, {
+  name: {
     label: 'Name',
     icon: <ShortText />,
-    required: true
+    required: true,
+    type: 'string'
   },
-  {
-    type: 'yyyymmdd',
-    name: 'dob',
+  dob: {
     label: 'Date of birth',
     icon: <Event />,
-    required: true
+    required: true,
+    type: 'yyyymmdd'
   }
-])
+})
 
 interface CreateProps {
   onClose: () => void
 }
 
 export const CreatePerson = observer(function CreatePerson({ onClose }: CreateProps) {
-  const createPerson = useAction((store, details: PersonDialogValues) => {
+  const createPerson = useAction((store, details: PersonJSON) => {
     store.people.addPerson(details)
   }, [])
 
   return (
     <PersonDialog
-      initialValues={{
-        name: '',
-        dob: null,
-      }}
       onClose={onClose}
       onDone={createPerson}
     />
@@ -54,7 +42,7 @@ interface EditProps {
 }
 
 export const EditPerson = observer(function EditPerson({ person, onClose }: EditProps) {
-  const onEdit = useAction((store, details: PersonDialogValues) => {
+  const onEdit = useAction((store, details: PersonJSON) => {
     person.name = details.name
     person.dob = details.dob
   }, [person])
