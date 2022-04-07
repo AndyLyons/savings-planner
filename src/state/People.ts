@@ -1,4 +1,5 @@
 import { makeAutoObservable } from 'mobx'
+import { keys } from '../utils/fn'
 import type { PersonDetails, PersonId } from './Person'
 import { Person } from './Person'
 import type { Store } from './Store'
@@ -25,6 +26,12 @@ export class People {
     this.data[person.id] = person
   }
 
+  clear() {
+    keys(this.data).forEach(key => {
+      delete this.data[key]
+    })
+  }
+
   getPerson(personId: PersonId): Person {
     return this.data[personId]
   }
@@ -41,6 +48,8 @@ export class People {
   }
 
   restoreSnapshot(snapshot: PeopleJSON) {
+    this.clear()
+
     snapshot
       .map(person => Person.fromJSON(this.store, person))
       .forEach(this.addPerson)
