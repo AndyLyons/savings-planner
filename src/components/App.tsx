@@ -28,7 +28,7 @@ export const App = observer(function App() {
     <ThemeProvider theme={theme}>
       <LocalizationProvider dateAdapter={AdapterDateFns} locale={enGB}>
         <HashRouter>
-          <Box sx={{ display: 'flex' }}>
+          <Box sx={{ display: 'flex', height: '100%' }}>
             <CssBaseline />
 
             <Header sx={{ zIndex: theme => theme.zIndex.drawer + 1 }} />
@@ -46,8 +46,11 @@ export const App = observer(function App() {
             }} />
 
             <Container maxWidth='md' sx={{
+              display: 'flex',
+              flexDirection: 'column',
               flexGrow: 1,
               mb: 2,
+              overflow: 'hidden',
               width: {
                 sm: `calc(100% - ${smMenuWidth}px)`,
                 md: `calc(100% - ${FULL_MENU_WIDTH}px)`
