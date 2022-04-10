@@ -63,12 +63,6 @@ export function useBoolean(initialValue: boolean | (() => boolean)) {
   return [value, useBind(setValue, true), useBind(setValue, false), toggle] as const
 }
 
-interface ChangeEvent {
-  target: {
-    value: string
-  }
-}
-
 type InitialState<T> = T | (() => T)
 
 export function useEventState<T, P extends readonly any[]>(
@@ -87,5 +81,9 @@ export function useEventState<T, P extends readonly any[]>(
   return [state, onEvent, setState] as const
 }
 
-export const getChangeEventState = (e: ChangeEvent) => e.target.value
-export const useChangeEventState = (initialState: InitialState<string>) => useEventState(initialState, getChangeEventState)
+export interface ChangeEvent { target: { value: string } }
+export interface SelectableEvent { target: { select: () => void } }
+
+export const selectTarget = (e: SelectableEvent) => e.target.select()
+export const getTargetValue = (e: ChangeEvent) => e.target.value
+export const useChangeEventState = (initialState: InitialState<string>) => useEventState(initialState, getTargetValue)

@@ -8,7 +8,7 @@ import { observer } from 'mobx-react-lite'
 import { cloneElement, ReactElement, useCallback, useReducer } from 'react'
 import { fromYYYYMM, fromYYYYMMDD, isDate, toYYYYMM, toYYYYMMDD, YYYYMM, YYYYMMDD } from '../../utils/date'
 import { entries, KeyValues } from '../../utils/fn'
-import { getChangeEventState, useKeyPress, useStopEvent } from '../../utils/hooks'
+import { getTargetValue, useKeyPress, useStopEvent } from '../../utils/hooks'
 import { Autocomplete, IconField } from '../mui'
 
 type FieldType<T> =
@@ -107,7 +107,7 @@ export function createEntityDialog<T>(name: string, icon: ReactElement, fields: 
                         fullWidth
                         label={label}
                         onChange={(e) => {
-                          const value = getChangeEventState(e)
+                          const value = getTargetValue(e)
                           dispatch({
                             key: name,
                             value: (value === '' ? undefined : value) as unknown as T[keyof T]
@@ -125,7 +125,7 @@ export function createEntityDialog<T>(name: string, icon: ReactElement, fields: 
                         fullWidth
                         label={label}
                         onChange={(e) => {
-                          const value = getChangeEventState(e)
+                          const value = getTargetValue(e)
                           const parsed = parseFloat(value)
                           dispatch({
                             key: name,
