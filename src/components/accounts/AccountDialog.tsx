@@ -37,10 +37,16 @@ const AccountDialog = createEntityDialog<AccountJSON>('account', <AccountBalance
 })
 
 interface CreateProps {
+  initialValues?: Partial<AccountJSON>
   onClose: () => void
 }
 
-export const CreateAccount = observer(function CreateAccount({ onClose }: CreateProps) {
+const DEFAULTS = {
+  growth: 0,
+  compoundPeriod: 1
+}
+
+export const CreateAccount = observer(function CreateAccount({ initialValues = DEFAULTS, onClose }: CreateProps) {
   const createAccount = useAction((store, details: AccountJSON) => {
     const owner = store.people.getPerson(details.owner)
     store.accounts.addAccount({ ...details, owner })
@@ -48,10 +54,7 @@ export const CreateAccount = observer(function CreateAccount({ onClose }: Create
 
   return (
     <AccountDialog
-      initialValues={{
-        growth: 0,
-        compoundPeriod: 1
-      }}
+      initialValues={initialValues}
       onClose={onClose}
       onDone={createAccount}
     />

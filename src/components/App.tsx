@@ -5,6 +5,7 @@ import { enGB } from 'date-fns/locale';
 import { observer } from 'mobx-react-lite';
 import { HashRouter, Route, Routes } from 'react-router-dom';
 import { useStore } from '../utils/mobx';
+import { Dialogs } from './Dialogs';
 import { Header } from './Header';
 import { Home } from './Home';
 import { COLLAPSED_MENU_WIDTH, FULL_MENU_WIDTH, Menu } from './Menu';
@@ -70,6 +71,8 @@ export const App = observer(function App() {
                 <Route path='/settings' element={<Settings />} />
               </Routes>
             </Container>
+
+            <Dialogs />
           </Box>
         </HashRouter>
       </LocalizationProvider>

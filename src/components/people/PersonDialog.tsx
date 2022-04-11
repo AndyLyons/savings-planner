@@ -20,16 +20,18 @@ const PersonDialog = createEntityDialog<PersonJSON>('person', <PersonIcon />, {
 })
 
 interface CreateProps {
+  initialValues?: Partial<PersonJSON>
   onClose: () => void
 }
 
-export const CreatePerson = observer(function CreatePerson({ onClose }: CreateProps) {
+export const CreatePerson = observer(function CreatePerson({ initialValues, onClose }: CreateProps) {
   const createPerson = useAction((store, details: PersonJSON) => {
     store.people.addPerson(details)
   }, [])
 
   return (
     <PersonDialog
+      initialValues={initialValues}
       onClose={onClose}
       onDone={createPerson}
     />

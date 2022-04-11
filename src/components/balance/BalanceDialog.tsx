@@ -27,10 +27,13 @@ const BalanceDialog = createEntityDialog<BalanceJSON>('balance', <CurrencyPound 
 })
 
 interface CreateProps {
+  initialValues?: Partial<BalanceJSON>
   onClose: () => void
 }
 
-export const CreateBalance = observer(function CreateBalance({ onClose }: CreateProps) {
+const DEFAULT = { value: 0 }
+
+export const CreateBalance = observer(function CreateBalance({ initialValues = DEFAULT, onClose }: CreateProps) {
   const createBalance = useAction((store, details: BalanceJSON) => {
     const account = store.accounts.getAccount(details.account)
     store.balances.addBalance({ ...details, account })
@@ -38,9 +41,7 @@ export const CreateBalance = observer(function CreateBalance({ onClose }: Create
 
   return (
     <BalanceDialog
-      initialValues={{
-        value: 0,
-      }}
+      initialValues={initialValues}
       onClose={onClose}
       onDone={createBalance}
     />

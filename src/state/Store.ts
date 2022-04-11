@@ -32,6 +32,10 @@ export class Store {
     return this.globalGrowth / 100
   }
 
+  get globalRatePercentage() {
+    return (this.globalRate * 100).toFixed(2).replace(/\.?0+$/, '')
+  }
+
   toggleShowAges() {
     this.showAges = !this.showAges
   }

@@ -6,14 +6,12 @@ import {
 import classNames from 'classnames'
 import { differenceInYears, format } from 'date-fns'
 import { observer } from 'mobx-react-lite'
-import { ComponentProps, Fragment, useState } from 'react'
+import { ComponentProps, Fragment } from 'react'
 import { getSavingsTable } from '../../selectors/savings'
-import { Balance } from '../../state/Balance'
 import { Period } from '../../state/Store'
+import { useIsDesktop } from '../../utils/breakpoints'
 import { toYYYYMM } from '../../utils/date'
-import { useBind, useBoolean } from '../../utils/hooks'
-import { useComputed, useStore } from '../../utils/mobx'
-import { CreateBalance, EditBalance } from '../balance/BalanceDialog'
+import { useComputed, useStore, useUI } from '../../utils/mobx'
 import { PeriodToggle } from '../common/PeriodToggle'
 import { ShowAgesToggle } from '../common/ShowAgesToggle'
 import { SpeedDial } from '../mui/SpeedDial'
@@ -74,10 +72,8 @@ const getButtonColour = (balance: number | undefined, predicted: number | undefi
 }
 
 export const Savings = observer(function Savings() {
-  const [isAddingBalance, openAddBalance, closeAddBalance] = useBoolean(false)
-  const [editingBalance, setEditingBalance] = useState<Balance>()
-  const closeEditBalance = useBind(setEditingBalance, undefined)
-
+  const isDesktop = useIsDesktop()
+  const ui = useUI()
   const store = useStore()
   const { period, showAges } = store
 
@@ -91,16 +87,10 @@ export const Savings = observer(function Savings() {
       <SpeedDial ariaLabel='savings-actions'>
         <SpeedDialAction
           icon={<CurrencyPound />}
-          onClick={openAddBalance}
+          onClick={ui.createBalance}
           tooltipTitle='Balance'
         />
       </SpeedDial>
-      {isAddingBalance && (
-        <CreateBalance onClose={closeAddBalance} />
-      )}
-      {editingBalance && (
-        <EditBalance balance={editingBalance} onClose={closeEditBalance} />
-      )}
       <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center', rowGap: 2, mb: 1, mt: 1 }}>
         <PeriodToggle sx={{ mr: 2 }} />
         <ShowAgesToggle sx={{ mr: 2 }} />
@@ -152,7 +142,8 @@ export const Savings = observer(function Savings() {
                 {row.accounts.map(({ id, balance, predicted }) =>
                   <Fragment key={id}>
                     <TableCell className={classNames('column-account column-balance', { 'has-balance': !!balance })} sx={getCellTextColour(balance?.value, predicted)}>
-                      {balance && <Button color={getButtonColour(balance.value, predicted)} onClick={() => setEditingBalance(balance)} endIcon={<Edit sx={{ fontSize: 'inherit !important' }} />} size='small' variant='outlined'>{balance.value.toFixed(2)}</Button>}
+                      {balance && <Button color={getButtonColour(balance.value, predicted)} onClick={() => ui.editBalance(balance)} endIcon={<Edit sx={{ fontSize: 'inherit !important' }} />} size='small' variant='outlined'>{balance.value.toFixed(2)}</Button>}
+                      {!balance && isDesktop && <Button className="add-balance" onClick={() => ui.createBalanceFrom({ date: toYYYYMM(row.date), account: id })} size='small' variant='outlined'>+</Button>}
                     </TableCell>
                     <TableCell className='column-account column-predicted' sx={COLOUR.GRAY}>
                       {predicted?.toFixed(2)}

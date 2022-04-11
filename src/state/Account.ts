@@ -52,7 +52,11 @@ export class Account {
   }
 
   get rate() {
-    return this.growth !== null ? this.growth / 100 : this.store.globalRate
+    return this.growth === null ? this.store.globalRate : this.growth / 100
+  }
+
+  get ratePercentage() {
+    return (this.rate * 100).toFixed(2).replace(/\.?0+$/, '')
   }
 
   // Annual Equivalence Rate

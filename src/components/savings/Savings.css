@@ -20,12 +20,24 @@ th.column-account,
   padding-right: 0
 }
 
-.has-balance.MuiTableCell-root {
+.MuiTableCell-root {
   padding-top: 0;
   padding-bottom: 0;
 }
 
-.has-balance .MuiButton-root {
+.MuiButton-root {
   padding-top: 0;
   padding-bottom: 0;
+}
+
+.add-balance {
+  width: 100%;
+}
+
+.column-balance .add-balance {
+  visibility: hidden;
+}
+
+.column-balance:hover .add-balance {
+  visibility: visible;
 }
