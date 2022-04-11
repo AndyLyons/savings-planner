@@ -40,8 +40,6 @@ export class Accounts {
     return accountId !== undefined && accountId in this.data
   }
 
-  removeAccount(account: Account): void
-  removeAccount(accountId: AccountId): void
   removeAccount(accountOrId: Account | AccountId) {
     const id = typeof accountOrId === 'string' ? accountOrId : accountOrId.id
     delete this.data[id]

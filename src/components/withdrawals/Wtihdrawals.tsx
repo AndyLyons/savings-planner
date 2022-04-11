@@ -6,9 +6,7 @@ import type { ComponentProps } from 'react'
 import { Period } from '../../state/Store'
 import { useStore } from '../../utils/mobx'
 import { PeriodToggle } from '../common/PeriodToggle'
-import { ShowAccountsToggle } from '../common/ShowAccountsToggle'
 import { ShowAgesToggle } from '../common/ShowAgesToggle'
-import { ShowHistoryToggle } from '../common/ShowHistoryToggle'
 
 // Empty cell which takes up all remaining space, causing other cells to
 // compress to the minimum width needed to fit their contents
@@ -33,7 +31,7 @@ function StickyCell(props: ComponentProps<typeof TableCell>) {
 
 export function Withdrawals() {
   const store = useStore()
-  const { period, showAges, showAccounts } = store
+  const { period, showAges } = store
 
   return (
     <Paper sx={{ p: 2 }}>
@@ -41,10 +39,8 @@ export function Withdrawals() {
         <Typography variant='h6' component='h2'>Withdrawals</Typography>
       </Breadcrumbs>
       <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center', rowGap: 2, mb: 1, mt: 1 }}>
-        <ShowHistoryToggle sx={{ mr: 2 }} />
         <PeriodToggle sx={{ mr: 2 }} />
         <ShowAgesToggle sx={{ mr: 2 }} />
-        <ShowAccountsToggle />
       </Box>
       <TableContainer>
         <Table size='small' sx={{ whiteSpace: 'nowrap' }}>
@@ -55,7 +51,7 @@ export function Withdrawals() {
                 <TableCell key={person.id}>{person.name}</TableCell>
               )}
               <TableCell>Withdrawn</TableCell>
-              {showAccounts && store.accounts.values.map(account =>
+              {store.accounts.values.map(account =>
                 <TableCell key={account.id}>{account.name} ({account.owner.name})</TableCell>
               )}
               <SpacerCell />
@@ -68,7 +64,7 @@ export function Withdrawals() {
                 <TableCell key={person.id}>35</TableCell>
               )}
               <TableCell>£0</TableCell>
-              {showAccounts && store.accounts.values.map(account =>
+              {store.accounts.values.map(account =>
                 <TableCell key={account.id}>£10</TableCell>
               )}
               <SpacerCell />
@@ -79,7 +75,7 @@ export function Withdrawals() {
                 <TableCell key={person.id}>35</TableCell>
               )}
               <TableCell>£0</TableCell>
-              {showAccounts && store.accounts.values.map(account =>
+              {store.accounts.values.map(account =>
                 <TableCell key={account.id}>£10</TableCell>
               )}
               <SpacerCell />

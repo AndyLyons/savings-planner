@@ -82,8 +82,11 @@ export function useEventState<T, P extends readonly any[]>(
 }
 
 export interface ChangeEvent { target: { value: string } }
+export interface CheckedEvent { target: { checked: boolean } }
 export interface SelectableEvent { target: { select: () => void } }
 
 export const selectTarget = (e: SelectableEvent) => e.target.select()
 export const getTargetValue = (e: ChangeEvent) => e.target.value
+export const getTargetChecked = (e: CheckedEvent) => e.target.checked
 export const useChangeEventState = (initialState: InitialState<string>) => useEventState(initialState, getTargetValue)
+export const useCheckedEventState = (initialState: InitialState<boolean>) => useEventState(initialState, getTargetChecked)

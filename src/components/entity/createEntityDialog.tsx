@@ -1,14 +1,14 @@
 import { Delete } from '@mui/icons-material'
 import { DatePicker } from '@mui/lab'
 import {
-  Button, Dialog, DialogActions, DialogContent,
-  DialogTitle, TextField, TextFieldProps
+  Button, Checkbox, Dialog, DialogActions, DialogContent,
+  DialogTitle, FormControlLabel, TextField, TextFieldProps
 } from '@mui/material'
 import { observer } from 'mobx-react-lite'
-import { cloneElement, ReactElement, useCallback, useReducer } from 'react'
+import { cloneElement, ReactElement, useCallback, useEffect, useReducer, useState } from 'react'
 import { fromYYYYMM, fromYYYYMMDD, isDate, toYYYYMM, toYYYYMMDD, YYYYMM, YYYYMMDD } from '../../utils/date'
 import { entries, KeyValues } from '../../utils/fn'
-import { getTargetValue, useKeyPress, useStopEvent } from '../../utils/hooks'
+import { CheckedEvent, getTargetChecked, getTargetValue, useCheckedEventState, useKeyPress, useStopEvent } from '../../utils/hooks'
 import { Autocomplete, IconField } from '../mui'
 
 type FieldType<T> =
@@ -25,6 +25,7 @@ type Fields<T> = {
     required?: boolean
     type: FieldType<T[P]>
     useOptions?: () => Array<{ id: string, label: string }>
+    useConstantOption?: () => { label: string, value: number }
   }
 }
 
@@ -42,7 +43,7 @@ export function createEntityDialog<T>(name: string, icon: ReactElement, fields: 
 
   const verifyState = (state: Partial<T>): state is T =>
     entries(fields).every(([name, config]) => {
-      return !config.required || state[name] != null
+      return !config.required || state[name] !== undefined
     })
 
   interface Props {
@@ -79,7 +80,7 @@ export function createEntityDialog<T>(name: string, icon: ReactElement, fields: 
           <DialogContent sx={{ display: 'flex', flexDirection: 'column' }}>
             {
               fieldEntries.map(([name, field], index) => {
-                const { type, icon, label, required, useOptions } = field
+                const { type, icon, label, required, useOptions, useConstantOption } = field
                 return (
                   <IconField key={`${name}`} icon={icon} sx={{ mt: index === 0 ? 1 : 0, mb: index < fieldEntries.length ? 2 : 0 }}>
                     {type === 'string' && useOptions && (() => {
@@ -120,7 +121,7 @@ export function createEntityDialog<T>(name: string, icon: ReactElement, fields: 
                         value={state[name] ?? ''}
                       />
                     )}
-                    {type === 'number' && (
+                    {type === 'number' && !useConstantOption && (
                       <TextField
                         fullWidth
                         label={label}
@@ -139,6 +140,48 @@ export function createEntityDialog<T>(name: string, icon: ReactElement, fields: 
                         value={`${state[name] ?? ''}`}
                       />
                     )}
+                    {type === 'number' && useConstantOption && (() => {
+                      // These is OK because the fields can't change at runtime
+                      // and will always run in exactly the same order
+
+                      /* eslint-disable react-hooks/rules-of-hooks */
+                      const { label: constantLabel, value: constantValue } = useConstantOption()
+                      /* eslint-enable react-hooks/rules-of-hooks */
+
+                      const value = state[name]
+
+                      return (
+                        <>
+                          <TextField
+                            disabled={value === null}
+                            label={label}
+                            onChange={(e) => {
+                              const value = getTargetValue(e)
+                              const parsed = parseFloat(value)
+                              dispatch({
+                                key: name,
+                                value: (Number.isNaN(parsed) ? undefined : parsed) as unknown as T[keyof T]
+                              })
+                            }}
+                            onKeyDown={onEnterKey}
+                            required={required}
+                            size='small'
+                            sx={{ width: '100px', mr: 1 }}
+                            type='number'
+                            value={`${value === null ? constantValue : value ?? ''}`}
+                          />
+                          <FormControlLabel label={constantLabel} control={
+                            <Checkbox checked={value === null} onChange={(e) => {
+                              const isChecked = getTargetChecked(e)
+                              dispatch({
+                                key: name,
+                                value: (isChecked ? null : constantValue) as unknown as T[keyof T]
+                              })
+                            }} />
+                          } />
+                        </>
+                      )
+                    })()}
                     {type === 'yyyymm' && (
                       <DatePicker
                         label={label}

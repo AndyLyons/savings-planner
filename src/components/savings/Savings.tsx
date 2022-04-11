@@ -1,22 +1,21 @@
-import { CurrencyPound } from '@mui/icons-material'
+import { CurrencyPound, Edit } from '@mui/icons-material'
 import {
-  Box, Breadcrumbs, Paper, SpeedDialAction, Table, TableBody, TableCell,
+  Box, Breadcrumbs, Button, Paper, SpeedDialAction, Table, TableBody, TableCell,
   TableContainer, TableHead, TableRow, Typography
 } from '@mui/material'
 import classNames from 'classnames'
 import { differenceInYears, format } from 'date-fns'
 import { observer } from 'mobx-react-lite'
-import { ComponentProps, useMemo } from 'react'
+import { ComponentProps, Fragment, useState } from 'react'
 import { getSavingsTable } from '../../selectors/savings'
+import { Balance } from '../../state/Balance'
 import { Period } from '../../state/Store'
 import { toYYYYMM } from '../../utils/date'
-import { useBoolean } from '../../utils/hooks'
+import { useBind, useBoolean } from '../../utils/hooks'
 import { useComputed, useStore } from '../../utils/mobx'
-import { CreateBalance } from '../balance/BalanceDialog'
+import { CreateBalance, EditBalance } from '../balance/BalanceDialog'
 import { PeriodToggle } from '../common/PeriodToggle'
-import { ShowAccountsToggle } from '../common/ShowAccountsToggle'
 import { ShowAgesToggle } from '../common/ShowAgesToggle'
-import { ShowHistoryToggle } from '../common/ShowHistoryToggle'
 import { SpeedDial } from '../mui/SpeedDial'
 import './Savings.css'
 
@@ -38,42 +37,54 @@ function StickyCell(props: ComponentProps<typeof TableCell>) {
         backgroundColor: 'white',
         left: 0,
         position: 'sticky',
+        zIndex: 1,
         ...props.sx
       }}
     />
   )
 }
 
+const COLOUR = {
+  NONE: {},
+  RED: { color: 'red' },
+  GREEN: { color: 'green' },
+  GRAY: { color: 'gray' }
+}
+
+const getDirection = (balance: number | undefined, predicted: number | undefined) => {
+  return balance && predicted ? balance >= predicted : null
+}
+
+const getCellTextColour = (balance: number | undefined, predicted: number | undefined) => {
+  const direction = getDirection(balance, predicted)
+  if (direction === null) {
+    return COLOUR.NONE
+  }
+
+  return direction ? COLOUR.GREEN : COLOUR.RED
+}
+
+const getButtonColour = (balance: number | undefined, predicted: number | undefined) => {
+  const direction = getDirection(balance, predicted)
+  if (direction === null) {
+    return 'primary'
+  }
+
+  return direction ? 'success' : 'error'
+}
+
 export const Savings = observer(function Savings() {
   const [isAddingBalance, openAddBalance, closeAddBalance] = useBoolean(false)
+  const [editingBalance, setEditingBalance] = useState<Balance>()
+  const closeEditBalance = useBind(setEditingBalance, undefined)
 
   const store = useStore()
-  const { period, showAges, showAccounts } = store
+  const { period, showAges } = store
 
   const savingsTable = useComputed(getSavingsTable, [])
 
-  const rows = useMemo(() => (
-    savingsTable.map(row =>
-      (
-        <TableRow key={toYYYYMM(row.date)} className={row.date.getMonth() === 0 ? 'row-jan' : 'row-not-jan'}>
-          <StickyCell>{formatMonthYear(row.date)}</StickyCell>
-          {row.ages.map(({ id, dob }) =>
-            <TableCell key={id} className='column-age'>{getAgeAtDate(dob, row.date)}</TableCell>
-          )}
-          <TableCell>£{row.balance}</TableCell>
-          {row.accounts.map(({ id, balance }) =>
-            <TableCell key={id} className='column-account'>
-              £{balance}
-            </TableCell>
-          )}
-          <SpacerCell />
-        </TableRow>
-      )
-    )
-  ), [savingsTable])
-
   return (
-    <Paper sx={{ p: 2 }}>
+    <Paper className='screen-savings' sx={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', p: 2 }}>
       <Breadcrumbs>
         <Typography variant='h6' component='h2'>Balances</Typography>
       </Breadcrumbs>
@@ -87,23 +98,32 @@ export const Savings = observer(function Savings() {
       {isAddingBalance && (
         <CreateBalance onClose={closeAddBalance} />
       )}
+      {editingBalance && (
+        <EditBalance balance={editingBalance} onClose={closeEditBalance} />
+      )}
       <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center', rowGap: 2, mb: 1, mt: 1 }}>
-        <ShowHistoryToggle sx={{ mr: 2 }} />
         <PeriodToggle sx={{ mr: 2 }} />
         <ShowAgesToggle sx={{ mr: 2 }} />
-        <ShowAccountsToggle />
       </Box>
       <TableContainer>
-        <Table size='small' sx={{ whiteSpace: 'nowrap' }}>
+        <Table stickyHeader size='small' sx={{ whiteSpace: 'nowrap' }}>
           <TableHead>
             <TableRow>
-              <StickyCell>Period</StickyCell>
-              {showAges && store.people.values.map(person =>
-                <TableCell key={person.id}>{person.name}</TableCell>
+              <TableCell className='column-period' sx={{ left: 0, zIndex: 3 }}>
+                Period
+              </TableCell>
+              {showAges && store.people.values.map((person, i) =>
+                <TableCell className={classNames('column-age', { 'column-age-last': i === store.people.values.length - 1 })} key={person.id}>
+                  {person.name}
+                </TableCell>
               )}
-              <TableCell>Balance</TableCell>
-              {showAccounts && store.accounts.values.map(account =>
-                <TableCell key={account.id}>{account.name} ({account.owner.name})</TableCell>
+              <TableCell className='column-total' colSpan={2}>
+                Total (£)
+              </TableCell>
+              {store.accounts.values.map(account =>
+                <TableCell className='column-account' colSpan={2} key={account.id}>
+                  {account.name} ({account.owner.name})
+                </TableCell>
               )}
               <SpacerCell />
             </TableRow>
@@ -111,10 +131,37 @@ export const Savings = observer(function Savings() {
           <TableBody className={classNames({
             'period-month': period === Period.MONTH,
             'period-year': period === Period.YEAR,
-            'hide-ages': !showAges,
-            'hide-accounts': !showAccounts
+            'hide-ages': !showAges
           })}>
-            {rows}
+            {savingsTable.map(row => (
+              <TableRow key={toYYYYMM(row.date)} className={row.date.getMonth() === 0 ? 'row-jan' : 'row-not-jan'}>
+                <StickyCell className='column-period'>
+                  {formatMonthYear(row.date)}
+                </StickyCell>
+                {row.ages.map(({ id, dob }, i) =>
+                  <TableCell key={id} className={classNames('column-age', { 'column-age-last': i === row.ages.length - 1 })} >
+                    {getAgeAtDate(dob, row.date)}
+                  </TableCell>
+                )}
+                <TableCell className='column-total column-balance' sx={getCellTextColour(row.totalBalance, row.totalPredicted)}>
+                  {row.totalBalance?.toFixed(2)}
+                </TableCell>
+                <TableCell className='column-total column-predicted' sx={COLOUR.GRAY}>
+                  {row.totalPredicted?.toFixed(2)}
+                </TableCell>
+                {row.accounts.map(({ id, balance, predicted }) =>
+                  <Fragment key={id}>
+                    <TableCell className={classNames('column-account column-balance', { 'has-balance': !!balance })} sx={getCellTextColour(balance?.value, predicted)}>
+                      {balance && <Button color={getButtonColour(balance.value, predicted)} onClick={() => setEditingBalance(balance)} endIcon={<Edit sx={{ fontSize: 'inherit !important' }} />} size='small' variant='outlined'>{balance.value.toFixed(2)}</Button>}
+                    </TableCell>
+                    <TableCell className='column-account column-predicted' sx={COLOUR.GRAY}>
+                      {predicted?.toFixed(2)}
+                    </TableCell>
+                  </Fragment>
+                )}
+                <SpacerCell />
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
       </TableContainer>

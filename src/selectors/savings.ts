@@ -1,43 +1,65 @@
-import { addMonths, isBefore, min } from 'date-fns';
+import { addMonths, isBefore } from 'date-fns';
 import type { AccountId } from '../state/Account';
+import { Balance } from '../state/Balance';
 import type { PersonId } from '../state/Person';
 import type { Store } from '../state/Store';
-import { fromYYYYMM, fromYYYYMMDD } from '../utils/date';
+import { fromYYYYMMDD, toYYYYMM } from '../utils/date';
 
 type SavingsRow = {
-  accounts: Array<{ id: AccountId, balance: number, interpolated: boolean }>
+  accounts: Array<{
+    id: AccountId,
+    balance: Balance | undefined,
+    predicted: number | undefined
+  }>
   ages: Array<{ id: PersonId, dob: Date }>
-  balance: number
+  totalBalance: number | undefined
+  totalPredicted: number | undefined
   date: Date
 }
 
-const getStartDate = (store: Store) => {
-  const earliestBalance = store.balances.earliestBalance
-  const earliestDate = earliestBalance
-    ? min([fromYYYYMM(earliestBalance), new Date()])
-    : new Date()
-  return new Date(earliestDate.getFullYear(), 0, 1)
-}
-
-// For now hard coded until 2070
+// For now hard coded
+const startDate = new Date(2020, 0, 1)
 const endDate = new Date(2070, 0, 1)
 
 export const getSavingsTable = (store: Store) => {
   const table = [] as Array<SavingsRow>
 
-  let date = getStartDate(store)
+  for (let date = startDate; isBefore(date, endDate); date = addMonths(date, 1)) {
+    const yyyymm = toYYYYMM(date)
+    const previous = table.length === 0 ? null : table[table.length - 1]
 
-  do {
-    table.push({
-      date,
-      balance: 0,
-      accounts: store.accounts.values.map(account => ({ id: account.id, balance: 0, interpolated: true })),
-      // eslint-disable-next-line no-loop-func
-      ages: store.people.values.map(person => ({ id: person.id, dob: fromYYYYMMDD(person.dob) }))
+    const accounts = store.accounts.values.map((account, i) => {
+      const previousBalance =
+        previous?.accounts[i].balance?.value
+        ?? previous?.accounts[i].predicted
+
+      const balance = account.balanceAtDate(yyyymm)
+
+      return ({
+        id: account.id,
+        balance: balance,
+        predicted: previousBalance ? previousBalance * (1 + account.mer) : undefined,
+      })
     })
 
-    date = addMonths(date, 1)
-  } while (isBefore(date, endDate))
+    const hasBalance = accounts.some(account => account.balance)
+    const totalBalance = hasBalance
+      ? accounts.reduce((total, account) => total + (account.balance?.value ?? account.predicted ?? 0), 0)
+      : undefined
+
+    const hasPredicted = accounts.some(account => account.predicted !== undefined)
+    const totalPredicted = hasPredicted
+      ? accounts.reduce((total, account) => total + (account.predicted ?? 0), 0)
+      : undefined
+
+    table.push({
+      date,
+      accounts,
+      ages: store.people.values.map(person => ({ id: person.id, dob: fromYYYYMMDD(person.dob) })),
+      totalBalance,
+      totalPredicted
+    })
+  }
 
   return table
 }

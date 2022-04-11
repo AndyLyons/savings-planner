@@ -11,8 +11,10 @@ interface Props {
 export const PeriodToggle = observer(function PeriodToggle({ sx }: Props) {
   const period = useStore(store => store.period)
 
-  const onPeriodToggle = useAction((store, _: unknown, value: Period) => {
-    store.period = value
+  const onPeriodToggle = useAction((store, _: unknown, value: Period | null) => {
+    if (value) {
+      store.period = value
+    }
   }, [])
 
   return (

@@ -1,8 +1,31 @@
-.period-year .row-not-jan {
+.period-year .row-not-jan,
+.hide-ages .column-age {
   display: none;
 }
 
-.hide-ages .column-age,
-.hide-accounts .column-account {
-  display: none;
+th.column-total,
+th.column-account {
+  text-align: center;
+}
+
+th.column-total,
+th.column-account,
+.column-period,
+.column-age-last,
+.column-predicted {
+  border-right: 1px solid rgba(224, 224, 224, 1);
+}
+
+.column-balance.MuiTableCell-root {
+  padding-right: 0
+}
+
+.has-balance.MuiTableCell-root {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.has-balance .MuiButton-root {
+  padding-top: 0;
+  padding-bottom: 0;
 }

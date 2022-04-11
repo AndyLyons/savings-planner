@@ -15,10 +15,9 @@ export enum Period {
 export type StoreJSON = typeof Store.prototype.json
 
 export class Store {
+  globalGrowth: number = 4
   period: Period = Period.YEAR
   showAges: boolean = false
-  showAccounts: boolean = true
-  showHistory: boolean = true
 
   menu: Menu = new Menu(this)
   accounts: Accounts = new Accounts(this)
@@ -29,26 +28,21 @@ export class Store {
     makeAutoObservable(this, undefined, { autoBind: true })
   }
 
+  get globalRate() {
+    return this.globalGrowth / 100
+  }
+
   toggleShowAges() {
     this.showAges = !this.showAges
-  }
-
-  toggleShowAccounts() {
-    this.showAccounts = !this.showAccounts
-  }
-
-  toggleShowHistory() {
-    this.showHistory = !this.showHistory
   }
 
   get json() {
     return {
       ...extract(
         this,
+        'globalGrowth',
         'period',
-        'showAges',
-        'showAccounts',
-        'showHistory'
+        'showAges'
       ),
 
       people: this.people.toJSON(),
@@ -62,10 +56,9 @@ export class Store {
   }
 
   restoreSnapshot(snapshot: StoreJSON) {
+    this.globalGrowth = snapshot.globalGrowth
     this.period = snapshot.period
     this.showAges = snapshot.showAges
-    this.showAccounts = snapshot.showAccounts
-    this.showHistory = snapshot.showHistory
 
     this.people.restoreSnapshot(snapshot.people)
     this.accounts.restoreSnapshot(snapshot.accounts)

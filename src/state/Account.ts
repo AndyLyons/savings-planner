@@ -1,5 +1,7 @@
 import { makeAutoObservable } from 'mobx'
+import { computedFn } from 'mobx-utils'
 import { nanoid } from 'nanoid'
+import { YYYYMM } from '../utils/date'
 import { extract } from '../utils/fn'
 import type { Person } from './Person'
 import type { Store } from './Store'
@@ -9,7 +11,8 @@ export type AccountId = string & { __accountId__: never }
 export type AccountDetails = {
   id: AccountId
   name: string
-  growth: number
+  growth: number | null
+  compoundPeriod: number
   owner: Person
 }
 
@@ -22,8 +25,9 @@ export class Account {
   name: AccountDetails['name']
   growth: AccountDetails['growth']
   owner: AccountDetails['owner']
+  compoundPeriod: AccountDetails['compoundPeriod']
 
-  constructor(store: Store, { id, name, growth, owner }: AccountDetails) {
+  constructor(store: Store, { id, name, growth, owner, compoundPeriod }: AccountDetails) {
     makeAutoObservable(this, { store: false }, { autoBind: true })
 
     this.store = store
@@ -31,6 +35,7 @@ export class Account {
     this.id = id
     this.name = name
     this.growth = growth
+    this.compoundPeriod = compoundPeriod
     this.owner = owner
   }
 
@@ -46,13 +51,31 @@ export class Account {
     return new Account(store, { ...json, owner })
   }
 
+  get rate() {
+    return this.growth !== null ? this.growth / 100 : this.store.globalRate
+  }
+
+  // Annual Equivalence Rate
+  get aer() {
+    return Math.pow(1 + this.rate/this.compoundPeriod, this.compoundPeriod) - 1
+  }
+
+  // Monthly Equivalence Rate
+  get mer() {
+    return Math.pow(1 + this.aer, 1/12) - 1
+  }
+
   get balances() {
     return this.store.balances.values.filter(balance => balance.account === this)
   }
 
+  balanceAtDate = computedFn((date: YYYYMM) =>
+    this.balances.find(balance => balance.date === date)
+  )
+
   get json() {
     return {
-      ...extract(this, 'id', 'name', 'growth'),
+      ...extract(this, 'id', 'name', 'growth', 'compoundPeriod'),
       owner: this.owner.id
     }
   }

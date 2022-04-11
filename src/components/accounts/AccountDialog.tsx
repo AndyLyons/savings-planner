@@ -1,4 +1,4 @@
-import { AccountBalance, Percent, Person, ShortText } from '@mui/icons-material'
+import { AccessTime, AccountBalance, Percent, Person, ShortText } from '@mui/icons-material'
 import { observer } from 'mobx-react-lite'
 import { Account, AccountJSON } from '../../state/Account'
 import { useAction, useStore } from '../../utils/mobx'
@@ -22,6 +22,16 @@ const AccountDialog = createEntityDialog<AccountJSON>('account', <AccountBalance
     type: 'number',
     label: 'Growth rate',
     icon: <Percent />,
+    required: true,
+    useConstantOption: () => {
+      const value = useStore(store => store.globalGrowth)
+      return { label: 'Use market growth?', value }
+    }
+  },
+  compoundPeriod: {
+    type: 'number',
+    label: 'Compounds per year',
+    icon: <AccessTime />,
     required: true
   }
 })
@@ -39,7 +49,8 @@ export const CreateAccount = observer(function CreateAccount({ onClose }: Create
   return (
     <AccountDialog
       initialValues={{
-        growth: 0
+        growth: 0,
+        compoundPeriod: 1
       }}
       onClose={onClose}
       onDone={createAccount}
@@ -56,6 +67,7 @@ export const EditAccount = observer(function EditAccount({ account, onClose }: E
   const onEdit = useAction((store, details: AccountJSON) => {
     account.name = details.name
     account.growth = details.growth
+    account.compoundPeriod = details.compoundPeriod
     account.owner = store.people.getPerson(details.owner)
   }, [account])
 

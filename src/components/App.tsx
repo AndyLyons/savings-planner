@@ -12,13 +12,19 @@ import { Savings } from './savings/Savings';
 import { Settings } from './Settings';
 import { Withdrawals } from './withdrawals/Wtihdrawals';
 
-const theme = createTheme({
+export const theme = createTheme({
   palette: {
     background: {
       default: '#f5f5f5'
     }
   }
 })
+
+export const darkTheme = createTheme({
+  palette: {
+    mode: 'dark',
+  },
+});
 
 export const App = observer(function App() {
   const store = useStore()

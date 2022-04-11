@@ -18,17 +18,9 @@ export class Balances {
   }
 
   get values() {
-    return Object.values(this.data)
-  }
-
-  get earliestBalance() {
-    return this.values.length > 0
-      ? this.values.map(({ date }) => date)
-        .reduce((earliest, current) =>
-          Number.parseInt(current) < Number.parseInt(earliest)
-            ? current
-            : earliest)
-      : null
+    return Object.values(this.data).sort(
+      (balance1, balance2) => Number(balance1) - Number(balance2)
+    )
   }
 
   addBalance(details: Omit<BalanceDetails, 'id'>) {
