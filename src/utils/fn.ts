@@ -1,6 +1,5 @@
-type Values<T> = T[keyof T]
-export type KeyValues<T> = Values<{ [P in keyof T]: { key: P, value: T[P] } }>
-export type KeyValuePairs<T> = Values<{ [P in keyof T]: [P, T[P]] }>
+export type KeyValues<T> = { [P in keyof T]: { key: P, value: T[P] } }[keyof T]
+export type KeyValuePairs<T> = { [P in keyof T]: [P, T[P]] }[keyof T]
 
 export function extract<T, K extends Array<keyof T>>(source: T, ...keys: K) {
   const extracted = {} as Pick<T, K[number]>

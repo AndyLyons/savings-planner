@@ -1,6 +1,7 @@
 import { makeAutoObservable } from 'mobx'
-import { keys } from '../utils/fn'
-import type { BalanceDetails, BalanceId } from './Balance'
+import { YYYYMM } from '../utils/date'
+import { entries, keys } from '../utils/fn'
+import type { BalanceDetails } from './Balance'
 import { Balance } from './Balance'
 import type { Store } from './Store'
 
@@ -9,7 +10,7 @@ export type BalancesJSON = typeof Balances.prototype.json
 export class Balances {
   store: Store
 
-  data: Record<BalanceId, Balance> = {}
+  data: Record<YYYYMM, Balance> = {}
 
   constructor(store: Store) {
     makeAutoObservable(this, { store: false }, { autoBind: true })
@@ -17,15 +18,13 @@ export class Balances {
     this.store = store
   }
 
-  get values() {
-    return Object.values(this.data).sort(
-      (balance1, balance2) => Number(balance1) - Number(balance2)
-    )
+  get entries() {
+    return entries(this.data)
   }
 
-  addBalance(details: Omit<BalanceDetails, 'id'>) {
+  addBalance(details: BalanceDetails) {
     const balance = Balance.create(this.store, details)
-    this.data[balance.id] = balance
+    this.data[balance.date] = balance
   }
 
   clear() {
@@ -34,19 +33,15 @@ export class Balances {
     })
   }
 
-  getBalance(balanceId: BalanceId): Balance {
-    return this.data[balanceId]
-  }
-
-  isBalanceId(balanceId: string | undefined): balanceId is BalanceId {
-    return balanceId !== undefined && balanceId in this.data
+  getBalance(date: YYYYMM): Balance {
+    return this.data[date]
   }
 
   removeBalance(balance: Balance): void
-  removeBalance(balanceId: BalanceId): void
-  removeBalance(balanceOrId: Balance | BalanceId) {
-    const id = typeof balanceOrId === 'string' ? balanceOrId : balanceOrId.id
-    delete this.data[id]
+  removeBalance(date: YYYYMM): void
+  removeBalance(balanceOrDate: Balance | YYYYMM) {
+    const date = balanceOrDate instanceof Balance ? balanceOrDate.date : balanceOrDate
+    delete this.data[date]
   }
 
   restoreSnapshot(snapshot: BalancesJSON) {
@@ -58,7 +53,7 @@ export class Balances {
   }
 
   get json() {
-    return this.values.map(balance => balance.toJSON())
+    return Object.values(this.data).map(balance => balance.toJSON())
   }
 
   toJSON() {

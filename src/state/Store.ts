@@ -2,7 +2,6 @@ import { makeAutoObservable } from 'mobx'
 import React from 'react'
 import { extract } from '../utils/fn'
 import { Accounts } from './Accounts'
-import { Balances } from './Balances'
 import { Menu } from './Menu'
 import { People } from './People'
 import { Persistence } from './Persistence'
@@ -21,7 +20,6 @@ export class Store {
 
   menu: Menu = new Menu(this)
   accounts: Accounts = new Accounts(this)
-  balances: Balances = new Balances(this)
   people: People = new People(this)
 
   constructor() {
@@ -51,7 +49,6 @@ export class Store {
 
       people: this.people.toJSON(),
       accounts: this.accounts.toJSON(),
-      balances: this.balances.toJSON()
     }
   }
 
@@ -66,7 +63,6 @@ export class Store {
 
     this.people.restoreSnapshot(snapshot.people)
     this.accounts.restoreSnapshot(snapshot.accounts)
-    this.balances.restoreSnapshot(snapshot.balances)
   }
 }
 

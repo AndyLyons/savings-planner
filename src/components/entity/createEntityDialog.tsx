@@ -5,10 +5,10 @@ import {
   DialogTitle, FormControlLabel, TextField, TextFieldProps
 } from '@mui/material'
 import { observer } from 'mobx-react-lite'
-import { cloneElement, ReactElement, useCallback, useEffect, useReducer, useState } from 'react'
+import { cloneElement, ReactElement, useCallback, useReducer } from 'react'
 import { fromYYYYMM, fromYYYYMMDD, isDate, toYYYYMM, toYYYYMMDD, YYYYMM, YYYYMMDD } from '../../utils/date'
 import { entries, KeyValues } from '../../utils/fn'
-import { CheckedEvent, getTargetChecked, getTargetValue, useCheckedEventState, useKeyPress, useStopEvent } from '../../utils/hooks'
+import { getTargetChecked, getTargetValue, useKeyPress, useStopEvent } from '../../utils/hooks'
 import { Autocomplete, IconField } from '../mui'
 
 type FieldType<T> =
@@ -22,6 +22,7 @@ type Fields<T> = {
   [P in keyof Partial<T>]: {
     icon: ReactElement
     label: string
+    readonly?: boolean
     required?: boolean
     type: FieldType<T[P]>
     useOptions?: () => Array<{ id: string, label: string }>
@@ -54,7 +55,8 @@ export function createEntityDialog<T>(name: string, icon: ReactElement, fields: 
   }
 
   const EntityDialog = observer(function EntityDialog({ initialValues, onClose, onDelete, onDone }: Props) {
-    const title = onDelete ? 'Edit' : 'Create'
+    const isEdit = Boolean(onDelete)
+    const title = isEdit ? 'Edit' : 'Create'
 
     const [state, dispatch] = useReducer(reducer, initialValues ?? {})
     const isValid = verifyState(state)
@@ -80,7 +82,7 @@ export function createEntityDialog<T>(name: string, icon: ReactElement, fields: 
           <DialogContent sx={{ display: 'flex', flexDirection: 'column' }}>
             {
               fieldEntries.map(([name, field], index) => {
-                const { type, icon, label, required, useOptions, useConstantOption } = field
+                const { type, icon, label, readonly, required, useOptions, useConstantOption } = field
                 return (
                   <IconField key={`${name}`} icon={icon} sx={{ mt: index === 0 ? 1 : 0, mb: index < fieldEntries.length ? 2 : 0 }}>
                     {type === 'string' && useOptions && (() => {
@@ -90,6 +92,7 @@ export function createEntityDialog<T>(name: string, icon: ReactElement, fields: 
                       const options = useOptions()
                       return (
                         <Autocomplete
+                          disabled={isEdit && readonly}
                           label={label}
                           getOptionLabel={(optionId) => options.find(({ id }) => id === optionId)?.label ?? ''}
                           onChange={(value) => dispatch({
@@ -105,6 +108,7 @@ export function createEntityDialog<T>(name: string, icon: ReactElement, fields: 
                     })()}
                     {type === 'string' && !useOptions && (
                       <TextField
+                        disabled={isEdit && readonly}
                         fullWidth
                         label={label}
                         onChange={(e) => {
@@ -123,6 +127,7 @@ export function createEntityDialog<T>(name: string, icon: ReactElement, fields: 
                     )}
                     {type === 'number' && !useConstantOption && (
                       <TextField
+                        disabled={isEdit && readonly}
                         fullWidth
                         label={label}
                         onChange={(e) => {
@@ -153,7 +158,7 @@ export function createEntityDialog<T>(name: string, icon: ReactElement, fields: 
                       return (
                         <>
                           <TextField
-                            disabled={value === null}
+                            disabled={value === null || (isEdit && readonly)}
                             label={label}
                             onChange={(e) => {
                               const value = getTargetValue(e)
@@ -184,6 +189,7 @@ export function createEntityDialog<T>(name: string, icon: ReactElement, fields: 
                     })()}
                     {type === 'yyyymm' && (
                       <DatePicker
+                        disabled={isEdit && readonly}
                         label={label}
                         onChange={(value) => dispatch({
                           key: name,
@@ -204,6 +210,7 @@ export function createEntityDialog<T>(name: string, icon: ReactElement, fields: 
                     )}
                     {type === 'yyyymmdd' && (
                       <DatePicker
+                        disabled={isEdit && readonly}
                         label={label}
                         onChange={(value) => dispatch({
                           key: name,

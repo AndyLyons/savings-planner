@@ -1,83 +1,22 @@
-import { CurrencyPound, Edit } from '@mui/icons-material'
+import { CurrencyPound } from '@mui/icons-material'
 import {
-  Box, Breadcrumbs, Button, Paper, SpeedDialAction, Table, TableBody, TableCell,
+  Box, Breadcrumbs, Paper, SpeedDialAction, Table, TableBody, TableCell,
   TableContainer, TableHead, TableRow, Typography
 } from '@mui/material'
 import classNames from 'classnames'
-import { differenceInYears, format } from 'date-fns'
 import { observer } from 'mobx-react-lite'
-import { ComponentProps, Fragment } from 'react'
-import { getSavingsTable } from '../../selectors/savings'
 import { Period } from '../../state/Store'
-import { useIsDesktop } from '../../utils/breakpoints'
-import { toYYYYMM } from '../../utils/date'
-import { useComputed, useStore, useUI } from '../../utils/mobx'
+import { useStore, useUI } from '../../utils/mobx'
 import { PeriodToggle } from '../common/PeriodToggle'
 import { ShowAgesToggle } from '../common/ShowAgesToggle'
 import { SpeedDial } from '../mui/SpeedDial'
 import './Savings.css'
-
-const formatMonthYear = (date: Date) => format(date, 'MMM yyyy')
-const getAgeAtDate = (dob: Date, date: Date) => differenceInYears(date, dob)
-
-// Empty cell which takes up all remaining space, causing other cells to
-// compress to the minimum width needed to fit their contents
-function SpacerCell() {
-  return <TableCell sx={{ p: 0 }} width='100%' />
-}
-
-function StickyCell(props: ComponentProps<typeof TableCell>) {
-  return (
-    <TableCell
-      {...props}
-      sx={{
-        backgroundClip: 'padding-box',
-        backgroundColor: 'white',
-        left: 0,
-        position: 'sticky',
-        zIndex: 1,
-        ...props.sx
-      }}
-    />
-  )
-}
-
-const COLOUR = {
-  NONE: {},
-  RED: { color: 'red' },
-  GREEN: { color: 'green' },
-  GRAY: { color: 'gray' }
-}
-
-const getDirection = (balance: number | undefined, predicted: number | undefined) => {
-  return balance && predicted ? balance >= predicted : null
-}
-
-const getCellTextColour = (balance: number | undefined, predicted: number | undefined) => {
-  const direction = getDirection(balance, predicted)
-  if (direction === null) {
-    return COLOUR.NONE
-  }
-
-  return direction ? COLOUR.GREEN : COLOUR.RED
-}
-
-const getButtonColour = (balance: number | undefined, predicted: number | undefined) => {
-  const direction = getDirection(balance, predicted)
-  if (direction === null) {
-    return 'primary'
-  }
-
-  return direction ? 'success' : 'error'
-}
+import { SavingsRows, SpacerCell } from './SavingsRows'
 
 export const Savings = observer(function Savings() {
-  const isDesktop = useIsDesktop()
   const ui = useUI()
   const store = useStore()
   const { period, showAges } = store
-
-  const savingsTable = useComputed(getSavingsTable, [])
 
   return (
     <Paper className='screen-savings' sx={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', p: 2 }}>
@@ -123,36 +62,7 @@ export const Savings = observer(function Savings() {
             'period-year': period === Period.YEAR,
             'hide-ages': !showAges
           })}>
-            {savingsTable.map(row => (
-              <TableRow key={toYYYYMM(row.date)} className={row.date.getMonth() === 0 ? 'row-jan' : 'row-not-jan'}>
-                <StickyCell className='column-period'>
-                  {formatMonthYear(row.date)}
-                </StickyCell>
-                {row.ages.map(({ id, dob }, i) =>
-                  <TableCell key={id} className={classNames('column-age', { 'column-age-last': i === row.ages.length - 1 })} >
-                    {getAgeAtDate(dob, row.date)}
-                  </TableCell>
-                )}
-                <TableCell className='column-total column-balance' sx={getCellTextColour(row.totalBalance, row.totalPredicted)}>
-                  {row.totalBalance?.toFixed(2)}
-                </TableCell>
-                <TableCell className='column-total column-predicted' sx={COLOUR.GRAY}>
-                  {row.totalPredicted?.toFixed(2)}
-                </TableCell>
-                {row.accounts.map(({ id, balance, predicted }) =>
-                  <Fragment key={id}>
-                    <TableCell className={classNames('column-account column-balance', { 'has-balance': !!balance })} sx={getCellTextColour(balance?.value, predicted)}>
-                      {balance && <Button color={getButtonColour(balance.value, predicted)} onClick={() => ui.editBalance(balance)} endIcon={<Edit sx={{ fontSize: 'inherit !important' }} />} size='small' variant='outlined'>{balance.value.toFixed(2)}</Button>}
-                      {!balance && isDesktop && <Button className="add-balance" onClick={() => ui.createBalanceFrom({ date: toYYYYMM(row.date), account: id })} size='small' variant='outlined'>+</Button>}
-                    </TableCell>
-                    <TableCell className='column-account column-predicted' sx={COLOUR.GRAY}>
-                      {predicted?.toFixed(2)}
-                    </TableCell>
-                  </Fragment>
-                )}
-                <SpacerCell />
-              </TableRow>
-            ))}
+            <SavingsRows />
           </TableBody>
         </Table>
       </TableContainer>

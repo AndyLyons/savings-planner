@@ -1,8 +1,8 @@
 import { makeAutoObservable } from 'mobx'
-import { computedFn } from 'mobx-utils'
 import { nanoid } from 'nanoid'
 import { YYYYMM } from '../utils/date'
 import { extract } from '../utils/fn'
+import { Balances } from './Balances'
 import type { Person } from './Person'
 import type { Store } from './Store'
 
@@ -27,6 +27,8 @@ export class Account {
   owner: AccountDetails['owner']
   compoundPeriod: AccountDetails['compoundPeriod']
 
+  balances: Balances
+
   constructor(store: Store, { id, name, growth, owner, compoundPeriod }: AccountDetails) {
     makeAutoObservable(this, { store: false }, { autoBind: true })
 
@@ -37,6 +39,8 @@ export class Account {
     this.growth = growth
     this.compoundPeriod = compoundPeriod
     this.owner = owner
+
+    this.balances = new Balances(store)
   }
 
   static create(store: Store, details: Omit<AccountDetails, 'id'>) {
@@ -47,8 +51,11 @@ export class Account {
   }
 
   static fromJSON(store: Store, json: AccountJSON) {
-    const owner = store.people.getPerson(json.owner)
-    return new Account(store, { ...json, owner })
+    const { owner: ownerId, balances, ...rest } = json
+    const owner = store.people.getPerson(ownerId)
+    const account = new Account(store, { ...rest, owner })
+    account.balances.restoreSnapshot(balances)
+    return account
   }
 
   get rate() {
@@ -69,18 +76,23 @@ export class Account {
     return Math.pow(1 + this.aer, 1/12) - 1
   }
 
-  get balances() {
-    return this.store.balances.values.filter(balance => balance.account === this)
+  // get balances() {
+  //   return this.store.balances.values.filter(balance => balance.account === this)
+  // }
+
+  balanceAtDate(date: YYYYMM) {
+    return this.balances.getBalance(date)
   }
 
-  balanceAtDate = computedFn((date: YYYYMM) =>
-    this.balances.find(balance => balance.date === date)
-  )
+  // interpolateBalance = computedFn((date: YYYYMM) => {
+
+  // })
 
   get json() {
     return {
       ...extract(this, 'id', 'name', 'growth', 'compoundPeriod'),
-      owner: this.owner.id
+      owner: this.owner.id,
+      balances: this.balances.toJSON()
     }
   }
 

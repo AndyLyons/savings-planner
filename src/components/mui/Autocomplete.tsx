@@ -3,16 +3,18 @@ import { ComponentProps, useCallback } from 'react'
 import { useBoolean } from '../../utils/hooks'
 
 interface Props<T extends string> {
-  getOptionLabel: (id: T) => string,
-  label: ComponentProps<typeof TextField>['label'],
-  onChange: (id: T) => void,
+  disabled?: boolean
+  getOptionLabel: (id: T) => string
+  label: ComponentProps<typeof TextField>['label']
+  onChange: (id: T) => void
   onKeyDown: ComponentProps<typeof TextField>['onKeyDown']
-  options: Array<T>,
-  required: ComponentProps<typeof TextField>['required'],
-  value: T,
+  options: Array<T>
+  required: ComponentProps<typeof TextField>['required']
+  value: T
 }
 
 export function Autocomplete<T extends string>({
+  disabled,
   getOptionLabel,
   label,
   onChange,
@@ -28,6 +30,7 @@ export function Autocomplete<T extends string>({
     <MUIAutocomplete
       autoHighlight
       disableClearable
+      disabled={disabled}
       fullWidth
       getOptionLabel={getOptionLabel}
       multiple={false}

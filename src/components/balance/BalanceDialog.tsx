@@ -1,15 +1,21 @@
 import { AccountBalance, CurrencyPound, Event } from '@mui/icons-material'
 import { observer } from 'mobx-react-lite'
+import { AccountId } from '../../state/Account'
 import type { Balance, BalanceJSON } from '../../state/Balance'
 import { useAction, useStore } from '../../utils/mobx'
 import { createEntityDialog } from '../entity/createEntityDialog'
 
-const BalanceDialog = createEntityDialog<BalanceJSON>('balance', <CurrencyPound />, {
+type BalanceData = BalanceJSON & {
+  account: AccountId
+}
+
+const BalanceDialog = createEntityDialog<BalanceData>('balance', <CurrencyPound />, {
   account: {
     type: 'string',
     label: 'Account',
     icon: <AccountBalance />,
     useOptions: () => useStore(store => store.accounts.values.map(({ id, name, owner }) => ({ id, label: `${name} (${owner.name})` }))),
+    readonly: true,
     required: true
   },
   value: {
@@ -34,9 +40,9 @@ interface CreateProps {
 const DEFAULT = { value: 0 }
 
 export const CreateBalance = observer(function CreateBalance({ initialValues = DEFAULT, onClose }: CreateProps) {
-  const createBalance = useAction((store, details: BalanceJSON) => {
+  const createBalance = useAction((store, details: BalanceData) => {
     const account = store.accounts.getAccount(details.account)
-    store.balances.addBalance({ ...details, account })
+    account.balances.addBalance({ ...details, account })
   }, [])
 
   return (
@@ -54,14 +60,13 @@ interface EditProps {
 }
 
 export const EditBalance = observer(function EditBalance({ balance, onClose }: EditProps) {
-  const onEdit = useAction((store, details: BalanceJSON) => {
+  const onEdit = useAction((store, details: BalanceData) => {
     balance.value = details.value
     balance.date = details.date
-    balance.account = store.accounts.getAccount(details.account)
   }, [balance])
 
-  const onDelete = useAction(store => {
-    store.balances.removeBalance(balance)
+  const onDelete = useAction(() => {
+    balance.account.balances.removeBalance(balance)
   }, [balance])
 
   return (

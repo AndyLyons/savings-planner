@@ -5,12 +5,14 @@ import type { PersonId } from '../state/Person';
 import type { Store } from '../state/Store';
 import { fromYYYYMMDD, toYYYYMM } from '../utils/date';
 
-type SavingsRow = {
-  accounts: Array<{
-    id: AccountId,
-    balance: Balance | undefined,
-    predicted: number | undefined
-  }>
+export type AccountData = {
+  id: AccountId,
+  balance: Balance | undefined,
+  predicted: number | undefined
+}
+
+export type SavingsRow = {
+  accounts: Array<AccountData>
   ages: Array<{ id: PersonId, dob: Date }>
   totalBalance: number | undefined
   totalPredicted: number | undefined
