@@ -26,7 +26,7 @@ interface CreateProps {
 
 export const CreatePerson = observer(function CreatePerson({ initialValues, onClose }: CreateProps) {
   const createPerson = useAction((store, details: PersonJSON) => {
-    store.people.addPerson(details)
+    store.people.createPerson(details)
   }, [])
 
   return (

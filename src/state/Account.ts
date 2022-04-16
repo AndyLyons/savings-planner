@@ -1,6 +1,5 @@
 import { makeAutoObservable } from 'mobx'
 import { nanoid } from 'nanoid'
-import { YYYYMM } from '../utils/date'
 import { extract } from '../utils/fn'
 import { Balances } from './Balances'
 import type { Person } from './Person'
@@ -40,7 +39,7 @@ export class Account {
     this.compoundPeriod = compoundPeriod
     this.owner = owner
 
-    this.balances = new Balances(store)
+    this.balances = new Balances(store, this)
   }
 
   static create(store: Store, details: Omit<AccountDetails, 'id'>) {
@@ -75,18 +74,6 @@ export class Account {
   get mer() {
     return Math.pow(1 + this.aer, 1/12) - 1
   }
-
-  // get balances() {
-  //   return this.store.balances.values.filter(balance => balance.account === this)
-  // }
-
-  balanceAtDate(date: YYYYMM) {
-    return this.balances.getBalance(date)
-  }
-
-  // interpolateBalance = computedFn((date: YYYYMM) => {
-
-  // })
 
   get json() {
     return {

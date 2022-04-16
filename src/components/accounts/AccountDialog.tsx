@@ -49,7 +49,7 @@ const DEFAULTS = {
 export const CreateAccount = observer(function CreateAccount({ initialValues = DEFAULTS, onClose }: CreateProps) {
   const createAccount = useAction((store, details: AccountJSON) => {
     const owner = store.people.getPerson(details.owner)
-    store.accounts.addAccount({ ...details, owner })
+    store.accounts.createAccount({ ...details, owner })
   }, [])
 
   return (

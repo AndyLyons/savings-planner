@@ -17,17 +17,25 @@ export class People {
     this.store = store
   }
 
+  get keys() {
+    return keys(this.data)
+  }
+
   get values() {
     return Object.values(this.data)
   }
 
-  addPerson(details: Omit<PersonDetails, 'id'>) {
+  createPerson(details: Omit<PersonDetails, 'id'>) {
     const person = Person.create(this.store, details)
+    this.addPerson(person)
+  }
+
+  addPerson(person: Person) {
     this.data[person.id] = person
   }
 
   clear() {
-    keys(this.data).forEach(key => {
+    this.keys.forEach(key => {
       delete this.data[key]
     })
   }

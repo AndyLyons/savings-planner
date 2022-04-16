@@ -23,6 +23,7 @@ export class Persistence {
         { fireImmediately: false })
     } catch {
       alert('Could not restore snapshot - data is corrupted')
+      localStorage.removeItem('store')
     }
   }
 

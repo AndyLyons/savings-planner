@@ -5,11 +5,11 @@ import { enGB } from 'date-fns/locale';
 import { observer } from 'mobx-react-lite';
 import { HashRouter, Route, Routes } from 'react-router-dom';
 import { useStore } from '../utils/mobx';
+import { Balances } from './balances/Balances';
 import { Dialogs } from './Dialogs';
 import { Header } from './Header';
 import { Home } from './Home';
 import { COLLAPSED_MENU_WIDTH, FULL_MENU_WIDTH, Menu } from './Menu';
-import { Savings } from './savings/Savings';
 import { Settings } from './Settings';
 import { Withdrawals } from './withdrawals/Wtihdrawals';
 
@@ -66,7 +66,7 @@ export const App = observer(function App() {
               <Toolbar sx={{ mb: 2 }}/>
               <Routes>
                 <Route path='/' element={<Home />} />
-                <Route path='/balances' element={<Savings />} />
+                <Route path='/balances' element={<Balances />} />
                 <Route path='/incomes' element={<Withdrawals />} />
                 <Route path='/settings' element={<Settings />} />
               </Routes>

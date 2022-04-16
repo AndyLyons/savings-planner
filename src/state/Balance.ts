@@ -7,7 +7,6 @@ import type { Store } from './Store'
 export type BalanceId = string & { __balanceId__: never }
 
 export type BalanceDetails = {
-  account: Account
   date: YYYYMM
   value: number
 }
@@ -16,12 +15,12 @@ export type BalanceJSON = typeof Balance.prototype.json
 
 export class Balance {
   store: Store
+  account: Account
 
-  account: BalanceDetails['account']
   date: BalanceDetails['date']
   value: BalanceDetails['value']
 
-  constructor(store: Store, { account, date, value }: BalanceDetails) {
+  constructor(store: Store, account: Account, { date, value }: BalanceDetails) {
     makeAutoObservable(this, { store: false }, { autoBind: true })
 
     this.store = store
@@ -31,20 +30,16 @@ export class Balance {
     this.value = value
   }
 
-  static create(store: Store, details: BalanceDetails) {
-    return new Balance(store, details)
+  static create(store: Store, account: Account, details: BalanceDetails) {
+    return new Balance(store, account, details)
   }
 
-  static fromJSON(store: Store, { account: accountId, ...details }: BalanceJSON) {
-    const account = store.accounts.getAccount(accountId)
-    return new Balance(store, { ...details, account })
+  static fromJSON(store: Store, account: Account, details: BalanceJSON) {
+    return new Balance(store, account, details)
   }
 
   get json() {
-    return {
-      ...extract(this, 'date', 'value'),
-      account: this.account.id
-    }
+    return extract(this, 'date', 'value')
   }
 
   toJSON() {

@@ -17,17 +17,24 @@ export class Accounts {
     this.store = store
   }
 
+  get keys() {
+    return keys(this.data)
+  }
+
   get values() {
     return Object.values(this.data)
   }
 
-  addAccount(details: Omit<AccountDetails, 'id'>) {
-    const account = Account.create(this.store, details)
+  addAccount(account: Account) {
     this.data[account.id] = account
   }
 
+  createAccount(details: Omit<AccountDetails, 'id'>) {
+    this.addAccount(Account.create(this.store, details))
+  }
+
   clear() {
-    keys(this.data).forEach(key => {
+    this.keys.forEach(key => {
       delete this.data[key]
     })
   }

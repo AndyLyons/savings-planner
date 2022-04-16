@@ -40,9 +40,9 @@ interface CreateProps {
 const DEFAULT = { value: 0 }
 
 export const CreateBalance = observer(function CreateBalance({ initialValues = DEFAULT, onClose }: CreateProps) {
-  const createBalance = useAction((store, details: BalanceData) => {
-    const account = store.accounts.getAccount(details.account)
-    account.balances.addBalance({ ...details, account })
+  const createBalance = useAction((store, { account: accountId, ...details }: BalanceData) => {
+    const account = store.accounts.getAccount(accountId)
+    account.balances.createBalance(details)
   }, [])
 
   return (
@@ -71,7 +71,7 @@ export const EditBalance = observer(function EditBalance({ balance, onClose }: E
 
   return (
     <BalanceDialog
-      initialValues={balance.toJSON()}
+      initialValues={{ ...balance.toJSON(), account: balance.account.id }}
       onClose={onClose}
       onDelete={onDelete}
       onDone={onEdit}

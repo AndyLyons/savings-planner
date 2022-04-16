@@ -4,9 +4,9 @@
 
 import { makeAutoObservable } from 'mobx'
 import React from 'react'
-import { Account, AccountJSON } from './Account'
-import { Balance, BalanceJSON } from './Balance'
-import { Person, PersonJSON } from './Person'
+import type { Account, AccountId, AccountJSON } from './Account'
+import type { Balance, BalanceJSON } from './Balance'
+import type { Person, PersonJSON } from './Person'
 
 export enum Action {
   CREATE = 'CREATE',
@@ -29,7 +29,9 @@ interface CreatePerson {
 interface CreateBalance {
   action: Action.CREATE
   entity: Entity.BALANCE
-  initialValues?: Partial<BalanceJSON>
+  initialValues?: Partial<BalanceJSON & {
+    account: AccountId
+  }>
 }
 
 interface CreateAccount {
@@ -76,26 +78,26 @@ export class UI {
   }
 
   createPerson() {
-    this.mode = { action: Action.CREATE, entity: Entity.PERSON }
+    this.createPersonFrom()
   }
 
-  createPersonFrom(initialValues: Partial<PersonJSON>) {
+  createPersonFrom(initialValues?: CreatePerson['initialValues']) {
     this.mode = { action: Action.CREATE, entity: Entity.PERSON, initialValues }
   }
 
   createAccount() {
-    this.mode = { action: Action.CREATE, entity: Entity.ACCOUNT }
+    this.createAccountFrom()
   }
 
-  createAccountFrom(initialValues: Partial<AccountJSON>) {
+  createAccountFrom(initialValues?: CreateAccount['initialValues']) {
     this.mode = { action: Action.CREATE, entity: Entity.ACCOUNT, initialValues }
   }
 
   createBalance() {
-    this.mode = { action: Action.CREATE, entity: Entity.BALANCE }
+    this.createBalanceFrom()
   }
 
-  createBalanceFrom(initialValues: Partial<BalanceJSON>) {
+  createBalanceFrom(initialValues?: CreateBalance['initialValues']) {
     this.mode = { action: Action.CREATE, entity: Entity.BALANCE, initialValues }
   }
 

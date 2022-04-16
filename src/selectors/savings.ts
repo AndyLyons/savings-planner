@@ -35,7 +35,7 @@ export const getSavingsTable = (store: Store) => {
         previous?.accounts[i].balance?.value
         ?? previous?.accounts[i].predicted
 
-      const balance = account.balanceAtDate(yyyymm)
+      const balance = account.balances.getBalance(yyyymm)
 
       return ({
         id: account.id,
