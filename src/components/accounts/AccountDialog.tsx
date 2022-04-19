@@ -24,8 +24,8 @@ const AccountDialog = createEntityDialog<AccountJSON>('account', <AccountBalance
     icon: <Percent />,
     required: true,
     useConstantOption: () => {
-      const value = useStore(store => store.globalGrowth)
-      return { label: 'Use market growth?', value }
+      const constantValue = useStore(store => store.globalGrowth)
+      return { label: 'Use market growth?', constantValue, value: null }
     }
   },
   compoundPeriod: {

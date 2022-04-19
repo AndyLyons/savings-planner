@@ -2,7 +2,7 @@ import { addMonths, isBefore } from 'date-fns'
 import { makeAutoObservable } from 'mobx'
 import { computedFn } from 'mobx-utils'
 import React from 'react'
-import { addMonth, fromYYYYMM, toYYYYMM, YYYYMM } from '../utils/date'
+import { addMonth, fromYYYYMM, subMonth, toYYYYMM, YYYYMM } from '../utils/date'
 import { extract } from '../utils/fn'
 import { Accounts } from './Accounts'
 import { Menu } from './Menu'
@@ -20,8 +20,10 @@ export class Store {
   globalGrowth: number = 4
   period: Period = Period.YEAR
   showAges: boolean = false
+  showAccounts: boolean = false
   start: YYYYMM
   end: YYYYMM
+  retireOn: YYYYMM
 
   menu: Menu = new Menu(this)
   accounts: Accounts = new Accounts(this)
@@ -32,6 +34,7 @@ export class Store {
 
     this.start = '202001' as YYYYMM
     this.end = addMonth(this.start, 12 * 50)
+    this.retireOn = '203705' as YYYYMM
   }
 
   get startDate() {
@@ -62,6 +65,10 @@ export class Store {
     return (this.globalRate * 100).toFixed(2).replace(/\.?0+$/, '')
   }
 
+  toggleShowAccounts() {
+    this.showAccounts = !this.showAccounts
+  }
+
   toggleShowAges() {
     this.showAges = !this.showAges
   }
@@ -72,6 +79,7 @@ export class Store {
         this,
         'globalGrowth',
         'period',
+        'showAccounts',
         'showAges',
         'start',
         'end'
@@ -89,6 +97,7 @@ export class Store {
   restoreSnapshot(snapshot: StoreJSON) {
     this.globalGrowth = snapshot.globalGrowth
     this.period = snapshot.period
+    this.showAccounts = snapshot.showAccounts
     this.showAges = snapshot.showAges
     this.start = snapshot.start
     this.end = snapshot.end

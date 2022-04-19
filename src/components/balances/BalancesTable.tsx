@@ -1,5 +1,5 @@
 import { Add, Edit } from '@mui/icons-material'
-import { Button, Tooltip } from '@mui/material'
+import { Box, Button, Tooltip } from '@mui/material'
 import classNames from 'classnames'
 import { format } from 'date-fns'
 import { observer } from 'mobx-react-lite'
@@ -10,6 +10,7 @@ import { FixedSizeList } from 'react-window'
 import type { AccountId } from '../../state/Account'
 import type { Balance } from '../../state/Balance'
 import type { PersonId } from '../../state/Person'
+import { Period } from '../../state/Store'
 import type { YYYYMM } from '../../utils/date'
 import { fromYYYYMM } from '../../utils/date'
 import { useBind } from '../../utils/hooks'
@@ -18,7 +19,7 @@ import { getButtonColour, getDirection } from './utils'
 
 type Dates = Array<YYYYMM>
 
-const formatMonthYear = (date: YYYYMM) => format(fromYYYYMM(date), 'MMM yyyy')
+const formatMonthYear = (period: Period, date: YYYYMM) => format(fromYYYYMM(date), period === Period.MONTH ? 'MMM yyyy' : 'yyyy')
 
 const AgeCell = observer(function AgeCell({ date, personId }: { date: YYYYMM, personId: PersonId }) {
   const age = useStore(store => store.people.getPerson(personId).getAge(date))
@@ -69,21 +70,21 @@ function InterpolatedButton({ account, date, interpolated }: { account: AccountI
   )
 }
 
-const AccountCell = observer(function AccountCell({ date, accountId }: { date: YYYYMM, accountId: AccountId }) {
+const AccountBalanceCell = observer(function AccountBalanceCell({ date, accountId }: { date: YYYYMM, accountId: AccountId }) {
   const store = useStore()
   const account = store.accounts.getAccount(accountId)
   const balance = account.balances.getBalance(date)
   const interpolated = account.balances.interpolateBalance(date)
 
   return (
-    <div className='table-cell table-column--account'>
+    <div className='table-cell table-column--account-balance'>
       {balance && <BalanceButton balance={balance} interpolated={interpolated} />}
       {!balance && <InterpolatedButton account={accountId} date={date} interpolated={interpolated} />}
     </div>
   )
 })
 
-const TotalCell = observer(function TotalCell({ date }: { date: YYYYMM }) {
+const TotalBalanceCell = observer(function TotalBalanceCell({ date }: { date: YYYYMM }) {
   const store = useStore()
   const balances = store.accounts.values.map(account => {
     const balance = account.balances.getBalance(date)?.value
@@ -103,44 +104,65 @@ type RowProps = ListChildComponentProps<Dates>
 
 const TableRow = observer(function TableRow(props: RowProps) {
   const { data, index, style } = props
-  const { people, accounts } = useStore()
+  const { accounts, people, period } = useStore()
 
-  const date = data[index - 1] // -1 because of header row
+  const date = data[index - 2] // -2 because of header rows
 
   return (
     <div className='table-row' style={style}>
-      <div className='table-cell table-column--date'>{formatMonthYear(date)}</div>
+      <div className='table-cell table-column--date'>{formatMonthYear(period, date)}</div>
       {people.keys.map(personId => (
         <AgeCell key={personId} date={date} personId={personId} />
       ))}
-      <TotalCell date={date} />
+      <div className='table-cell table-column--total' />
       {accounts.keys.map(accountId => (
-        <AccountCell key={accountId} date={date} accountId={accountId} />
+        <div key={accountId} className='table-cell table-column--account-income' />
+      ))}
+      <TotalBalanceCell date={date} />
+      {accounts.keys.map(accountId => (
+        <AccountBalanceCell key={accountId} date={date} accountId={accountId} />
       ))}
     </div>
   )
 })
 
 const TableHeader = observer(function TableHeader() {
-  const { people, accounts } = useStore()
+  const { people, accounts, showAccounts } = useStore()
+  const numVisibleAccounts = showAccounts ? accounts.keys.length : 0
 
   return (
-    <div className="table-header table-row">
-      <div className='table-cell table-column--date'>Date</div>
-      {people.values.map(person => (
-        <div key={person.id} className='table-cell table-column--age'>{person.name}</div>
-      ))}
-      <div className='table-cell table-column--total'>Total (£)</div>
-      {accounts.values.map(account => (
-        <div key={account.id} className='table-cell table-column--account'>{account.name} ({account.owner.name})</div>
-      ))}
-    </div>
+    <>
+      <div className="table-header">
+        <div className="table-row">
+          <div className='table-cell--empty table-column--date'></div>
+          {people.keys.map(personId => (
+            <div key={personId} className='table-cell--empty table-column--age'></div>
+          ))}
+          <Box className='table-cell table-columns--incomes' sx={{ width: `${150 + (numVisibleAccounts * 150)}px` }}>Income</Box>
+          <Box className='table-cell table-columns--balances' sx={{ width: `${150 + (numVisibleAccounts * 150)}px` }}>Balance</Box>
+        </div>
+        <div className="table-row">
+          <div className='table-cell table-column--date'>Date</div>
+          {people.values.map(person => (
+            <div key={person.id} className='table-cell table-column--age'>{person.name}</div>
+          ))}
+          <div className='table-cell table-column--total'>Total (£)</div>
+          {accounts.values.map(account => (
+            <div key={account.id} className='table-cell table-column--account-income'>{account.name} ({account.owner.name})</div>
+          ))}
+          <div className='table-cell table-column--total'>Total (£)</div>
+          {accounts.values.map(account => (
+            <div key={account.id} className='table-cell table-column--account-balance'>{account.name} ({account.owner.name})</div>
+          ))}
+        </div>
+      </div>
+    </>
   )
 })
 
 const TableRowWrapper = function TableRowWrapper(props: RowProps) {
-  // Index 0 is the header which is rendered separately
-  return props.index === 0 ? null : <TableRow {...props} />
+  // Index 0 & 1 are the headers which are rendered separately
+  return props.index <= 1 ? null : <TableRow {...props} />
 }
 
 const TableBody = forwardRef<HTMLDivElement>(function TableBody({ children, ...rest }, ref) {
@@ -155,14 +177,14 @@ const TableBody = forwardRef<HTMLDivElement>(function TableBody({ children, ...r
 const getKey: ListItemKeySelector<Dates> = (index, dates) => index === 0 ? '__HEADER__' : dates[index - 1]
 
 const Table = observer(function Table({ height, width }: { height: number, width: number }) {
-  const { dates, showAges } = useStore()
+  const { dates, showAccounts, showAges } = useStore()
 
   return (
     <FixedSizeList
-      className={classNames('table', { 'hide-ages': !showAges })}
+      className={classNames('table', { 'hide-ages': !showAges, 'hide-accounts': !showAccounts })}
       height={height}
       width={width}
-      itemCount={dates.length + 1} // +1 for header row
+      itemCount={dates.length + 2} // +2 for header rows
       itemData={dates}
       innerElementType={TableBody}
       itemKey={getKey}

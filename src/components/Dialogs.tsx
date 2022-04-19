@@ -3,6 +3,7 @@ import { Action, Entity } from '../state/UI';
 import { useUI } from '../utils/mobx';
 import { CreateAccount, EditAccount } from './accounts/AccountDialog';
 import { CreateBalance, EditBalance } from './balance/BalanceDialog';
+import { CreateDeposit, EditDeposit } from './deposit/DepositDialog';
 import { CreatePerson, EditPerson } from './people/PersonDialog';
 
 export const Dialogs = observer(function Dialogs() {
@@ -10,12 +11,18 @@ export const Dialogs = observer(function Dialogs() {
 
   return (
     <>
-      {ui.mode.action === Action.EDIT && ui.mode.entity === Entity.PERSON && <EditPerson person={ui.mode.model} onClose={ui.cancel} />}
-      {ui.mode.action === Action.EDIT && ui.mode.entity === Entity.ACCOUNT && <EditAccount account={ui.mode.model} onClose={ui.cancel} />}
-      {ui.mode.action === Action.EDIT && ui.mode.entity === Entity.BALANCE && <EditBalance balance={ui.mode.model} onClose={ui.cancel} />}
-      {ui.mode.action === Action.CREATE && ui.mode.entity === Entity.PERSON && <CreatePerson initialValues={ui.mode.initialValues} onClose={ui.cancel} />}
-      {ui.mode.action === Action.CREATE && ui.mode.entity === Entity.ACCOUNT && <CreateAccount initialValues={ui.mode.initialValues} onClose={ui.cancel} />}
-      {ui.mode.action === Action.CREATE && ui.mode.entity === Entity.BALANCE && <CreateBalance initialValues={ui.mode.initialValues} onClose={ui.cancel} />}
+      {ui.dialogs.map(dialog =>
+        <>
+          {dialog.action === Action.EDIT && dialog.entity === Entity.PERSON && <EditPerson person={dialog.model} onClose={ui.cancel} />}
+          {dialog.action === Action.EDIT && dialog.entity === Entity.ACCOUNT && <EditAccount account={dialog.model} onClose={ui.cancel} />}
+          {dialog.action === Action.EDIT && dialog.entity === Entity.BALANCE && <EditBalance balance={dialog.model} onClose={ui.cancel} />}
+          {dialog.action === Action.EDIT && dialog.entity === Entity.DEPOSIT && <EditDeposit deposit={dialog.model} onClose={ui.cancel} />}
+          {dialog.action === Action.CREATE && dialog.entity === Entity.PERSON && <CreatePerson initialValues={dialog.initialValues} onClose={ui.cancel} />}
+          {dialog.action === Action.CREATE && dialog.entity === Entity.ACCOUNT && <CreateAccount initialValues={dialog.initialValues} onClose={ui.cancel} />}
+          {dialog.action === Action.CREATE && dialog.entity === Entity.BALANCE && <CreateBalance initialValues={dialog.initialValues} onClose={ui.cancel} />}
+          {dialog.action === Action.CREATE && dialog.entity === Entity.DEPOSIT && <CreateDeposit initialValues={dialog.initialValues} onClose={ui.cancel} />}
+        </>
+      )}
     </>
   )
 })

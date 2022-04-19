@@ -1,4 +1,4 @@
-import { Home, Outbound, Savings, Settings } from '@mui/icons-material';
+import { Savings, Settings } from '@mui/icons-material';
 import {
   Box, Divider, Drawer, List, ListItemIcon,
   ListItemText, SxProps, Theme, Toolbar
@@ -50,16 +50,8 @@ export const Menu = observer(function Menu({ sx }: Props) {
         <Toolbar />
         <List>
           <ListItemButtonLink to='/' selected={pathname === '/'}>
-            <ListItemIcon><Home color='primary' /></ListItemIcon>
-            <ListItemText>Home</ListItemText>
-          </ListItemButtonLink>
-          <ListItemButtonLink to='/balances' selected={pathname === '/balances'}>
             <ListItemIcon><Savings color='primary' /></ListItemIcon>
-            <ListItemText>Balances</ListItemText>
-          </ListItemButtonLink>
-          <ListItemButtonLink to='/incomes' selected={pathname === '/incomes'}>
-            <ListItemIcon><Outbound color='primary' /></ListItemIcon>
-            <ListItemText>Withdrawals</ListItemText>
+            <ListItemText>Savings</ListItemText>
           </ListItemButtonLink>
           <Divider />
           <ListItemButtonLink to='/settings' selected={pathname.startsWith('/settings')}>

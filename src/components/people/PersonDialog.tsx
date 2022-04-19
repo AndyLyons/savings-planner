@@ -15,7 +15,7 @@ const PersonDialog = createEntityDialog<PersonJSON>('person', <PersonIcon />, {
     label: 'Date of birth',
     icon: <Event />,
     required: true,
-    type: 'yyyymmdd'
+    type: 'yyyymm'
   }
 })
 

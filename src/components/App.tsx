@@ -8,10 +8,8 @@ import { useStore } from '../utils/mobx';
 import { Balances } from './balances/Balances';
 import { Dialogs } from './Dialogs';
 import { Header } from './Header';
-import { Home } from './Home';
 import { COLLAPSED_MENU_WIDTH, FULL_MENU_WIDTH, Menu } from './Menu';
 import { Settings } from './Settings';
-import { Withdrawals } from './withdrawals/Wtihdrawals';
 
 export const theme = createTheme({
   palette: {
@@ -52,7 +50,7 @@ export const App = observer(function App() {
               })
             }} />
 
-            <Container maxWidth='md' sx={{
+            <Container maxWidth={false} sx={{
               display: 'flex',
               flexDirection: 'column',
               flexGrow: 1,
@@ -65,9 +63,7 @@ export const App = observer(function App() {
             }}>
               <Toolbar sx={{ mb: 2 }}/>
               <Routes>
-                <Route path='/' element={<Home />} />
-                <Route path='/balances' element={<Balances />} />
-                <Route path='/incomes' element={<Withdrawals />} />
+                <Route path='/' element={<Balances />} />
                 <Route path='/settings' element={<Settings />} />
               </Routes>
             </Container>

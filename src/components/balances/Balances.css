@@ -4,12 +4,16 @@
 }
 
 .table-header {
-  height: 42px;
+  height: 84px;
   position: sticky;
   top: 0;
 
   font-weight: 500;
   z-index: 2;
+}
+
+.table-header .table-row {
+  height: 42px;
 }
 
 .table-header .table-cell {
@@ -35,6 +39,10 @@
   padding: 6px 16px;
 }
 
+.table-cell--empty {
+  background-color: white;
+}
+
 .table-column--date {
   position: sticky;
   left: 0;
@@ -52,21 +60,34 @@
   display: none;
 }
 
-.table-column--total {
-  width: 150px;
-}
-
-.table-column--account {
+.table-column--account-income,
+.table-column--account-balance {
   width: 150px;
   padding: 0;
 }
 
+.hide-accounts .table-column--account-income,
+.hide-accounts .table-column--account-balance {
+  display: none;
+}
+
 .table-column--total {
+  font-weight: 600;
   justify-content: right;
   width: 150px;
 }
 
-.table-column--account .MuiButton-root {
+.table-column--total {
+  border-left: 1px solid rgba(224, 224, 224, 1);
+}
+
+.table-header .table-column--total {
+  font-weight: 500;
+  border-left: 0;
+}
+
+.table-column--account-income .MuiButton-root,
+.table-column--account-balance .MuiButton-root {
   height: 100%;
   width: 100%;
   justify-content: right;

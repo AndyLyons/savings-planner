@@ -1,10 +1,13 @@
 import { Close, Menu, ShowChart } from '@mui/icons-material';
+import { DatePicker } from '@mui/lab';
 import {
   AppBar, Hidden, Icon, IconButton,
-  SxProps, TextField, Theme, ThemeProvider, Toolbar, Typography
+  SxProps, TextField, TextFieldProps,
+  Theme, ThemeProvider, Toolbar, Typography
 } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
+import { fromYYYYMM, isDate, toYYYYMM } from '../utils/date';
 import { ChangeEvent, getTargetValue } from '../utils/hooks';
 import { useAction, useStore } from '../utils/mobx';
 import { useNavigateTo } from '../utils/router';
@@ -23,6 +26,11 @@ export const Header = observer(function Header({ sx }: Props) {
     isValid: true
   })
 
+  const [retireOn, setRetireOn] = useState({
+    value: fromYYYYMM(store.retireOn) as Date | null,
+    isValid: true
+  })
+
   const onGrowthChanged = useAction((store, e: ChangeEvent) => {
     const value = getTargetValue(e)
     const parsedValue = parseFloat(value)
@@ -33,6 +41,16 @@ export const Header = observer(function Header({ sx }: Props) {
       store.globalGrowth = parsedValue
     }
   }, [])
+
+  const onRetireAtChanged = (value: Date | null) => {
+    const parsedValue = isDate(value) ? toYYYYMM(value) : null
+    const isValid = parsedValue !== null
+    setRetireOn({ value, isValid })
+
+    if (isValid) {
+      store.retireOn = parsedValue
+    }
+  }
 
   return (
     <AppBar position='fixed' sx={sx}>
@@ -47,6 +65,21 @@ export const Header = observer(function Header({ sx }: Props) {
           Savings Planner
         </Typography>
         <ThemeProvider theme={darkTheme}>
+          <DatePicker
+            label='Retirement date'
+            onChange={onRetireAtChanged}
+            renderInput={(props: TextFieldProps) => (
+              <TextField
+                {...props}
+                error={!retireOn.isValid}
+                fullWidth
+                size='small'
+                sx={{ ml: 'auto', width: '185px' }}
+              />
+            )}
+            value={retireOn.value}
+            views={['month', 'year']}
+          />
           <TextField
             InputLabelProps={{
               shrink: true
@@ -55,7 +88,7 @@ export const Header = observer(function Header({ sx }: Props) {
             label='Growth %'
             onChange={onGrowthChanged}
             size='small'
-            sx={{ ml: 'auto', width: '80px' }}
+            sx={{ml: 1, width: '80px' }}
             type='number'
             value={growth.value}
           />

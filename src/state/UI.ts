@@ -7,6 +7,7 @@ import React from 'react'
 import type { Account, AccountId, AccountJSON } from './Account'
 import type { Balance, BalanceJSON } from './Balance'
 import type { Person, PersonJSON } from './Person'
+import type { Deposit, DepositJSON } from './Deposit'
 
 export enum Action {
   CREATE = 'CREATE',
@@ -17,7 +18,8 @@ export enum Action {
 export enum Entity {
   ACCOUNT = 'ACCOUNT',
   BALANCE = 'BALANCE',
-  PERSON = 'PERSON'
+  PERSON = 'PERSON',
+  DEPOSIT = 'DEPOSIT'
 }
 
 interface CreatePerson {
@@ -40,6 +42,12 @@ interface CreateAccount {
   initialValues?: Partial<AccountJSON>
 }
 
+interface CreateDeposit {
+  action: Action.CREATE
+  entity: Entity.DEPOSIT
+  initialValues?: Partial<DepositJSON>
+}
+
 interface EditPerson {
   action: Action.EDIT
   entity: Entity.PERSON
@@ -58,23 +66,23 @@ interface EditBalance {
   model: Balance
 }
 
-interface None {
-  action: Action.NONE
+interface EditDeposit {
+  action: Action.EDIT
+  entity: Entity.DEPOSIT
+  model: Deposit
 }
 
-type Mode = CreatePerson | CreateAccount | CreateBalance | EditPerson | EditAccount | EditBalance | None
-
-const NO_MODE = { action: Action.NONE } as const
+type Dialog = CreatePerson | CreateAccount | CreateBalance | CreateDeposit | EditPerson | EditAccount | EditBalance | EditDeposit
 
 export class UI {
-  mode: Mode = NO_MODE
+  dialogs: Array<Dialog> = []
 
   constructor() {
     makeAutoObservable(this, undefined, { autoBind: true })
   }
 
   cancel() {
-    this.mode = NO_MODE
+    this.dialogs.pop()
   }
 
   createPerson() {
@@ -82,7 +90,7 @@ export class UI {
   }
 
   createPersonFrom(initialValues?: CreatePerson['initialValues']) {
-    this.mode = { action: Action.CREATE, entity: Entity.PERSON, initialValues }
+    this.dialogs.push({ action: Action.CREATE, entity: Entity.PERSON, initialValues })
   }
 
   createAccount() {
@@ -90,7 +98,7 @@ export class UI {
   }
 
   createAccountFrom(initialValues?: CreateAccount['initialValues']) {
-    this.mode = { action: Action.CREATE, entity: Entity.ACCOUNT, initialValues }
+    this.dialogs.push({ action: Action.CREATE, entity: Entity.ACCOUNT, initialValues })
   }
 
   createBalance() {
@@ -98,19 +106,31 @@ export class UI {
   }
 
   createBalanceFrom(initialValues?: CreateBalance['initialValues']) {
-    this.mode = { action: Action.CREATE, entity: Entity.BALANCE, initialValues }
+    this.dialogs.push({ action: Action.CREATE, entity: Entity.BALANCE, initialValues })
+  }
+
+  createDeposit() {
+    this.createDepositFrom()
+  }
+
+  createDepositFrom(initialValues?: CreateDeposit['initialValues']) {
+    this.dialogs.push({ action: Action.CREATE, entity: Entity.DEPOSIT, initialValues })
   }
 
   editPerson(person: Person) {
-    this.mode = { action: Action.EDIT, entity: Entity.PERSON, model: person }
+    this.dialogs.push({ action: Action.EDIT, entity: Entity.PERSON, model: person })
   }
 
   editAccount(account: Account) {
-    this.mode = { action: Action.EDIT, entity: Entity.ACCOUNT, model: account }
+    this.dialogs.push({ action: Action.EDIT, entity: Entity.ACCOUNT, model: account })
   }
 
   editBalance(balance: Balance) {
-    this.mode = { action: Action.EDIT, entity: Entity.BALANCE, model: balance }
+    this.dialogs.push({ action: Action.EDIT, entity: Entity.BALANCE, model: balance })
+  }
+
+  editDeposit(deposit: Deposit) {
+    this.dialogs.push({ action: Action.EDIT, entity: Entity.DEPOSIT, model: deposit })
   }
 }
 
