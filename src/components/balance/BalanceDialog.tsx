@@ -9,7 +9,7 @@ type BalanceData = BalanceJSON & {
   account: AccountId
 }
 
-const BalanceDialog = createEntityDialog<BalanceData>('balance', <CurrencyPound />, {
+export const BalanceDialog = createEntityDialog<BalanceData>('balance', <CurrencyPound />, {
   account: {
     type: 'string',
     label: 'Account',

@@ -35,8 +35,8 @@ export class Person {
 
   static create(store: Store, details: Omit<PersonDetails, 'id'>) {
     return new Person(store, {
-      id: nanoid(10) as PersonId,
-      ...details
+      ...details,
+      id: nanoid(10) as PersonId
     })
   }
 

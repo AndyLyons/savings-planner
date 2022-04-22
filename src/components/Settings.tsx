@@ -1,4 +1,4 @@
-import { AccountBalance, Person as PersonIcon } from '@mui/icons-material';
+import { AccountBalance, CurrencyExchange, Person as PersonIcon } from '@mui/icons-material';
 import { Box, Paper, SpeedDialAction } from '@mui/material';
 import { useUI } from '../utils/mobx';
 import { Accounts } from './accounts/Accounts';
@@ -6,6 +6,7 @@ import { Export } from './import/Export';
 import { Import } from './import/Import';
 import { SpeedDial } from './mui/SpeedDial';
 import { People } from './people/People';
+import { Strategies } from './strategies/Strategies';
 
 export function Settings() {
   const ui = useUI()
@@ -19,8 +20,11 @@ export function Settings() {
       <Paper sx={{ p: 2, mb: 2 }}>
         <People onClick={ui.editPerson} />
       </Paper>
-      <Paper sx={{ p: 2 }}>
+      <Paper sx={{ p: 2, mb: 2 }}>
         <Accounts onClick={ui.editAccount} />
+      </Paper>
+      <Paper sx={{ p: 2 }}>
+        <Strategies onClick={ui.editStrategy} />
       </Paper>
       <SpeedDial ariaLabel='settings-actions'>
         <SpeedDialAction
@@ -32,6 +36,11 @@ export function Settings() {
           icon={<PersonIcon />}
           onClick={ui.createPerson}
           tooltipTitle='Person'
+        />
+        <SpeedDialAction
+          icon={<CurrencyExchange />}
+          onClick={ui.createStrategy}
+          tooltipTitle='Strategy'
         />
       </SpeedDial>
     </Box>

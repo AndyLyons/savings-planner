@@ -1,15 +1,24 @@
-import { AccountBalance, CurrencyPound, Download, Event, EventRepeat, Loop } from '@mui/icons-material'
+import { AccountBalance, CurrencyPound, Download, Event, EventRepeat, Loop, ViewList } from '@mui/icons-material'
 import { observer } from 'mobx-react-lite'
-import { Period } from '../../state/Store'
 import { Deposit, DepositJSON, RETIREMENT } from '../../state/Deposit'
+import { Period } from '../../state/Store'
+import type { StrategyId } from '../../state/Strategy'
 import { useAction, useStore } from '../../utils/mobx'
 import { createEntityDialog } from '../entity/createEntityDialog'
 
 type DepositData = DepositJSON & {
-  repeating: boolean
+  strategy: StrategyId
 }
 
-const DespoitDialog = createEntityDialog<DepositData>('deposit', <Download />, {
+const DepositDialog = createEntityDialog<DepositData>('deposit', <Download />, {
+  strategy: {
+    type: 'string',
+    label: 'Strategy',
+    icon: <ViewList />,
+    useOptions: () => useStore(store => store.strategies.values.map(({ id, name }) => ({ id, label: name }))),
+    readonly: true,
+    required: true
+  },
   account: {
     type: 'string',
     label: 'Account',
@@ -20,7 +29,7 @@ const DespoitDialog = createEntityDialog<DepositData>('deposit', <Download />, {
   },
   amount: {
     type: 'number',
-    label: 'Despoit',
+    label: 'Deposit',
     icon: <CurrencyPound />,
     required: true
   },
@@ -41,14 +50,14 @@ const DespoitDialog = createEntityDialog<DepositData>('deposit', <Download />, {
     label: 'Every...',
     icon: <EventRepeat />,
     useOptions: () => [{ id: Period.MONTH, label: 'Month' }, { id: Period.YEAR, label: 'Year' }],
-    getEnabled: (state) => state.repeating === true,
+    getVisible: (state) => state.repeating === true,
     required: true
   },
   endDate: {
     type: 'yyyymm',
     label: 'Until',
     icon: <Event />,
-    getEnabled: (state) => state.repeating === true,
+    getVisible: (state) => state.repeating === true,
     required: true,
     useConstantOption: () => {
       const { retireOn } = useStore()
@@ -65,15 +74,14 @@ interface CreateProps {
 const DEFAULT = {}
 
 export const CreateDeposit = observer(function CreateDeposit({ initialValues = DEFAULT, onClose }: CreateProps) {
-  const createDeposit = useAction((store, details: DepositData) => {
-    console.log('Create', details);
-
-    // const account = store.accounts.getAccount(accountId)
-    // account.deposits.createDeposit(details)
+  const createDeposit = useAction((store, { strategy: strategyId, account: accountId, ...details }: DepositData) => {
+    const strategy = store.strategies.getStrategy(strategyId)
+    const account = store.accounts.getAccount(accountId)
+    strategy.addDeposit(Deposit.create(store, strategy, { account, ...details }))
   }, [])
 
   return (
-    <DespoitDialog
+    <DepositDialog
       initialValues={initialValues}
       onClose={onClose}
       onDone={createDeposit}
@@ -88,20 +96,21 @@ interface EditProps {
 
 export const EditDeposit = observer(function EditDeposit({ deposit, onClose }: EditProps) {
   const onEdit = useAction((store, details: DepositData) => {
-    // deposit.value = details.value
-    // deposit.date = details.date
-    console.log('Edit', details);
+    deposit.amount = details.amount
+    deposit.startDate = details.startDate
+    deposit.repeating = details.repeating
+    deposit.endDate = details.endDate
+    deposit.period = details.period
+    deposit.account = store.accounts.getAccount(details.account)
   }, [deposit])
 
   const onDelete = useAction(() => {
-    console.log('Delete');
-
-    // deposit.account.deposits.removeDeposit(deposit)
+    deposit.strategy.removeDeposit(deposit)
   }, [deposit])
 
   return (
-    <DespoitDialog
-      initialValues={{}}
+    <DepositDialog
+      initialValues={{ ...deposit.toJSON(), strategy: deposit.strategy.id }}
       onClose={onClose}
       onDelete={onDelete}
       onDone={onEdit}

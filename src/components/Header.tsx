@@ -7,11 +7,14 @@ import {
 } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
+import type { StrategyId } from '../state/Strategy';
 import { fromYYYYMM, isDate, toYYYYMM } from '../utils/date';
-import { ChangeEvent, getTargetValue } from '../utils/hooks';
+import type { ChangeEvent } from '../utils/hooks';
+import { getTargetValue } from '../utils/hooks';
 import { useAction, useStore } from '../utils/mobx';
 import { useNavigateTo } from '../utils/router';
 import { darkTheme } from './App';
+import { SelectField } from './mui';
 
 interface Props {
   sx?: SxProps<Theme>
@@ -21,6 +24,7 @@ export const Header = observer(function Header({ sx }: Props) {
   const navigateHome = useNavigateTo('/')
 
   const store = useStore()
+
   const [growth, setGrowth] = useState({
     value: `${store.globalGrowth}`,
     isValid: true
@@ -42,7 +46,7 @@ export const Header = observer(function Header({ sx }: Props) {
     }
   }, [])
 
-  const onRetireAtChanged = (value: Date | null) => {
+  const onRetireAtChanged = useAction((_, value: Date | null) => {
     const parsedValue = isDate(value) ? toYYYYMM(value) : null
     const isValid = parsedValue !== null
     setRetireOn({ value, isValid })
@@ -50,7 +54,16 @@ export const Header = observer(function Header({ sx }: Props) {
     if (isValid) {
       store.retireOn = parsedValue
     }
-  }
+  }, [])
+
+  const onStrategyChanged = useAction((_, value: string) => {
+    if (store.strategies.isStrategyId(value)) {
+      const strategy = store.strategies.getStrategy(value)
+      store.currentStrategy = strategy
+    } else {
+      store.currentStrategy = null
+    }
+  }, [])
 
   return (
     <AppBar position='fixed' sx={sx}>
@@ -65,6 +78,15 @@ export const Header = observer(function Header({ sx }: Props) {
           Savings Planner
         </Typography>
         <ThemeProvider theme={darkTheme}>
+          <SelectField
+            allowEmpty
+            label='Strategy'
+            onChange={onStrategyChanged}
+            options={store.strategies.values.map(({ id, name }) => ({ value: id, label: name }))}
+            size='small'
+            sx={{ ml: 'auto', width: '120px' }}
+            value={store.currentStrategy?.id ?? ''}
+          />
           <DatePicker
             label='Retirement date'
             onChange={onRetireAtChanged}
@@ -74,7 +96,7 @@ export const Header = observer(function Header({ sx }: Props) {
                 error={!retireOn.isValid}
                 fullWidth
                 size='small'
-                sx={{ ml: 'auto', width: '185px' }}
+                sx={{ ml: 1, width: '185px' }}
               />
             )}
             value={retireOn.value}

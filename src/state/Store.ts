@@ -2,12 +2,14 @@ import { addMonths, isBefore } from 'date-fns'
 import { makeAutoObservable } from 'mobx'
 import { computedFn } from 'mobx-utils'
 import React from 'react'
-import { addMonth, fromYYYYMM, subMonth, toYYYYMM, YYYYMM } from '../utils/date'
+import { addMonth, fromYYYYMM, toYYYYMM, YYYYMM } from '../utils/date'
 import { extract } from '../utils/fn'
 import { Accounts } from './Accounts'
 import { Menu } from './Menu'
 import { People } from './People'
 import { Persistence } from './Persistence'
+import { Strategies } from './Strategies'
+import { Strategy } from './Strategy'
 
 export enum Period {
   MONTH = 'month',
@@ -24,10 +26,12 @@ export class Store {
   start: YYYYMM
   end: YYYYMM
   retireOn: YYYYMM
+  currentStrategy: Strategy | null = null
 
   menu: Menu = new Menu(this)
   accounts: Accounts = new Accounts(this)
   people: People = new People(this)
+  strategies: Strategies = new Strategies(this)
 
   constructor() {
     makeAutoObservable(this, undefined, { autoBind: true })
@@ -87,6 +91,7 @@ export class Store {
 
       people: this.people.toJSON(),
       accounts: this.accounts.toJSON(),
+      strategies: this.strategies.toJSON()
     }
   }
 
@@ -104,6 +109,7 @@ export class Store {
 
     this.people.restoreSnapshot(snapshot.people)
     this.accounts.restoreSnapshot(snapshot.accounts)
+    this.strategies.restoreSnapshot(snapshot.strategies)
   }
 }
 

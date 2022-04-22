@@ -44,8 +44,8 @@ export class Account {
 
   static create(store: Store, details: Omit<AccountDetails, 'id'>) {
     return new Account(store, {
-      id: nanoid(10) as AccountId,
-      ...details
+      ...details,
+      id: nanoid(10) as AccountId
     })
   }
 

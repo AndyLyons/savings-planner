@@ -6,8 +6,9 @@ import { makeAutoObservable } from 'mobx'
 import React from 'react'
 import type { Account, AccountId, AccountJSON } from './Account'
 import type { Balance, BalanceJSON } from './Balance'
-import type { Person, PersonJSON } from './Person'
 import type { Deposit, DepositJSON } from './Deposit'
+import type { Person, PersonJSON } from './Person'
+import type { Strategy, StrategyDetails } from './Strategy'
 
 export enum Action {
   CREATE = 'CREATE',
@@ -19,6 +20,7 @@ export enum Entity {
   ACCOUNT = 'ACCOUNT',
   BALANCE = 'BALANCE',
   PERSON = 'PERSON',
+  STRATEGY = 'STRATEGY',
   DEPOSIT = 'DEPOSIT'
 }
 
@@ -40,6 +42,12 @@ interface CreateAccount {
   action: Action.CREATE
   entity: Entity.ACCOUNT
   initialValues?: Partial<AccountJSON>
+}
+
+interface CreateStrategy {
+  action: Action.CREATE
+  entity: Entity.STRATEGY
+  initialValues?: Partial<StrategyDetails>
 }
 
 interface CreateDeposit {
@@ -66,13 +74,20 @@ interface EditBalance {
   model: Balance
 }
 
+interface EditStrategy {
+  action: Action.EDIT
+  entity: Entity.STRATEGY
+  model: Strategy
+}
+
 interface EditDeposit {
   action: Action.EDIT
   entity: Entity.DEPOSIT
   model: Deposit
 }
 
-type Dialog = CreatePerson | CreateAccount | CreateBalance | CreateDeposit | EditPerson | EditAccount | EditBalance | EditDeposit
+type Dialog = CreatePerson | CreateAccount | CreateBalance | CreateDeposit | CreateStrategy
+  | EditPerson | EditAccount | EditBalance | EditDeposit | EditStrategy
 
 export class UI {
   dialogs: Array<Dialog> = []
@@ -109,6 +124,14 @@ export class UI {
     this.dialogs.push({ action: Action.CREATE, entity: Entity.BALANCE, initialValues })
   }
 
+  createStrategy() {
+    this.createStrategyFrom()
+  }
+
+  createStrategyFrom(initialValues?: CreateStrategy['initialValues']) {
+    this.dialogs.push({ action: Action.CREATE, entity: Entity.STRATEGY, initialValues })
+  }
+
   createDeposit() {
     this.createDepositFrom()
   }
@@ -127,6 +150,10 @@ export class UI {
 
   editBalance(balance: Balance) {
     this.dialogs.push({ action: Action.EDIT, entity: Entity.BALANCE, model: balance })
+  }
+
+  editStrategy(strategy: Strategy) {
+    this.dialogs.push({ action: Action.EDIT, entity: Entity.STRATEGY, model: strategy })
   }
 
   editDeposit(deposit: Deposit) {

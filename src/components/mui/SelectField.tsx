@@ -9,6 +9,7 @@ interface Props {
   label: string
   onChange: (value: string) => void
   options: Array<{ label: string, value: string }>
+  emptyLabel?: string
   required?: ComponentProps<typeof FormControl>['required']
   size?: ComponentProps<typeof FormControl>['size']
   sx?: ComponentProps<typeof FormControl>['sx']
@@ -23,6 +24,7 @@ export function SelectField({
   label,
   onChange,
   options,
+  emptyLabel = 'None',
   required,
   size,
   sx,
@@ -52,7 +54,7 @@ export function SelectField({
               onChange={onChangeEvent}
               value={value}
             >
-              {allowEmpty && <MenuItem value=''><em>Please select</em></MenuItem>}
+              {allowEmpty && <MenuItem value=''><em>{emptyLabel}</em></MenuItem>}
               {options.map(({ label, value }) => <MenuItem key={value} value={value}>{label}</MenuItem>)}
             </Select>
           ) : (
@@ -63,7 +65,7 @@ export function SelectField({
               }}
               value={value}
             >
-              {(value === '' || allowEmpty) && <option hidden value='' style={{ display: 'none' }}><em>Please select</em></option>}
+              {(value === '' || allowEmpty) && <option hidden value='' style={{ display: 'none' }}><em>{emptyLabel}</em></option>}
               {options.map(({ label, value }) => <option key={value} value={value}>{label}</option>)}
             </NativeSelect>
           )
