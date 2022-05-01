@@ -1,3 +1,4 @@
+import { Person as MUIPersonIcon } from '@mui/icons-material'
 import { addYears, differenceInYears } from 'date-fns'
 import { makeAutoObservable } from 'mobx'
 import { computedFn } from 'mobx-utils'
@@ -8,13 +9,9 @@ import type { Store } from './Store'
 
 export type PersonId = string & { __personId__: never }
 
-export type PersonDetails = {
-  id: PersonId
-  name: string
-  dob: YYYYMM
-}
-
 export type PersonJSON = typeof Person.prototype.json
+
+export const PersonIcon = MUIPersonIcon
 
 export class Person {
   store: Store
@@ -23,7 +20,11 @@ export class Person {
   name: string
   dob: YYYYMM
 
-  constructor(store: Store, { id, name, dob }: PersonDetails) {
+  constructor(
+    store: Store,
+    { id, name, dob }:
+      Pick<Person, 'id' | 'name' | 'dob'>
+  ) {
     makeAutoObservable(this, { store: false }, { autoBind: true })
 
     this.store = store
@@ -33,15 +34,17 @@ export class Person {
     this.dob = dob
   }
 
-  static create(store: Store, details: Omit<PersonDetails, 'id'>) {
-    return new Person(store, {
-      ...details,
-      id: nanoid(10) as PersonId
-    })
+  static createId() {
+    return nanoid(10) as PersonId
   }
 
-  static fromJSON(store: Store, json: PersonJSON) {
-    return new Person(store, json)
+  static fromJSON(store: Store, json: PersonJSON, copy?: boolean) {
+    const { id, ...rest } = json
+
+    return new Person(store, {
+      id: copy ? Person.createId() : id,
+      ...rest
+    })
   }
 
   get accounts() {
@@ -58,6 +61,13 @@ export class Person {
 
   get dobAsDate() {
     return fromYYYYMM(this.dob)
+  }
+
+  restore(details: PersonJSON, copy?: boolean) {
+    const { name, dob } = details
+
+    this.name = name
+    this.dob = dob
   }
 
   get json() {

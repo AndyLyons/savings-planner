@@ -30,7 +30,7 @@ export const Export = observer(function Export({ sx }: Props) {
     <Card sx={sx}>
       <CardContent>
         <Typography variant='h6' component='h2'>Export</Typography>
-        <Typography sx={{ ml: 1, mt: 1 }}>Copy this string to another PC to export settings</Typography>
+        <Typography sx={{ ml: 1, mt: 1 }}>Copy this text to another PC to export settings</Typography>
         <TextField
           InputProps={{
             endAdornment: (

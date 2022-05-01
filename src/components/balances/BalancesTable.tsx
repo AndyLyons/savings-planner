@@ -1,63 +1,57 @@
 import { Add, Edit } from '@mui/icons-material'
-import { Box, Button, Tooltip } from '@mui/material'
+import { Box, Button } from '@mui/material'
 import classNames from 'classnames'
 import { format } from 'date-fns'
 import { observer } from 'mobx-react-lite'
-import { forwardRef, useCallback } from 'react'
+import { forwardRef } from 'react'
 import AutoSizer from 'react-virtualized-auto-sizer'
 import type { ListChildComponentProps, ListItemKeySelector } from 'react-window'
 import { FixedSizeList } from 'react-window'
-import type { AccountId } from '../../state/Account'
-import type { Balance } from '../../state/Balance'
+import type { Account, AccountId } from '../../state/Account'
 import type { PersonId } from '../../state/Person'
 import { Period } from '../../state/Store'
 import type { YYYYMM } from '../../utils/date'
 import { fromYYYYMM } from '../../utils/date'
-import { useBind } from '../../utils/hooks'
-import { useStore, useUI } from '../../utils/mobx'
-import { getButtonColour, getDirection } from './utils'
+import { useAction, useStore } from '../../utils/mobx'
 
 type Dates = Array<YYYYMM>
 
 const formatMonthYear = (period: Period, date: YYYYMM) => format(fromYYYYMM(date), period === Period.MONTH ? 'MMM yyyy' : 'yyyy')
 
 const AgeCell = observer(function AgeCell({ date, personId }: { date: YYYYMM, personId: PersonId }) {
-  const age = useStore(store => store.people.getPerson(personId).getAge(date))
+  const age = useStore(store => store.people.get(personId).getAge(date))
   return <div className='table-cell table-column--age'>{age}</div>
 })
 
 const AddIcon = <Add sx={{ fontSize: 'inherit !important' }} />
 const EditIcon = <Edit sx={{ fontSize: 'inherit !important' }} />
 
-function BalanceButton({ balance, interpolated }: { balance: Balance, interpolated: number | undefined }) {
-  const ui = useUI()
-  const editBalance = useBind(ui.editBalance, balance)
+const KnownBalance = observer(function KnownBalance({ account, date }: { account: Account, date: YYYYMM }) {
+  const balance = account.balances.get(date)
 
-  const direction = getDirection(balance.value, interpolated)
-  const buttonColour = getButtonColour(direction)
+  const editBalance = useAction(store => {
+    store.dialogs.editBalance(balance)
+  }, [balance])
 
   return (
-    <Tooltip placement='right' title={interpolated?.toFixed(0) ?? ''}>
-      <Button
-        className="table-column--account_edit-balance"
-        color={buttonColour}
-        onClick={editBalance}
-        endIcon={EditIcon}
-        size='small'
-        variant='contained'
-      >
-        {balance.value.toFixed(0)}
-      </Button>
-    </Tooltip>
+    <Button
+      className="table-column--account_edit-balance"
+      onClick={editBalance}
+      endIcon={EditIcon}
+      size='small'
+      variant='contained'
+    >
+      {balance.value.toFixed(0)}
+    </Button>
   )
-}
+})
 
-function InterpolatedButton({ account, date, interpolated }: { account: AccountId, date: YYYYMM, interpolated: number | undefined }) {
-  const ui = useUI()
+const PredictedBalance = observer(function PredictedBalance({ account, date }: { account: Account, date: YYYYMM }) {
+  const balanceValue = account.getBalance(date)
 
-  const createBalance = useCallback(() => {
-    ui.createBalanceFrom({ date, account })
-  }, [ui, date, account])
+  const createBalance = useAction((store) => {
+    store.dialogs.createBalance(account, { date })
+  }, [date, account])
 
   return (
     <Button
@@ -66,20 +60,23 @@ function InterpolatedButton({ account, date, interpolated }: { account: AccountI
       endIcon={AddIcon}
       size='small'
       variant='contained'
-    >{interpolated?.toFixed(0)}</Button>
+    >
+      {balanceValue ? balanceValue.toFixed(0) : ''}
+    </Button>
   )
-}
+})
 
 const AccountBalanceCell = observer(function AccountBalanceCell({ date, accountId }: { date: YYYYMM, accountId: AccountId }) {
-  const store = useStore()
-  const account = store.accounts.getAccount(accountId)
-  const balance = account.balances.getBalance(date)
-  const interpolated = account.balances.interpolateBalance(date)
+  const account = useStore(store => store.accounts.get(accountId))
+  const hasConcreteBalance = account.balances.has(date)
 
   return (
     <div className='table-cell table-column--account-balance'>
-      {balance && <BalanceButton balance={balance} interpolated={interpolated} />}
-      {!balance && <InterpolatedButton account={accountId} date={date} interpolated={interpolated} />}
+      {
+        hasConcreteBalance
+          ? <KnownBalance account={account} date={date} />
+          : <PredictedBalance account={account} date={date} />
+      }
     </div>
   )
 })
@@ -87,17 +84,25 @@ const AccountBalanceCell = observer(function AccountBalanceCell({ date, accountI
 const TotalBalanceCell = observer(function TotalBalanceCell({ date }: { date: YYYYMM }) {
   const store = useStore()
   const balances = store.accounts.values.map(account => {
-    const balance = account.balances.getBalance(date)?.value
-    return balance ?? account.balances.interpolateBalance(date)
+    const balance = account.balances.get(date)?.value
+    return balance ?? account.getBalance(date)
   })
 
-  const total = balances.reduce((sum, value) => (
-    value !== undefined ? (sum ?? 0) + value : sum
-  ), undefined)
+  const total = balances.reduce((sum, value) => sum + value, 0)
 
   return (
-    <div className='table-cell table-column--total'>{total?.toFixed(0)}</div>
+    <div className='table-cell table-column--total'>{total ? total.toFixed(0) : ''}</div>
   )
+})
+
+const AccountIncomeCell = observer(function AccountIncomeCell({ date, accountId }: { date: YYYYMM, accountId: AccountId }) {
+  const account = useStore(store => store.accounts.get(accountId))
+  const income = account.getWithdrawals(date)
+
+  return (
+    <div className='table-cell table-column--account-income'>{income ? income.toFixed(0) : ''}</div>
+  )
+
 })
 
 type RowProps = ListChildComponentProps<Dates>
@@ -116,7 +121,7 @@ const TableRow = observer(function TableRow(props: RowProps) {
       ))}
       <div className='table-cell table-column--total' />
       {accounts.keys.map(accountId => (
-        <div key={accountId} className='table-cell table-column--account-income' />
+        <AccountIncomeCell key={accountId} date={date} accountId={accountId} />
       ))}
       <TotalBalanceCell date={date} />
       {accounts.keys.map(accountId => (

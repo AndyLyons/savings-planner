@@ -46,7 +46,7 @@
 .table-column--date {
   position: sticky;
   left: 0;
-  justify-content: right;
+  /* justify-content: right; */
   width: 100px;
   z-index: 1;
 }
@@ -60,9 +60,14 @@
   display: none;
 }
 
+.table-column--total,
 .table-column--account-income,
 .table-column--account-balance {
   width: 150px;
+  justify-content: right;
+}
+
+.table-column--account-balance {
   padding: 0;
 }
 
@@ -73,8 +78,6 @@
 
 .table-column--total {
   font-weight: 600;
-  justify-content: right;
-  width: 150px;
 }
 
 .table-column--total {

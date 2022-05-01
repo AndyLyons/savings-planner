@@ -21,7 +21,7 @@ export const Import = observer(function Import({ sx }: Props) {
     try {
       const decodedImportString = atob(importedString)
       const parsedImportString = JSON.parse(decodedImportString)
-      store.restoreSnapshot(parsedImportString)
+      store.restore(parsedImportString, false)
       setImportedString('')
       setImportSucceeded(true)
     } catch {
@@ -33,7 +33,7 @@ export const Import = observer(function Import({ sx }: Props) {
     <Card sx={sx}>
       <CardContent>
         <Typography variant='h6' component='h2'>Import</Typography>
-        <Typography sx={{ ml: 1, mt: 1 }}>Paste the string from another PC to import settings</Typography>
+        <Typography sx={{ ml: 1, mt: 1 }}>Paste the text from another PC to import settings</Typography>
         <TextField
           InputProps={{
             endAdornment: (

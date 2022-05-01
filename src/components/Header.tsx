@@ -7,7 +7,6 @@ import {
 } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
-import type { StrategyId } from '../state/Strategy';
 import { fromYYYYMM, isDate, toYYYYMM } from '../utils/date';
 import type { ChangeEvent } from '../utils/hooks';
 import { getTargetValue } from '../utils/hooks';
@@ -57,11 +56,11 @@ export const Header = observer(function Header({ sx }: Props) {
   }, [])
 
   const onStrategyChanged = useAction((_, value: string) => {
-    if (store.strategies.isStrategyId(value)) {
-      const strategy = store.strategies.getStrategy(value)
-      store.currentStrategy = strategy
+    if (store.strategies.has(value)) {
+      const strategy = store.strategies.get(value)
+      store.strategy = strategy
     } else {
-      store.currentStrategy = null
+      store.strategy = null
     }
   }, [])
 
@@ -73,10 +72,12 @@ export const Header = observer(function Header({ sx }: Props) {
             {store.menu.isOpen ? <Close /> : <Menu />}
           </IconButton>
         </Hidden>
-        <Icon sx={{ mr: 1 }}><ShowChart /></Icon>
-        <Typography variant='h5' component='h1' onClick={navigateHome} sx={{ cursor: 'pointer' }}>
-          Savings Planner
-        </Typography>
+        <Hidden mdDown>
+          <Icon sx={{ mr: 1 }}><ShowChart /></Icon>
+          <Typography variant='h5' component='h1' onClick={navigateHome} sx={{ cursor: 'pointer' }}>
+            Savings Planner
+          </Typography>
+        </Hidden>
         <ThemeProvider theme={darkTheme}>
           <SelectField
             allowEmpty
@@ -85,7 +86,7 @@ export const Header = observer(function Header({ sx }: Props) {
             options={store.strategies.values.map(({ id, name }) => ({ value: id, label: name }))}
             size='small'
             sx={{ ml: 'auto', width: '120px' }}
-            value={store.currentStrategy?.id ?? ''}
+            value={store.strategy?.id ?? ''}
           />
           <DatePicker
             label='Retirement date'

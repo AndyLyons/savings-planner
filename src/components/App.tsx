@@ -6,7 +6,7 @@ import { observer } from 'mobx-react-lite';
 import { HashRouter, Route, Routes } from 'react-router-dom';
 import { useStore } from '../utils/mobx';
 import { Balances } from './balances/Balances';
-import { Dialogs } from './Dialogs';
+import { Dialogs } from './dialogs/Dialogs';
 import { Header } from './Header';
 import { COLLAPSED_MENU_WIDTH, FULL_MENU_WIDTH, Menu } from './Menu';
 import { Settings } from './Settings';

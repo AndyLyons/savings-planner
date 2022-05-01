@@ -3,24 +3,17 @@ import { nanoid } from 'nanoid';
 import type { YYYYMM } from '../utils/date';
 import { extract } from '../utils/fn';
 import type { Account } from './Account';
-import type { Period, Store } from './Store';
+import { Period, Store } from './Store';
 import type { Strategy } from './Strategy';
 
+export const START = '__START__'
 export const RETIREMENT = '__RETIREMENT__'
 
 export type DepositId = string & { depositId__: never }
 
-export type DepositDetails = {
-  id: DepositId
-  account: Account
-  amount: number
-  startDate: YYYYMM
-  repeating: boolean
-  endDate: YYYYMM | typeof RETIREMENT | null
-  period: Period | null
-}
-
 export type DepositJSON = typeof Deposit.prototype.json
+
+export { DepositIcon } from '../components/icons/DepositIcon';
 
 export class Deposit {
   store: Store
@@ -29,13 +22,18 @@ export class Deposit {
   id: DepositId
   account: Account
   amount: number
-  startDate: YYYYMM
+  startDate: YYYYMM | typeof START
   repeating: boolean
   endDate: YYYYMM | typeof RETIREMENT | null
   period: Period | null
 
-  constructor(store: Store, strategy: Strategy, { id, account, amount, startDate, repeating, endDate, period }: DepositDetails) {
-    makeAutoObservable(this, { store: false }, { autoBind: true })
+  constructor(
+    store: Store,
+    strategy: Strategy,
+    { id, account, amount, startDate, repeating, endDate, period }:
+      Pick<Deposit, 'id' | 'account' | 'amount' | 'startDate' | 'repeating' | 'endDate' | 'period'>
+  ) {
+    makeAutoObservable(this, { store: false, strategy: false }, { autoBind: true })
 
     this.store = store
     this.strategy = strategy
@@ -49,16 +47,42 @@ export class Deposit {
     this.period = period
   }
 
-  static create(store: Store, strategy: Strategy, details: Omit<DepositDetails, 'id'>) {
+  static createId() {
+    return nanoid(10) as DepositId
+  }
+
+  static fromJSON(store: Store, strategy: Strategy, json: DepositJSON, copy?: boolean) {
+    const { id, account: accountId, ...rest } = json
+
+    const account = store.accounts.get(accountId)
     return new Deposit(store, strategy, {
-      ...details,
-      id: nanoid(10) as DepositId
+      id: copy ? Deposit.createId() : id,
+      account,
+      ...rest
     })
   }
 
-  static fromJSON(store: Store, strategy: Strategy, { account: accountId, ...details }: DepositJSON) {
-    const account = store.accounts.getAccount(accountId)
-    return new Deposit(store, strategy, { ...details, account })
+  get startDateValue() {
+    return this.startDate === START ? this.store.start : this.startDate
+  }
+
+  get endDateValue() {
+    return this.endDate === RETIREMENT ? this.store.retireOn : this.endDate
+  }
+
+  get monthlyAmount() {
+    return this.period === Period.YEAR ? this.amount / 12 : this.amount
+  }
+
+  restore(json: DepositJSON, copy?: boolean) {
+    const { account: accountId, amount, startDate, repeating, endDate, period } = json
+
+    this.account = this.store.accounts.get(accountId)
+    this.amount = amount
+    this.startDate = startDate
+    this.repeating = repeating
+    this.endDate = endDate
+    this.period = period
   }
 
   get json() {

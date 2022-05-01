@@ -22,7 +22,7 @@ export const StrategyListItem = observer(function StrategyListItem({ strategy, o
       ...json,
       name: `${json.name} (copy)`
     }
-    store.strategies.addStrategy(Strategy.fromJSON(store, copy))
+    store.strategies.create(copy, true)
   }, [])
 
   return (

@@ -4,12 +4,13 @@ import { computedFn } from 'mobx-utils'
 import React from 'react'
 import { addMonth, fromYYYYMM, toYYYYMM, YYYYMM } from '../utils/date'
 import { extract } from '../utils/fn'
-import { Accounts } from './Accounts'
+import { Account, AccountId } from './Account'
+import { Collection } from './Collection'
+import { Dialogs } from './Dialogs'
 import { Menu } from './Menu'
-import { People } from './People'
 import { Persistence } from './Persistence'
-import { Strategies } from './Strategies'
-import { Strategy } from './Strategy'
+import { Person, PersonId } from './Person'
+import { Strategy, StrategyId } from './Strategy'
 
 export enum Period {
   MONTH = 'month',
@@ -21,17 +22,27 @@ export type StoreJSON = typeof Store.prototype.json
 export class Store {
   globalGrowth: number = 4
   period: Period = Period.YEAR
-  showAges: boolean = false
-  showAccounts: boolean = false
+  showAges: boolean = true
+  showAccounts: boolean = true
   start: YYYYMM
   end: YYYYMM
   retireOn: YYYYMM
-  currentStrategy: Strategy | null = null
+  strategy: Strategy | null = null
 
+  dialogs: Dialogs = new Dialogs(this)
   menu: Menu = new Menu(this)
-  accounts: Accounts = new Accounts(this)
-  people: People = new People(this)
-  strategies: Strategies = new Strategies(this)
+  accounts: Collection<Account, AccountId> = new Collection({
+    getId: account => account.id,
+    fromJSON: (json, copy) => Account.fromJSON(this, json, copy)
+  })
+  people: Collection<Person, PersonId> = new Collection({
+    getId: person => person.id,
+    fromJSON: (json, copy) => Person.fromJSON(this, json, copy)
+  })
+  strategies: Collection<Strategy, StrategyId> = new Collection({
+    getId: strategy => strategy.id,
+    fromJSON: (json, copy) => Strategy.fromJSON(this, json, copy)
+  })
 
   constructor() {
     makeAutoObservable(this, undefined, { autoBind: true })
@@ -89,6 +100,7 @@ export class Store {
         'end'
       ),
 
+      strategy: this.strategy?.id ?? null,
       people: this.people.toJSON(),
       accounts: this.accounts.toJSON(),
       strategies: this.strategies.toJSON()
@@ -99,21 +111,23 @@ export class Store {
     return this.json
   }
 
-  restoreSnapshot(snapshot: StoreJSON) {
-    this.globalGrowth = snapshot.globalGrowth
-    this.period = snapshot.period
-    this.showAccounts = snapshot.showAccounts
-    this.showAges = snapshot.showAges
-    this.start = snapshot.start
-    this.end = snapshot.end
+  restore(json: StoreJSON, copy?: boolean) {
+    this.globalGrowth = json.globalGrowth
+    this.period = json.period
+    this.showAccounts = json.showAccounts
+    this.showAges = json.showAges
+    this.start = json.start
+    this.end = json.end
 
-    this.people.restoreSnapshot(snapshot.people)
-    this.accounts.restoreSnapshot(snapshot.accounts)
-    this.strategies.restoreSnapshot(snapshot.strategies)
+    this.people.restore(json.people, copy)
+    this.accounts.restore(json.accounts, copy)
+    this.strategies.restore(json.strategies, copy)
+
+    this.strategy = json.strategy ? this.strategies.get(json.strategy) : null
   }
 }
 
-const store = new Store()
+export const store = new Store()
 const persistence = new Persistence(store)
 persistence.start()
 

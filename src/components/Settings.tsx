@@ -1,6 +1,8 @@
-import { AccountBalance, CurrencyExchange, Person as PersonIcon } from '@mui/icons-material';
 import { Box, Paper, SpeedDialAction } from '@mui/material';
-import { useUI } from '../utils/mobx';
+import { AccountIcon } from '../state/Account';
+import { PersonIcon } from '../state/Person';
+import { StrategyIcon } from '../state/Strategy';
+import { useStore } from '../utils/mobx';
 import { Accounts } from './accounts/Accounts';
 import { Export } from './import/Export';
 import { Import } from './import/Import';
@@ -9,7 +11,7 @@ import { People } from './people/People';
 import { Strategies } from './strategies/Strategies';
 
 export function Settings() {
-  const ui = useUI()
+  const store = useStore()
 
   return (
     <Box sx={{ minHeight: 0, overflow: 'auto' }}>
@@ -18,29 +20,29 @@ export function Settings() {
         <Import sx={{ flexGrow: 1, ml: 1 }} />
       </Box>
       <Paper sx={{ p: 2, mb: 2 }}>
-        <People onClick={ui.editPerson} />
+        <People onClick={store.dialogs.editPerson} />
       </Paper>
       <Paper sx={{ p: 2, mb: 2 }}>
-        <Accounts onClick={ui.editAccount} />
+        <Accounts onClick={store.dialogs.editAccount} />
       </Paper>
       <Paper sx={{ p: 2 }}>
-        <Strategies onClick={ui.editStrategy} />
+        <Strategies onClick={store.dialogs.editStrategy} />
       </Paper>
       <SpeedDial ariaLabel='settings-actions'>
         <SpeedDialAction
-          icon={<AccountBalance />}
-          onClick={ui.createAccount}
+          icon={<StrategyIcon />}
+          onClick={() => store.dialogs.createStrategy()}
+          tooltipTitle='Strategy'
+        />
+        <SpeedDialAction
+          icon={<AccountIcon />}
+          onClick={() => store.dialogs.createAccount()}
           tooltipTitle='Account'
         />
         <SpeedDialAction
           icon={<PersonIcon />}
-          onClick={ui.createPerson}
+          onClick={() => store.dialogs.createPerson()}
           tooltipTitle='Person'
-        />
-        <SpeedDialAction
-          icon={<CurrencyExchange />}
-          onClick={ui.createStrategy}
-          tooltipTitle='Strategy'
         />
       </SpeedDial>
     </Box>

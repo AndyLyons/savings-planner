@@ -14,7 +14,7 @@ export class Persistence {
       const persisted = localStorage.getItem('store')
 
       if (persisted) {
-        this.store.restoreSnapshot(JSON.parse(persisted))
+        this.store.restore(JSON.parse(persisted), false)
       }
 
       this.disposer = reaction(

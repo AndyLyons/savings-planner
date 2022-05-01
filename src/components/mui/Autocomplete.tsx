@@ -3,6 +3,7 @@ import { ComponentProps, useCallback } from 'react'
 import { useBoolean } from '../../utils/hooks'
 
 interface Props<T extends string> {
+  autoFocus?: boolean
   disabled?: boolean
   getOptionLabel: (id: T) => string
   label: ComponentProps<typeof TextField>['label']
@@ -14,6 +15,7 @@ interface Props<T extends string> {
 }
 
 export function Autocomplete<T extends string>({
+  autoFocus,
   disabled,
   getOptionLabel,
   label,
@@ -42,6 +44,7 @@ export function Autocomplete<T extends string>({
       renderInput={(params) =>
         <TextField
           {...params}
+          autoFocus={autoFocus}
           label={label}
           onKeyDown={isOpen ? undefined : onKeyDown}
           required={required}
