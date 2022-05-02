@@ -105,6 +105,19 @@ const AccountIncomeCell = observer(function AccountIncomeCell({ date, accountId 
 
 })
 
+const TotalIncomeCell = observer(function TotalIncomeCell({ date }: { date: YYYYMM }) {
+  const store = useStore()
+  const withdrawals = store.accounts.values.map(account =>
+    account.getWithdrawals(date)
+  )
+
+  const total = withdrawals.reduce((sum, value) => sum + value, 0)
+
+  return (
+    <div className='table-cell table-column--total'>{total ? total.toFixed(0) : ''}</div>
+  )
+})
+
 type RowProps = ListChildComponentProps<Dates>
 
 const TableRow = observer(function TableRow(props: RowProps) {
@@ -119,7 +132,7 @@ const TableRow = observer(function TableRow(props: RowProps) {
       {people.keys.map(personId => (
         <AgeCell key={personId} date={date} personId={personId} />
       ))}
-      <div className='table-cell table-column--total' />
+      <TotalIncomeCell date={date} />
       {accounts.keys.map(accountId => (
         <AccountIncomeCell key={accountId} date={date} accountId={accountId} />
       ))}
