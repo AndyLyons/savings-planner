@@ -41,9 +41,9 @@ export class Store {
   constructor() {
     makeAutoObservable(this, undefined, { autoBind: true })
 
-    this.start = '2020' as YYYY
+    this.start = 2020 as YYYY
     this.end = addYear(this.start, 100)
-    this.retireOn = '2037' as YYYY
+    this.retireOn = 2037 as YYYY
   }
 
   get startYear() {

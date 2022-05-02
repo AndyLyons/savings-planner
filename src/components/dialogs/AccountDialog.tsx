@@ -44,7 +44,7 @@ export const AccountDialog = createDialog<AccountJSON>('account', <AccountIcon /
     type: 'collection',
     dialogType: DialogType.BALANCE,
     label: 'Balances',
-    getKey: (store, balance) => balance.year,
+    getKey: (store, balance) => `${balance.year}`,
     getLabel: (store, balance) => `${balance.year} - £${balance.value}`,
     icon: <List />,
     itemIcon: <BalanceIcon />

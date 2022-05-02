@@ -18,7 +18,7 @@ export type Item<J extends JSON> = {
 
 type GetJSON<T> = T extends { toJSON: () => infer J } ? J : never
 
-export class Collection<T extends Item<J>, K extends string, J extends JSON = GetJSON<T>> {
+export class Collection<T extends Item<J>, K extends string | number, J extends JSON = GetJSON<T>> {
   data: Record<K, T> = {} as Record<K, T>
   getId: (item: T | J) => K
   fromJSON: (json: J, newIds?: boolean) => T
@@ -57,12 +57,12 @@ export class Collection<T extends Item<J>, K extends string, J extends JSON = Ge
     return this.data[id]
   }
 
-  has(id: string | undefined): id is K {
+  has(id: string | number | undefined): id is K {
     return id !== undefined && id in this.data
   }
 
   remove(idOrItem: K | T) {
-    const id = typeof idOrItem === 'string' ? idOrItem : this.getId(idOrItem)
+    const id = typeof idOrItem === 'string' || typeof idOrItem === 'number' ? idOrItem : this.getId(idOrItem as T)
     const item = this.data[id]
     delete this.data[id]
     return item
