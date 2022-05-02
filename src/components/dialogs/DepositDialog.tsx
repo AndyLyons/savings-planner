@@ -1,6 +1,6 @@
 import { AccountBalance, CurrencyPound, Event, EventRepeat, Loop } from '@mui/icons-material'
 import { Deposit, DepositIcon, DepositJSON, RETIREMENT, START } from '../../state/Deposit'
-import { Period } from '../../state/Store'
+import { Period } from '../../utils/date'
 import { useStore } from '../../utils/mobx'
 import { createDialog } from './createDialog'
 
@@ -23,8 +23,15 @@ export const DepositDialog = createDialog<DepositJSON>('deposit schedule', <Depo
     icon: <CurrencyPound />,
     required: true
   },
-  startDate: {
-    type: 'yyyymm',
+  period: {
+    type: 'string',
+    label: 'Per',
+    icon: <EventRepeat />,
+    useOptions: () => [{ id: Period.MONTH, label: 'Month' }, { id: Period.YEAR, label: 'Year' }],
+    required: true
+  },
+  startYear: {
+    type: 'yyyy',
     label: 'On',
     icon: <Event />,
     required: true,
@@ -39,16 +46,8 @@ export const DepositDialog = createDialog<DepositJSON>('deposit schedule', <Depo
     icon: <Loop />,
     required: false
   },
-  period: {
-    type: 'string',
-    label: 'Every',
-    icon: <EventRepeat />,
-    useOptions: () => [{ id: Period.MONTH, label: 'Month' }, { id: Period.YEAR, label: 'Year' }],
-    getVisible: (state) => state.repeating === true,
-    required: true
-  },
-  endDate: {
-    type: 'yyyymm',
+  endYear: {
+    type: 'yyyy',
     label: 'Until',
     icon: <Event />,
     getVisible: (state) => state.repeating === true,
@@ -59,5 +58,7 @@ export const DepositDialog = createDialog<DepositJSON>('deposit schedule', <Depo
     }
   }
 }, {
-  startDate: START
+  period: Period.MONTH,
+  repeating: true,
+  startYear: START
 })

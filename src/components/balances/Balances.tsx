@@ -2,7 +2,6 @@ import {
   Box, Breadcrumbs, Paper, Typography
 } from '@mui/material'
 import { observer } from 'mobx-react-lite'
-import { PeriodToggle } from '../common/PeriodToggle'
 import { ShowAccountsToggle } from '../common/ShowAccountsToggle'
 import { ShowAgesToggle } from '../common/ShowAgesToggle'
 import './Balances.css'
@@ -23,7 +22,6 @@ export const Balances = observer(function Balances() {
         mb: 1,
         mt: 1
       }}>
-        <PeriodToggle sx={{ mr: 2 }} />
         <ShowAgesToggle sx={{ mr: 2 }} />
         <ShowAccountsToggle />
       </Box>

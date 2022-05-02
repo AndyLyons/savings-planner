@@ -3,7 +3,7 @@ import { addYears, differenceInYears } from 'date-fns'
 import { makeAutoObservable } from 'mobx'
 import { computedFn } from 'mobx-utils'
 import { nanoid } from 'nanoid'
-import { fromYYYYMM, toYYYYMM, YYYYMM } from '../utils/date'
+import { fromYYYY, toYYYY, YYYY } from '../utils/date'
 import { extract } from '../utils/fn'
 import type { Store } from './Store'
 
@@ -18,7 +18,7 @@ export class Person {
 
   id: PersonId
   name: string
-  dob: YYYYMM
+  dob: YYYY
 
   constructor(
     store: Store,
@@ -51,16 +51,16 @@ export class Person {
     return this.store.accounts.values.filter(account => account.owner === this)
   }
 
-  getAge = computedFn((date: YYYYMM) => {
-    return differenceInYears(fromYYYYMM(date), this.dobAsDate)
+  getAge = computedFn((date: YYYY) => {
+    return differenceInYears(fromYYYY(date), this.dobAsDate)
   })
 
   getDateWhenAge = computedFn((age: number) => {
-    return toYYYYMM(addYears(this.dobAsDate, age))
+    return toYYYY(addYears(this.dobAsDate, age))
   })
 
   get dobAsDate() {
-    return fromYYYYMM(this.dob)
+    return fromYYYY(this.dob)
   }
 
   restore(details: PersonJSON, copy?: boolean) {

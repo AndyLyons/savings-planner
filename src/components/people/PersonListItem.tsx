@@ -2,7 +2,6 @@ import { Person as PersonIcon } from '@mui/icons-material'
 import { ListItemButton, ListItemIcon, ListItemText, Typography } from '@mui/material'
 import { observer } from 'mobx-react-lite'
 import type { Person } from '../../state/Person'
-import { formatYYYYMM } from '../../utils/date'
 import { useBind } from '../../utils/hooks'
 
 interface Props {
@@ -22,7 +21,7 @@ export const PersonListItem = observer(function PersonListItem({ person, onClick
         primary={
           <>
             <Typography sx={{ fontWeight: 'bold' }} component='span'>{person.name}</Typography>
-            <Typography component='span'> - {formatYYYYMM(person.dob)}</Typography>
+            <Typography component='span'> - {person.dob}</Typography>
           </>
         }
       />

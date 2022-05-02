@@ -15,9 +15,9 @@ export const PersonDialog = createDialog<PersonJSON>('person', <PersonIcon />, {
     type: 'string'
   },
   dob: {
-    label: 'Date of birth',
+    label: 'Year of birth',
     icon: <Event />,
     required: true,
-    type: 'yyyymm'
+    type: 'yyyy'
   }
 })

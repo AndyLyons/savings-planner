@@ -10,15 +10,15 @@ import { cloneElement, Fragment, ReactElement, useReducer } from 'react'
 import type { DialogType } from '../../state/Dialogs'
 import type { Store } from '../../state/Store'
 import { useIsDesktop } from '../../utils/breakpoints'
-import { fromYYYYMM, isDate, toYYYYMM, YYYYMM } from '../../utils/date'
+import { fromYYYY, isDate, toYYYY, YYYY } from '../../utils/date'
 import { entries, KeyValues } from '../../utils/fn'
 import { getTargetChecked, getTargetValue, useKeyPress, useStopEvent } from '../../utils/hooks'
 import { useStore } from '../../utils/mobx'
 import { Autocomplete, IconField } from '../mui'
 
 type FieldType<T> =
-  T extends YYYYMM ? {
-    type: 'yyyymm'
+  T extends YYYY ? {
+    type: 'yyyy'
   } :
   T extends string ? {
     type: 'string'
@@ -41,8 +41,8 @@ type FieldType<T> =
 
 type FormField<T, K extends keyof T> = FieldType<T[K]> & {
   autoFocus?: boolean
-  icon: ReactElement
-  label: string
+  icon: ReactElement | ((state: T) => ReactElement)
+  label: string | ((state: T) => string)
   readonly?: boolean
   required?: boolean
   useConstantOption?: () => { label: string, value: T[K], constantValue: T[K] }
@@ -135,7 +135,10 @@ export function createDialog<T>(name: string, icon: ReactElement, fields: Fields
                 return null
               }
 
-              const { type, icon, label, autoFocus, readonly, required, getVisible, useConstantOption } = field
+              const { type, icon: iconGetter, label: labelGetter, autoFocus, readonly, required, getVisible, useConstantOption } = field
+
+              const icon = typeof iconGetter === 'function' ? iconGetter(state) : iconGetter
+              const label = typeof labelGetter === 'function' ? labelGetter(state) : labelGetter
 
               // Fields are static at runtime - this will either always be called
               // or never be called and wont change each render
@@ -261,13 +264,13 @@ export function createDialog<T>(name: string, icon: ReactElement, fields: Fields
                         </>
                       )
                     })()}
-                    {type === 'yyyymm' && !useConstantOption && (
+                    {type === 'yyyy' && !useConstantOption && (
                       <DatePicker
                         disabled={isDisabled}
                         label={label}
                         onChange={(value) => dispatch({
                           key: name,
-                          value: (isDate(value) ? toYYYYMM(value) : undefined) as unknown as T[keyof T]
+                          value: (isDate(value) ? toYYYY(value) : undefined) as unknown as T[keyof T]
                         })}
                         renderInput={(props: TextFieldProps) => (
                           <TextField
@@ -279,11 +282,11 @@ export function createDialog<T>(name: string, icon: ReactElement, fields: Fields
                             size='small'
                           />
                         )}
-                        value={state[name] ? fromYYYYMM(state[name] as unknown as YYYYMM) : null}
-                        views={['month', 'year']}
+                        value={state[name] ? fromYYYY(state[name] as unknown as YYYY) : null}
+                        views={['year']}
                       />
                     )}
-                    {type === 'yyyymm' && useConstantOption && (() => {
+                    {type === 'yyyy' && useConstantOption && (() => {
                       // These is OK because the fields can't change at runtime
                       // and will always run in exactly the same order
 
@@ -300,7 +303,7 @@ export function createDialog<T>(name: string, icon: ReactElement, fields: Fields
                             label={label}
                             onChange={(value) => dispatch({
                               key: name,
-                              value: (isDate(value) ? toYYYYMM(value) : undefined) as unknown as T[keyof T]
+                              value: (isDate(value) ? toYYYY(value) : undefined) as unknown as T[keyof T]
                             })}
                             renderInput={(props: TextFieldProps) => (
                               <TextField
@@ -312,8 +315,8 @@ export function createDialog<T>(name: string, icon: ReactElement, fields: Fields
                                 size='small'
                               />
                             )}
-                            value={value === valueWhenConstant ? fromYYYYMM(constantValue as unknown as YYYYMM) : value ? fromYYYYMM(value as unknown as YYYYMM) : null}
-                            views={['month', 'year']}
+                            value={value === valueWhenConstant ? fromYYYY(constantValue as unknown as YYYY) : value ? fromYYYY(value as unknown as YYYY) : null}
+                            views={['year']}
                           />
                           <FormControlLabel label={constantLabel} control={
                             <Checkbox checked={value === valueWhenConstant} disabled={isDisabled} onChange={(e) => {

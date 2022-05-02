@@ -1,9 +1,9 @@
 import { List, ShortText } from '@mui/icons-material'
 import { DepositIcon } from '../../state/Deposit'
 import { DialogType } from '../../state/Dialogs'
-import { Period } from '../../state/Store'
 import { Strategy, StrategyIcon, StrategyJSON } from '../../state/Strategy'
-import { WithdrawalIcon } from '../../state/Withdrawal'
+import { WithdrawalIcon, WithdrawalType } from '../../state/Withdrawal'
+import { Period } from '../../utils/date'
 import { createDialog } from './createDialog'
 
 export const StrategyDialog = createDialog<StrategyJSON>('strategy', <StrategyIcon />, {
@@ -25,7 +25,7 @@ export const StrategyDialog = createDialog<StrategyJSON>('strategy', <StrategyIc
     icon: <List />,
     itemIcon: <DepositIcon />,
     getKey: (store, deposit) => deposit.id,
-    getLabel: (store, deposit) => `${store.accounts.get(deposit.account).name} £${deposit.amount} / ${deposit.period === Period.MONTH ? 'month' : 'year'}`
+    getLabel: (store, deposit) => `${store.accounts.get(deposit.account).name}  - £${deposit.amount} / ${deposit.period === Period.MONTH ? 'month' : 'year'}`
   },
   withdrawals: {
     type: 'collection',
@@ -34,8 +34,11 @@ export const StrategyDialog = createDialog<StrategyJSON>('strategy', <StrategyIc
     icon: <List />,
     itemIcon: <WithdrawalIcon />,
     getKey: (store, withdrawal) => withdrawal.id,
-    getLabel: (store, withdrawal) =>
-      `${store.accounts.get(withdrawal.account).name} £${withdrawal.amount} / ${withdrawal.period === Period.MONTH ? 'month' : 'year'}`
+    getLabel: (store, withdrawal) => {
+      const symbol = [WithdrawalType.PERCENTAGE, WithdrawalType.STATIC_PERCENTAGE].includes(withdrawal.type) ? '%' : '£'
+      const per = WithdrawalType.FIXED_PER_MONTH ? 'month' : 'year'
+      return `${store.accounts.get(withdrawal.account).name} - ${symbol}${withdrawal.amount} / ${per}`
+    }
   }
 }, {
   deposits: [],

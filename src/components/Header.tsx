@@ -7,7 +7,7 @@ import {
 } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
-import { fromYYYYMM, isDate, toYYYYMM } from '../utils/date';
+import { fromYYYY, isDate, toYYYY } from '../utils/date';
 import type { ChangeEvent } from '../utils/hooks';
 import { getTargetValue } from '../utils/hooks';
 import { useAction, useStore } from '../utils/mobx';
@@ -30,7 +30,7 @@ export const Header = observer(function Header({ sx }: Props) {
   })
 
   const [retireOn, setRetireOn] = useState({
-    value: fromYYYYMM(store.retireOn) as Date | null,
+    value: fromYYYY(store.retireOn) as Date | null,
     isValid: true
   })
 
@@ -46,7 +46,7 @@ export const Header = observer(function Header({ sx }: Props) {
   }, [])
 
   const onRetireAtChanged = useAction((_, value: Date | null) => {
-    const parsedValue = isDate(value) ? toYYYYMM(value) : null
+    const parsedValue = isDate(value) ? toYYYY(value) : null
     const isValid = parsedValue !== null
     setRetireOn({ value, isValid })
 
@@ -89,7 +89,7 @@ export const Header = observer(function Header({ sx }: Props) {
             value={store.strategy?.id ?? ''}
           />
           <DatePicker
-            label='Retirement date'
+            label='Retirement year'
             onChange={onRetireAtChanged}
             renderInput={(props: TextFieldProps) => (
               <TextField
@@ -97,11 +97,11 @@ export const Header = observer(function Header({ sx }: Props) {
                 error={!retireOn.isValid}
                 fullWidth
                 size='small'
-                sx={{ ml: 1, width: '185px' }}
+                sx={{ ml: 1, width: '120px' }}
               />
             )}
             value={retireOn.value}
-            views={['month', 'year']}
+            views={['year']}
           />
           <TextField
             InputLabelProps={{

@@ -1,7 +1,6 @@
 import { Add, Edit } from '@mui/icons-material'
-import { Box, Button } from '@mui/material'
+import { Box, Button, Tooltip } from '@mui/material'
 import classNames from 'classnames'
-import { format } from 'date-fns'
 import { observer } from 'mobx-react-lite'
 import { forwardRef } from 'react'
 import AutoSizer from 'react-virtualized-auto-sizer'
@@ -9,25 +8,21 @@ import type { ListChildComponentProps, ListItemKeySelector } from 'react-window'
 import { FixedSizeList } from 'react-window'
 import type { Account, AccountId } from '../../state/Account'
 import type { PersonId } from '../../state/Person'
-import { Period } from '../../state/Store'
-import type { YYYYMM } from '../../utils/date'
-import { fromYYYYMM } from '../../utils/date'
+import { YYYY } from '../../utils/date'
 import { useAction, useStore } from '../../utils/mobx'
 
-type Dates = Array<YYYYMM>
+type Dates = Array<YYYY>
 
-const formatMonthYear = (period: Period, date: YYYYMM) => format(fromYYYYMM(date), period === Period.MONTH ? 'MMM yyyy' : 'yyyy')
-
-const AgeCell = observer(function AgeCell({ date, personId }: { date: YYYYMM, personId: PersonId }) {
-  const age = useStore(store => store.people.get(personId).getAge(date))
+const AgeCell = observer(function AgeCell({ year, personId }: { year: YYYY, personId: PersonId }) {
+  const age = useStore(store => store.people.get(personId).getAge(year))
   return <div className='table-cell table-column--age'>{age}</div>
 })
 
 const AddIcon = <Add sx={{ fontSize: 'inherit !important' }} />
 const EditIcon = <Edit sx={{ fontSize: 'inherit !important' }} />
 
-const KnownBalance = observer(function KnownBalance({ account, date }: { account: Account, date: YYYYMM }) {
-  const balance = account.balances.get(date)
+const KnownBalance = observer(function KnownBalance({ account, year }: { account: Account, year: YYYY }) {
+  const balance = account.balances.get(year)
 
   const editBalance = useAction(store => {
     store.dialogs.editBalance(balance)
@@ -46,12 +41,12 @@ const KnownBalance = observer(function KnownBalance({ account, date }: { account
   )
 })
 
-const PredictedBalance = observer(function PredictedBalance({ account, date }: { account: Account, date: YYYYMM }) {
-  const balanceValue = account.getBalance(date)
+const PredictedBalance = observer(function PredictedBalance({ account, year }: { account: Account, year: YYYY }) {
+  const balanceValue = account.getBalance(year)
 
   const createBalance = useAction((store) => {
-    store.dialogs.createBalance(account, { date })
-  }, [date, account])
+    store.dialogs.createBalance(account, { year })
+  }, [year, account])
 
   return (
     <Button
@@ -66,26 +61,43 @@ const PredictedBalance = observer(function PredictedBalance({ account, date }: {
   )
 })
 
-const AccountBalanceCell = observer(function AccountBalanceCell({ date, accountId }: { date: YYYYMM, accountId: AccountId }) {
+const AccountBreakdown = observer(function AccountBreakdown({ year, accountId }: { year: YYYY, accountId: AccountId }) {
   const account = useStore(store => store.accounts.get(accountId))
-  const hasConcreteBalance = account.balances.has(date)
+  const interest = account.getInterest(year)
+  const deposits = account.getDeposits(year)
+  const withdrawals = account.getWithdrawals(year)
 
   return (
-    <div className='table-cell table-column--account-balance'>
-      {
-        hasConcreteBalance
-          ? <KnownBalance account={account} date={date} />
-          : <PredictedBalance account={account} date={date} />
-      }
-    </div>
+    <ul className='account-breakdown'>
+      <li className='account-breakdown--add'>£{interest.toFixed(0)} interest</li>
+      <li className='account-breakdown--add'>£{deposits.toFixed(0)} deposits</li>
+      <li className='account-breakdown--subtract'>£{withdrawals.toFixed(0)} withdrawals</li>
+    </ul>
   )
 })
 
-const TotalBalanceCell = observer(function TotalBalanceCell({ date }: { date: YYYYMM }) {
+const AccountBalanceCell = observer(function AccountBalanceCell({ year, accountId }: { year: YYYY, accountId: AccountId }) {
+  const account = useStore(store => store.accounts.get(accountId))
+  const hasConcreteBalance = account.balances.has(year)
+
+  return (
+    <Tooltip placement='left' title={<AccountBreakdown year={year} accountId={accountId} />}>
+      <div className='table-cell table-column--account-balance'>
+        {
+          hasConcreteBalance
+            ? <KnownBalance account={account} year={year} />
+            : <PredictedBalance account={account} year={year} />
+        }
+      </div>
+    </Tooltip>
+  )
+})
+
+const TotalBalanceCell = observer(function TotalBalanceCell({ year }: { year: YYYY }) {
   const store = useStore()
   const balances = store.accounts.values.map(account => {
-    const balance = account.balances.get(date)?.value
-    return balance ?? account.getBalance(date)
+    const balance = account.balances.get(year)?.value
+    return balance ?? account.getBalance(year)
   })
 
   const total = balances.reduce((sum, value) => sum + value, 0)
@@ -95,20 +107,19 @@ const TotalBalanceCell = observer(function TotalBalanceCell({ date }: { date: YY
   )
 })
 
-const AccountIncomeCell = observer(function AccountIncomeCell({ date, accountId }: { date: YYYYMM, accountId: AccountId }) {
+const AccountIncomeCell = observer(function AccountIncomeCell({ year, accountId }: { year: YYYY, accountId: AccountId }) {
   const account = useStore(store => store.accounts.get(accountId))
-  const income = account.getWithdrawals(date)
+  const income = account.getWithdrawals(year)
 
   return (
     <div className='table-cell table-column--account-income'>{income ? income.toFixed(0) : ''}</div>
   )
-
 })
 
-const TotalIncomeCell = observer(function TotalIncomeCell({ date }: { date: YYYYMM }) {
+const TotalIncomeCell = observer(function TotalIncomeCell({ year }: { year: YYYY }) {
   const store = useStore()
   const withdrawals = store.accounts.values.map(account =>
-    account.getWithdrawals(date)
+    account.getWithdrawals(year)
   )
 
   const total = withdrawals.reduce((sum, value) => sum + value, 0)
@@ -122,23 +133,23 @@ type RowProps = ListChildComponentProps<Dates>
 
 const TableRow = observer(function TableRow(props: RowProps) {
   const { data, index, style } = props
-  const { accounts, people, period } = useStore()
+  const { accounts, people } = useStore()
 
-  const date = data[index - 2] // -2 because of header rows
+  const year = data[index - 2] // -2 because of header rows
 
   return (
     <div className='table-row' style={style}>
-      <div className='table-cell table-column--date'>{formatMonthYear(period, date)}</div>
+      <div className='table-cell table-column--year'>{year}</div>
       {people.keys.map(personId => (
-        <AgeCell key={personId} date={date} personId={personId} />
+        <AgeCell key={personId} year={year} personId={personId} />
       ))}
-      <TotalIncomeCell date={date} />
+      <TotalIncomeCell year={year} />
       {accounts.keys.map(accountId => (
-        <AccountIncomeCell key={accountId} date={date} accountId={accountId} />
+        <AccountIncomeCell key={accountId} year={year} accountId={accountId} />
       ))}
-      <TotalBalanceCell date={date} />
+      <TotalBalanceCell year={year} />
       {accounts.keys.map(accountId => (
-        <AccountBalanceCell key={accountId} date={date} accountId={accountId} />
+        <AccountBalanceCell key={accountId} year={year} accountId={accountId} />
       ))}
     </div>
   )
@@ -152,7 +163,7 @@ const TableHeader = observer(function TableHeader() {
     <>
       <div className="table-header">
         <div className="table-row">
-          <div className='table-cell--empty table-column--date'></div>
+          <div className='table-cell--empty table-column--year'></div>
           {people.keys.map(personId => (
             <div key={personId} className='table-cell--empty table-column--age'></div>
           ))}
@@ -160,7 +171,7 @@ const TableHeader = observer(function TableHeader() {
           <Box className='table-cell table-columns--balances' sx={{ width: `${150 + (numVisibleAccounts * 150)}px` }}>Balance</Box>
         </div>
         <div className="table-row">
-          <div className='table-cell table-column--date'>Date</div>
+          <div className='table-cell table-column--year'>Date</div>
           {people.values.map(person => (
             <div key={person.id} className='table-cell table-column--age'>{person.name}</div>
           ))}
@@ -192,18 +203,18 @@ const TableBody = forwardRef<HTMLDivElement>(function TableBody({ children, ...r
   )
 })
 
-const getKey: ListItemKeySelector<Dates> = (index, dates) => index === 0 ? '__HEADER__' : dates[index - 1]
+const getKey: ListItemKeySelector<Dates> = (index, years) => index === 0 ? '__HEADER__' : years[index - 1]
 
 const Table = observer(function Table({ height, width }: { height: number, width: number }) {
-  const { dates, showAccounts, showAges } = useStore()
+  const { years, showAccounts, showAges } = useStore()
 
   return (
     <FixedSizeList
       className={classNames('table', { 'hide-ages': !showAges, 'hide-accounts': !showAccounts })}
       height={height}
       width={width}
-      itemCount={dates.length + 2} // +2 for header rows
-      itemData={dates}
+      itemCount={years.length + 2} // +2 for header rows
+      itemData={years}
       innerElementType={TableBody}
       itemKey={getKey}
       itemSize={42}

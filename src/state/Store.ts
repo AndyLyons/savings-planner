@@ -1,8 +1,8 @@
-import { addMonths, isBefore } from 'date-fns'
+import { addYears, isBefore } from 'date-fns'
 import { makeAutoObservable } from 'mobx'
 import { computedFn } from 'mobx-utils'
 import React from 'react'
-import { addMonth, fromYYYYMM, toYYYYMM, YYYYMM } from '../utils/date'
+import { addYear, fromYYYY, toYYYY, YYYY } from '../utils/date'
 import { extract } from '../utils/fn'
 import { Account, AccountId } from './Account'
 import { Collection } from './Collection'
@@ -12,21 +12,15 @@ import { Persistence } from './Persistence'
 import { Person, PersonId } from './Person'
 import { Strategy, StrategyId } from './Strategy'
 
-export enum Period {
-  MONTH = 'month',
-  YEAR ='year'
-}
-
 export type StoreJSON = typeof Store.prototype.json
 
 export class Store {
   globalGrowth: number = 4
-  period: Period = Period.YEAR
   showAges: boolean = true
   showAccounts: boolean = true
-  start: YYYYMM
-  end: YYYYMM
-  retireOn: YYYYMM
+  start: YYYY
+  end: YYYY
+  retireOn: YYYY
   strategy: Strategy | null = null
 
   dialogs: Dialogs = new Dialogs(this)
@@ -47,29 +41,29 @@ export class Store {
   constructor() {
     makeAutoObservable(this, undefined, { autoBind: true })
 
-    this.start = '202001' as YYYYMM
-    this.end = addMonth(this.start, 12 * 50)
-    this.retireOn = '203705' as YYYYMM
+    this.start = '2020' as YYYY
+    this.end = addYear(this.start, 100)
+    this.retireOn = '2037' as YYYY
   }
 
-  get startDate() {
-    return fromYYYYMM(this.start)
+  get startYear() {
+    return fromYYYY(this.start)
   }
 
-  get endDate() {
-    return fromYYYYMM(this.end)
+  get endYear() {
+    return fromYYYY(this.end)
   }
 
-  get dates() {
-    const dates = []
-    for (let date = this.startDate; isBefore(date, this.endDate); date = addMonths(date, this.period === Period.YEAR ? 12 : 1)) {
-      dates.push(toYYYYMM(date))
+  get years() {
+    const years = []
+    for (let date = this.startYear; isBefore(date, this.endYear); date = addYears(date, 1)) {
+      years.push(toYYYY(date))
     }
-    return dates
+    return years
   }
 
   getDate = computedFn((index: number) => {
-    return addMonth(this.start, index)
+    return addYear(this.start, index)
   })
 
   get globalRate() {
@@ -93,11 +87,8 @@ export class Store {
       ...extract(
         this,
         'globalGrowth',
-        'period',
         'showAccounts',
-        'showAges',
-        'start',
-        'end'
+        'showAges'
       ),
 
       strategy: this.strategy?.id ?? null,
@@ -113,11 +104,8 @@ export class Store {
 
   restore(json: StoreJSON, copy?: boolean) {
     this.globalGrowth = json.globalGrowth
-    this.period = json.period
     this.showAccounts = json.showAccounts
     this.showAges = json.showAges
-    this.start = json.start
-    this.end = json.end
 
     this.people.restore(json.people, copy)
     this.accounts.restore(json.accounts, copy)

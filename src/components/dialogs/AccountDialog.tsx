@@ -2,7 +2,6 @@ import { AccessTime, List, Percent, Person, ShortText } from '@mui/icons-materia
 import { Account, AccountIcon, AccountJSON } from '../../state/Account'
 import { BalanceIcon } from '../../state/Balance'
 import { DialogType } from '../../state/Dialogs'
-import { formatYYYYMM } from '../../utils/date'
 import { useStore } from '../../utils/mobx'
 import { createDialog } from './createDialog'
 
@@ -45,13 +44,13 @@ export const AccountDialog = createDialog<AccountJSON>('account', <AccountIcon /
     type: 'collection',
     dialogType: DialogType.BALANCE,
     label: 'Balances',
-    getKey: (store, balance) => balance.date,
-    getLabel: (store, balance) => `${formatYYYYMM(balance.date)} - £${balance.value}`,
+    getKey: (store, balance) => balance.year,
+    getLabel: (store, balance) => `${balance.year} - £${balance.value}`,
     icon: <List />,
     itemIcon: <BalanceIcon />
   },
 }, {
   balances: [],
-  growth: 4,
+  growth: null,
   compoundPeriod: 1
 })

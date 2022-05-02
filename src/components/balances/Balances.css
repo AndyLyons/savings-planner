@@ -43,11 +43,11 @@
   background-color: white;
 }
 
-.table-column--date {
+.table-column--year {
   position: sticky;
   left: 0;
-  /* justify-content: right; */
-  width: 100px;
+  justify-content: right;
+  width: 70px;
   z-index: 1;
 }
 
@@ -69,6 +69,21 @@
 
 .table-column--account-balance {
   padding: 0;
+}
+
+.account-breakdown {
+  list-style-position: inside;
+  padding-left: 0;
+}
+
+.account-breakdown--add {
+  color: rgb(220, 255, 220);
+  list-style-type: '+ ';
+}
+
+.account-breakdown--subtract {
+  color: rgb(255, 220, 220);
+  list-style-type: '– ';
 }
 
 .hide-accounts .table-column--account-income,

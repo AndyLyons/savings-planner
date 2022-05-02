@@ -1,6 +1,6 @@
 import { CurrencyPound } from '@mui/icons-material'
 import { makeAutoObservable } from 'mobx'
-import { YYYYMM } from '../utils/date'
+import { YYYY } from '../utils/date'
 import { extract } from '../utils/fn'
 import type { Account } from './Account'
 import type { Store } from './Store'
@@ -13,21 +13,21 @@ export class Balance {
   store: Store
   account: Account
 
-  date: YYYYMM
+  year: YYYY
   value: number
 
   constructor(
     store: Store,
     account: Account,
-    { date, value }:
-      Pick<Balance, 'date' | 'value'>
+    { year, value }:
+      Pick<Balance, 'year' | 'value'>
   ) {
     makeAutoObservable(this, { store: false, account: false }, { autoBind: true })
 
     this.store = store
     this.account = account
 
-    this.date = date
+    this.year = year
     this.value = value
   }
 
@@ -35,13 +35,13 @@ export class Balance {
     return new Balance(store, account, json)
   }
 
-  restore({ date, value }: BalanceJSON, copy?: boolean) {
-    this.date = date
+  restore({ year, value }: BalanceJSON, copy?: boolean) {
+    this.year = year
     this.value = value
   }
 
   get json() {
-    return extract(this, 'date', 'value')
+    return extract(this, 'year', 'value')
   }
 
   toJSON() {

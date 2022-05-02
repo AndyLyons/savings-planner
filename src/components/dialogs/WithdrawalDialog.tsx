@@ -1,5 +1,4 @@
-import { AccountBalance, CurrencyPound, Event, EventRepeat, Loop, Percent, RadioButtonChecked } from '@mui/icons-material'
-import { Period } from '../../state/Store'
+import { AccountBalance, CurrencyPound, Event, Loop, Percent, RadioButtonChecked } from '@mui/icons-material'
 import { RETIREMENT, Withdrawal, WithdrawalIcon, WithdrawalJSON, WithdrawalType } from '../../state/Withdrawal'
 import { useStore } from '../../utils/mobx'
 import { createDialog } from './createDialog'
@@ -23,15 +22,17 @@ export const WithdrawalDialog = createDialog<WithdrawalJSON>('withdrawal schedul
     label: 'Type',
     icon: <RadioButtonChecked />,
     useOptions: () => [
-      { id: WithdrawalType.FIXED, label: '£ amount' },
-      { id: WithdrawalType.PERCENTAGE, label: '% of value' },
+      { id: WithdrawalType.FIXED_PER_MONTH, label: '£ / month' },
+      { id: WithdrawalType.FIXED_PER_YEAR, label: '£ / year' },
+      { id: WithdrawalType.PERCENTAGE, label: '% / year' },
+      { id: WithdrawalType.STATIC_PERCENTAGE, label: '% / year (static)' }
     ],
     required: true
   },
   amount: {
     type: 'number',
-    label: 'Amount',
-    icon: <CurrencyPound />,
+    label: (state) => [WithdrawalType.PERCENTAGE, WithdrawalType.STATIC_PERCENTAGE].includes(state.type) ? 'Percentage' : 'Amount',
+    icon: (state) => [WithdrawalType.PERCENTAGE, WithdrawalType.STATIC_PERCENTAGE].includes(state.type) ? <Percent /> :  <CurrencyPound />,
     required: true
   },
   taxRate: {
@@ -40,9 +41,9 @@ export const WithdrawalDialog = createDialog<WithdrawalJSON>('withdrawal schedul
     icon: <Percent />,
     required: true
   },
-  startDate: {
-    type: 'yyyymm',
-    label: 'On',
+  startYear: {
+    type: 'yyyy',
+    label: (state) => state.repeating ? 'From' : 'In',
     icon: <Event />,
     required: true,
     useConstantOption: () => {
@@ -56,22 +57,14 @@ export const WithdrawalDialog = createDialog<WithdrawalJSON>('withdrawal schedul
     icon: <Loop />,
     required: false
   },
-  period: {
-    type: 'string',
-    label: 'Every',
-    icon: <EventRepeat />,
-    useOptions: () => [{ id: Period.MONTH, label: 'Month' }, { id: Period.YEAR, label: 'Year' }],
-    getVisible: (state) => state.repeating === true,
-    required: true
-  },
-  endDate: {
-    type: 'yyyymm',
+  endYear: {
+    type: 'yyyy',
     label: 'Until',
     icon: <Event />,
     getVisible: (state) => state.repeating === true,
     required: true
   }
 }, {
-  type: WithdrawalType.FIXED,
+  type: WithdrawalType.FIXED_PER_MONTH,
   taxRate: 0
 })

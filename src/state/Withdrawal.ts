@@ -1,16 +1,18 @@
 import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid';
-import type { YYYYMM } from '../utils/date';
+import type { YYYY } from '../utils/date';
 import { extract } from '../utils/fn';
 import type { Account } from './Account';
-import { Period, Store } from './Store';
+import { Store } from './Store';
 import { Strategy } from './Strategy';
 
 export type WithdrawalId = string & { __withdrawalId__: never }
 
 export enum WithdrawalType {
-  FIXED = 'FIXED',
-  PERCENTAGE = 'PERCENTAGE'
+  FIXED_PER_YEAR = 'FIXED_PER_YEAR',
+  FIXED_PER_MONTH = 'FIXED_PER_MONTH',
+  PERCENTAGE = 'PERCENTAGE',
+  STATIC_PERCENTAGE = 'STATIC_PERCENTAGE'
 }
 
 export const RETIREMENT = '__RETIREMENT__'
@@ -27,17 +29,16 @@ export class Withdrawal {
   account: Account
   amount: number
   type: WithdrawalType
-  startDate: YYYYMM | typeof RETIREMENT
+  startYear: YYYY | typeof RETIREMENT
   repeating: boolean
-  endDate: YYYYMM | null
-  period: Period | null
+  endYear: YYYY | null
   taxRate: number
 
   constructor(
     store: Store,
     strategy: Strategy,
-    { id, account, amount, type, startDate, repeating, endDate, period, taxRate }:
-      Pick<Withdrawal, 'id' | 'account' | 'amount' | 'type' | 'startDate' | 'repeating' | 'endDate' | 'period' | 'taxRate'>
+    { id, account, amount, type, startYear, repeating, endYear, taxRate }:
+      Pick<Withdrawal, 'id' | 'account' | 'amount' | 'type' | 'startYear' | 'repeating' | 'endYear' | 'taxRate'>
   ) {
     makeAutoObservable(this, { store: false, account: false }, { autoBind: true })
 
@@ -48,10 +49,9 @@ export class Withdrawal {
     this.account = account
     this.amount = amount
     this.type = type
-    this.startDate = startDate
+    this.startYear = startYear
     this.repeating = repeating
-    this.endDate = endDate
-    this.period = period
+    this.endYear = endYear
     this.taxRate = taxRate
   }
 
@@ -69,35 +69,37 @@ export class Withdrawal {
     })
   }
 
-  get startDateValue() {
-    return this.startDate === RETIREMENT ? this.store.retireOn : this.startDate
+  get startYearValue() {
+    return this.startYear === RETIREMENT ? this.store.retireOn : this.startYear
   }
 
-  get monthlyAmount() {
-    if (this.type === WithdrawalType.PERCENTAGE) {
-      const percentageAmount = this.amount / 100
-      return this.period === Period.MONTH ? percentageAmount : Math.pow(1 + percentageAmount, 1/12) - 1
+  get normalisedAmount() {
+    if (this.type === WithdrawalType.FIXED_PER_MONTH) {
+      return this.amount * 12
     }
 
-    return this.period === Period.MONTH ? this.amount : this.amount / 12
+    if (this.type === WithdrawalType.PERCENTAGE || this.type === WithdrawalType.STATIC_PERCENTAGE) {
+      return this.amount / 100
+    }
+
+    return this.amount
   }
 
   restore(json: WithdrawalJSON, copy?: boolean) {
-    const { account, amount, type, startDate, repeating, endDate, period, taxRate } = json
+    const { account, amount, type, startYear, repeating, endYear, taxRate } = json
 
     this.account = this.store.accounts.get(account)
     this.amount = amount
     this.type = type
-    this.startDate = startDate
+    this.startYear = startYear
     this.repeating = repeating
-    this.endDate = endDate
-    this.period = period
+    this.endYear = endYear
     this.taxRate = taxRate
   }
 
   get json() {
     return {
-      ...extract(this, 'id', 'amount', 'type', 'startDate', 'repeating', 'endDate', 'period', 'taxRate'),
+      ...extract(this, 'id', 'amount', 'type', 'startYear', 'repeating', 'endYear', 'taxRate'),
       account: this.account.id
     }
   }
