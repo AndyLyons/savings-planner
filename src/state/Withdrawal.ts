@@ -74,11 +74,12 @@ export class Withdrawal {
   }
 
   get monthlyAmount() {
-    if (this.period === Period.YEAR) {
-      return this.type === WithdrawalType.FIXED ? this.amount / 12 : this.amount / 100
+    if (this.type === WithdrawalType.PERCENTAGE) {
+      const percentageAmount = this.amount / 100
+      return this.period === Period.MONTH ? percentageAmount : Math.pow(1 + percentageAmount, 1/12) - 1
     }
 
-    return this.type === WithdrawalType.FIXED ? this.amount : (Math.pow(1 + this.amount / 100, 1/12) - 1)
+    return this.period === Period.MONTH ? this.amount : this.amount / 12
   }
 
   restore(json: WithdrawalJSON, copy?: boolean) {

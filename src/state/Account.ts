@@ -109,7 +109,7 @@ export class Account {
   })
 
   getWithdrawals = computedFn((date: YYYYMM): number => {
-    return this.withdrawals.reduce((sum, withdrawal) => {
+    const withdrawals = this.withdrawals.reduce((sum, withdrawal) => {
       const isSingleWithdrawal = !withdrawal.repeating && withdrawal.startDate === date
       const isRepeatingWithdrawal = withdrawal.repeating && withdrawal.endDate
         && withdrawal.startDateValue <= date && date <= withdrawal.endDate
@@ -123,6 +123,10 @@ export class Account {
 
       return sum
     }, 0)
+
+    const balanceWithInterest = this.getPreviousBalance(date) + this.getInterest(date)
+
+    return withdrawals > balanceWithInterest ? balanceWithInterest : withdrawals
   })
 
   getBalance = computedFn((date: YYYYMM) => {
