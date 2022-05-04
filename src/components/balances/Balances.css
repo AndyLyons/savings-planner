@@ -76,6 +76,10 @@
   padding-left: 0;
 }
 
+.account-breakdown--existing {
+  list-style-type: '';
+}
+
 .account-breakdown--add {
   color: rgb(220, 255, 220);
   list-style-type: '+ ';

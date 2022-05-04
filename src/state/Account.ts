@@ -85,31 +85,31 @@ export class Account {
       : []
   }
 
-  getPreviousBalance = computedFn((year: YYYY): number => {
-    return year <= this.store.start ? 0 : this.getBalance(subYear(year))
-  })
+  getStartingBalance(year: YYYY) {
+    return this.getBalance(subYear(year)) + this.getDeposits(year)
+  }
 
   getInterest = computedFn((year: YYYY): number => {
-    return (this.getPreviousBalance(year) + this.getDeposits(year)) * this.aer
+    return this.getStartingBalance(year) * this.aer
   })
 
   getDeposits = computedFn((year: YYYY): number => {
     return this.deposits.reduce((sum, deposit) => {
       const isSingleDeposit = !deposit.repeating && deposit.startYearValue === year
       const isRepeatingDeposit = deposit.repeating && deposit.endYearValue
-        && deposit.startYearValue <= year && year <= deposit.endYearValue
+        && deposit.startYearValue <= year && year < deposit.endYearValue
 
       return isSingleDeposit || isRepeatingDeposit ? sum + deposit.normalisedAmount : sum
     }, 0)
   })
 
   getWithdrawals = computedFn((year: YYYY): number => {
-    const previousBalance = (this.getPreviousBalance(year) + this.getDeposits(year))
+    const previousBalance = this.getStartingBalance(year)
 
     const withdrawals = this.withdrawals.reduce((sum, withdrawal) => {
       const isSingleWithdrawal = !withdrawal.repeating && withdrawal.startYearValue === year
       const isRepeatingWithdrawal = withdrawal.repeating && withdrawal.endYear
-        && withdrawal.startYearValue <= year && year <= withdrawal.endYear
+        && withdrawal.startYearValue <= year && year < withdrawal.endYear
 
       let withdrawalAmount = 0
 
@@ -117,7 +117,7 @@ export class Account {
         if (withdrawal.type === WithdrawalType.PERCENTAGE) {
           withdrawalAmount = previousBalance * withdrawal.normalisedAmount
         } else if (withdrawal.type === WithdrawalType.STATIC_PERCENTAGE) {
-          const staticBalance = (this.getPreviousBalance(withdrawal.startYearValue) + this.getDeposits(withdrawal.startYearValue))
+          const staticBalance = this.getStartingBalance(withdrawal.startYearValue)
           withdrawalAmount = staticBalance * withdrawal.normalisedAmount
         } else {
           withdrawalAmount = withdrawal.normalisedAmount
@@ -132,12 +132,16 @@ export class Account {
     return withdrawals > balanceWithInterest ? balanceWithInterest : withdrawals
   })
 
-  getBalance = computedFn((year: YYYY) => {
+  getBalance = computedFn((year: YYYY): number => {
+    if (year < this.store.start) {
+      return 0
+    }
+
     if (this.balances.has(year)) {
       return this.balances.get(year).value
     }
 
-    return this.getPreviousBalance(year)
+    return this.getBalance(subYear(year))
       + this.getInterest(year)
       + this.getDeposits(year)
       - this.getWithdrawals(year)

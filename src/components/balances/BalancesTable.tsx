@@ -8,7 +8,7 @@ import type { ListChildComponentProps, ListItemKeySelector } from 'react-window'
 import { FixedSizeList } from 'react-window'
 import type { Account, AccountId } from '../../state/Account'
 import type { PersonId } from '../../state/Person'
-import { YYYY } from '../../utils/date'
+import { subYear, YYYY } from '../../utils/date'
 import { useAction, useStore } from '../../utils/mobx'
 
 type Dates = Array<YYYY>
@@ -63,14 +63,16 @@ const PredictedBalance = observer(function PredictedBalance({ account, year }: {
 
 const AccountBreakdown = observer(function AccountBreakdown({ year, accountId }: { year: YYYY, accountId: AccountId }) {
   const account = useStore(store => store.accounts.get(accountId))
+  const previous = account.getBalance(subYear(year))
   const interest = account.getInterest(year)
   const deposits = account.getDeposits(year)
   const withdrawals = account.getWithdrawals(year)
 
   return (
     <ul className='account-breakdown'>
-      <li className='account-breakdown--add'>£{interest.toFixed(0)} interest</li>
+      <li className='account-breakdown--existing'>£{previous.toFixed(0)}</li>
       <li className='account-breakdown--add'>£{deposits.toFixed(0)} deposits</li>
+      <li className='account-breakdown--add'>£{interest.toFixed(0)} interest</li>
       <li className='account-breakdown--subtract'>£{withdrawals.toFixed(0)} withdrawals</li>
     </ul>
   )
