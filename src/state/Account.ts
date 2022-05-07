@@ -97,7 +97,7 @@ export class Account {
     return this.deposits.reduce((sum, deposit) => {
       const isSingleDeposit = !deposit.repeating && deposit.startYearValue === year
       const isRepeatingDeposit = deposit.repeating && deposit.endYearValue
-        && deposit.startYearValue <= year && year <= deposit.endYearValue
+        && deposit.startYearValue <= year && year < deposit.endYearValue
 
       return isSingleDeposit || isRepeatingDeposit ? sum + deposit.normalisedAmount : sum
     }, 0)
