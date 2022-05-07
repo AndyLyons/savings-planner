@@ -62,8 +62,8 @@ const getActionIcon = (account: Account, year: YYYY) => {
 const KnownBalance = observer(function KnownBalance({ account, year }: { account: Account, year: YYYY }) {
   const balance = account.balances.get(year)
   const predictedBalance = account.getCalculatedBalance(year)
-  const isUp = predictedBalance !== 0 && balance.value > predictedBalance
-  const isDown = predictedBalance !== 0 && balance.value < predictedBalance
+  const isUp = predictedBalance !== 0 && balance.value / predictedBalance > 1.005
+  const isDown = predictedBalance !== 0 && balance.value / predictedBalance < 0.995
 
   const editBalance = useAction(store => {
     store.dialogs.editBalance(balance)
