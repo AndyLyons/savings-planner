@@ -67,11 +67,9 @@ export const Header = observer(function Header({ sx }: Props) {
   return (
     <AppBar position='fixed' sx={sx}>
       <Toolbar>
-        <Hidden mdUp>
-          <IconButton size="large" edge="start" color="inherit" onClick={store.menu.toggle} sx={{ mr: 2 }}>
-            {store.menu.isOpen ? <Close /> : <Menu />}
-          </IconButton>
-        </Hidden>
+        <IconButton size="large" edge="start" color="inherit" onClick={store.menu.toggle} sx={{ mr: 2 }}>
+          {store.menu.isOpen ? <Close /> : <Menu />}
+        </IconButton>
         <Hidden mdDown>
           <Icon sx={{ mr: 1 }}><ShowChart /></Icon>
           <Typography variant='h5' component='h1' onClick={navigateHome} sx={{ cursor: 'pointer' }}>

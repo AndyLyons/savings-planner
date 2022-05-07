@@ -20,7 +20,7 @@ interface Props {
 export const Menu = observer(function Menu({ sx }: Props) {
   const store = useStore()
   const { pathname } = useLocation()
-  const isDesktop = useMin('sm')
+  const hasSidebar = useMin('sm')
 
   useLocationChanged(store.menu.closeMenu)
 
@@ -30,13 +30,12 @@ export const Menu = observer(function Menu({ sx }: Props) {
         anchor='left'
         onClose={store.menu.closeMenu}
         open={store.menu.isOpen}
-        variant={isDesktop ? 'permanent' : 'temporary'}
+        variant={hasSidebar ? 'permanent' : 'temporary'}
         sx={{
           '& .MuiDrawer-paper': {
             width: {
               xs: FULL_MENU_WIDTH,
-              sm: store.menu.isOpen ? FULL_MENU_WIDTH : COLLAPSED_MENU_WIDTH,
-              md: FULL_MENU_WIDTH
+              sm: store.menu.isOpen ? FULL_MENU_WIDTH : COLLAPSED_MENU_WIDTH
             },
             boxSizing: 'border-box',
             transition: theme => theme.transitions.create('width', {

@@ -27,7 +27,7 @@ export const darkTheme = createTheme({
 
 export const App = observer(function App() {
   const store = useStore()
-  const smMenuWidth = store.menu.isOpen ? FULL_MENU_WIDTH : COLLAPSED_MENU_WIDTH
+  const menuWidth = store.menu.isOpen ? FULL_MENU_WIDTH : COLLAPSED_MENU_WIDTH
 
   return (
     <ThemeProvider theme={theme}>
@@ -39,11 +39,7 @@ export const App = observer(function App() {
             <Header sx={{ zIndex: theme => theme.zIndex.drawer + 1 }} />
 
             <Menu sx={{
-              flexShrink: { md: 0 },
-              width: {
-                sm: smMenuWidth,
-                md: FULL_MENU_WIDTH
-              },
+              width: { sm: menuWidth },
               transition: theme => theme.transitions.create('width', {
                 easing: theme.transitions.easing.sharp,
                 duration: theme.transitions.duration.enteringScreen
@@ -56,10 +52,7 @@ export const App = observer(function App() {
               flexGrow: 1,
               mb: 2,
               overflow: 'hidden',
-              width: {
-                sm: `calc(100% - ${smMenuWidth}px)`,
-                md: `calc(100% - ${FULL_MENU_WIDTH}px)`
-              }
+              width: { sm: `calc(100% - ${menuWidth}px)` }
             }}>
               <Toolbar sx={{ mb: 2 }}/>
               <Routes>
