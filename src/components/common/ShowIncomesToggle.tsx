@@ -7,19 +7,19 @@ interface Props {
   sx?: ComponentProps<typeof ToggleButtonGroup>['sx']
 }
 
-export const ShowAccountsToggle = observer(function ShowAccountsToggle({ sx }: Props) {
-  const { showAccounts, toggleShowAccounts } = useStore()
+export const ShowIncomesToggle = observer(function ShowIncomesToggle({ sx }: Props) {
+  const { showIncomes, toggleShowIncomes } = useStore()
 
   return (
     <ToggleButtonGroup
       color='primary'
       exclusive
-      onChange={toggleShowAccounts}
+      onChange={toggleShowIncomes}
       size='small'
       sx={sx}
-      value={showAccounts}
+      value={showIncomes}
     >
-      <ToggleButton value={true}>Accounts</ToggleButton>
+      <ToggleButton value={true}>Incomes</ToggleButton>
     </ToggleButtonGroup>
   )
 })

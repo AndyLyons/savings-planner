@@ -4,7 +4,6 @@
 }
 
 .table-header {
-  height: 84px;
   position: sticky;
   top: 0;
 
@@ -12,8 +11,12 @@
   z-index: 2;
 }
 
-.table-header .table-row {
-  height: 42px;
+.table-header .table-row--groups {
+  height: 24px;
+}
+
+.table-header .table-row--headers {
+  height: 60px;
 }
 
 .table-header .table-cell {
@@ -53,7 +56,7 @@
 
 .table-column--age {
   justify-content: center;
-  width: 65px;
+  width: 40px;
 }
 
 .hide-ages .table-column--age {
@@ -63,10 +66,11 @@
 .table-column--total,
 .table-column--account-income,
 .table-column--account-balance {
-  width: 150px;
+  width: 110px;
   justify-content: right;
 }
 
+.table-header .table-cell,
 .table-column--account-balance {
   padding: 0;
 }
@@ -90,8 +94,11 @@
   list-style-type: '– ';
 }
 
-.hide-accounts .table-column--account-income,
-.hide-accounts .table-column--account-balance {
+.account-breakdown--total {
+  list-style-type: '= ';
+}
+
+.hide-incomes .table-column--account-income {
   display: none;
 }
 
@@ -116,21 +123,43 @@
   border-radius: 0;
 }
 
+.table-column--account-income .MuiButton-root .MuiButton-startIcon,
+.table-column--account-balance .MuiButton-root .MuiButton-startIcon {
+  margin-right: auto;
+}
+
+
+.table-column--account_edit-balance.MuiButton-root,
 .table-column--account_add-balance.MuiButton-root {
-  background-color: white;
   box-shadow: none !important;
   color: rgba(0, 0, 0, 0.87);
   font-weight: 400;
 }
 
-.table-column--account_add-balance.MuiButton-root:hover {
-  background-color: rgba(25, 118, 210, 0.04);
+.table-column--account_edit-balance.table-column--account_edit-balance--up.MuiButton-root {
+  background-color: rgba(179, 223, 179, 0.5)
 }
 
+.table-column--account_edit-balance.table-column--account_edit-balance--down.MuiButton-root {
+  background-color: rgba(223, 179, 179, 0.5)
+}
+
+.table-column--account_edit-balance.MuiButton-root,
+.table-column--account_edit-balance.MuiButton-root:hover,
+.table-column--account_add-balance.MuiButton-root:hover {
+  background-color: rgba(25, 118, 210, 0.1);
+}
+
+.table-column--account_add-balance.MuiButton-root {
+  background-color: white;
+}
+
+.table-column--account_edit-balance .MuiButton-endIcon,
 .table-column--account_add-balance .MuiButton-endIcon {
   visibility: hidden;
 }
 
+.table-column--account_edit-balance:hover .MuiButton-endIcon,
 .table-column--account_add-balance:hover .MuiButton-endIcon {
   visibility: visible;
 }

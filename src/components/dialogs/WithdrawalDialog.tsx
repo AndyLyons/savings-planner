@@ -25,7 +25,7 @@ export const WithdrawalDialog = createDialog<WithdrawalJSON>('withdrawal schedul
       { id: WithdrawalType.FIXED_PER_MONTH, label: '£ / month' },
       { id: WithdrawalType.FIXED_PER_YEAR, label: '£ / year' },
       { id: WithdrawalType.PERCENTAGE, label: '% / year' },
-      { id: WithdrawalType.STATIC_PERCENTAGE, label: '% / year (static)' }
+      { id: WithdrawalType.STATIC_PERCENTAGE, label: '% then £ / year' }
     ],
     required: true
   },

@@ -2,7 +2,7 @@ import {
   Box, Breadcrumbs, Paper, Typography
 } from '@mui/material'
 import { observer } from 'mobx-react-lite'
-import { ShowAccountsToggle } from '../common/ShowAccountsToggle'
+import { ShowIncomesToggle } from '../common/ShowIncomesToggle'
 import { ShowAgesToggle } from '../common/ShowAgesToggle'
 import './Balances.css'
 import { BalancesTable } from './BalancesTable'
@@ -23,7 +23,7 @@ export const Balances = observer(function Balances() {
         mt: 1
       }}>
         <ShowAgesToggle sx={{ mr: 2 }} />
-        <ShowAccountsToggle />
+        <ShowIncomesToggle />
       </Box>
       <Box sx={{ flexGrow: 1 }}>
         <BalancesTable />

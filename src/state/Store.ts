@@ -17,7 +17,7 @@ export type StoreJSON = typeof Store.prototype.json
 export class Store {
   globalGrowth: number = 4
   showAges: boolean = true
-  showAccounts: boolean = true
+  showIncomes: boolean = true
   start: YYYY
   end: YYYY
   retireOn: YYYY
@@ -42,7 +42,7 @@ export class Store {
     makeAutoObservable(this, undefined, { autoBind: true })
 
     this.start = 2020 as YYYY
-    this.end = addYear(this.start, 100)
+    this.end = 2087 as YYYY
     this.retireOn = 2037 as YYYY
   }
 
@@ -74,8 +74,8 @@ export class Store {
     return (this.globalRate * 100).toFixed(2).replace(/\.?0+$/, '')
   }
 
-  toggleShowAccounts() {
-    this.showAccounts = !this.showAccounts
+  toggleShowIncomes() {
+    this.showIncomes = !this.showIncomes
   }
 
   toggleShowAges() {
@@ -87,7 +87,7 @@ export class Store {
       ...extract(
         this,
         'globalGrowth',
-        'showAccounts',
+        'showIncomes',
         'showAges'
       ),
 
@@ -104,7 +104,7 @@ export class Store {
 
   restore(json: StoreJSON, copy?: boolean) {
     this.globalGrowth = json.globalGrowth
-    this.showAccounts = json.showAccounts
+    this.showIncomes = json.showIncomes
     this.showAges = json.showAges
 
     this.people.restore(json.people, copy)

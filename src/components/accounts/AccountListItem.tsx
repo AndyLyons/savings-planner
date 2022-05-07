@@ -25,7 +25,7 @@ export const AccountListItem = observer(function AccountListItem({ account, onCl
             <>
               <Typography sx={{ fontWeight: 'bold' }} component='span'>{account.name}</Typography>
               {' '}
-              <Typography component='span'>({account.owner.name}) - {account.ratePercentage}%</Typography>
+              <Typography component='span'>({account.owner.name}) - {account.growth === null ? 'Market growth' : `${account.ratePercentage}%`}</Typography>
             </>
           }
         />

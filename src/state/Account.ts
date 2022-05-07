@@ -97,7 +97,7 @@ export class Account {
     return this.deposits.reduce((sum, deposit) => {
       const isSingleDeposit = !deposit.repeating && deposit.startYearValue === year
       const isRepeatingDeposit = deposit.repeating && deposit.endYearValue
-        && deposit.startYearValue <= year && year < deposit.endYearValue
+        && deposit.startYearValue <= year && year <= deposit.endYearValue
 
       return isSingleDeposit || isRepeatingDeposit ? sum + deposit.normalisedAmount : sum
     }, 0)
@@ -109,7 +109,7 @@ export class Account {
     const withdrawals = this.withdrawals.reduce((sum, withdrawal) => {
       const isSingleWithdrawal = !withdrawal.repeating && withdrawal.startYearValue === year
       const isRepeatingWithdrawal = withdrawal.repeating && withdrawal.endYear
-        && withdrawal.startYearValue <= year && year < withdrawal.endYear
+        && withdrawal.startYearValue <= year && year <= withdrawal.endYear
 
       let withdrawalAmount = 0
 
@@ -132,19 +132,23 @@ export class Account {
     return withdrawals > balanceWithInterest ? balanceWithInterest : withdrawals
   })
 
-  getBalance = computedFn((year: YYYY): number => {
+  getCalculatedBalance = computedFn((year: YYYY): number => {
     if (year < this.store.start) {
       return 0
-    }
-
-    if (this.balances.has(year)) {
-      return this.balances.get(year).value
     }
 
     return this.getBalance(subYear(year))
       + this.getInterest(year)
       + this.getDeposits(year)
       - this.getWithdrawals(year)
+  })
+
+  getBalance = computedFn((year: YYYY): number => {
+    if (this.balances.has(year)) {
+      return this.balances.get(year).value
+    }
+
+    return this.getCalculatedBalance(year)
   })
 
   restore(json: AccountJSON, copy?: boolean) {
