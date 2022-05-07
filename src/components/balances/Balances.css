@@ -75,6 +75,12 @@
   padding: 0;
 }
 
+.account-breakdown--year {
+  list-style-type: '';
+  font-weight: bolder;
+  text-decoration: underline;
+}
+
 .account-breakdown {
   list-style-position: inside;
   padding-left: 0;

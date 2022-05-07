@@ -125,7 +125,7 @@ export function createDialog<T>(name: string, icon: ReactElement, fields: Fields
     })
 
     return (
-      <MUIDialog fullWidth maxWidth='xs' open onClose={onClose}>
+      <MUIDialog fullWidth maxWidth='md' open onClose={onClose}>
         <DialogTitle sx={{ display: 'flex', alignItems: 'center' }}>{iconWithMargin} {title} {name}</DialogTitle>
         <DialogContent sx={{ display: 'flex', flexDirection: 'column', pb: 0 }}>
           <Box sx={{ mt: 1 }} />

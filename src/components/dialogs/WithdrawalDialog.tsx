@@ -25,7 +25,7 @@ export const WithdrawalDialog = createDialog<WithdrawalJSON>('withdrawal schedul
       { id: WithdrawalType.FIXED_PER_MONTH, label: '£ / month' },
       { id: WithdrawalType.FIXED_PER_YEAR, label: '£ / year' },
       { id: WithdrawalType.PERCENTAGE, label: '% / year' },
-      { id: WithdrawalType.STATIC_PERCENTAGE, label: '% then £ / year' }
+      { id: WithdrawalType.STATIC_PERCENTAGE, label: 'Fixed %' }
     ],
     required: true
   },
@@ -33,7 +33,11 @@ export const WithdrawalDialog = createDialog<WithdrawalJSON>('withdrawal schedul
     type: 'number',
     label: (state) => [WithdrawalType.PERCENTAGE, WithdrawalType.STATIC_PERCENTAGE].includes(state.type) ? 'Percentage' : 'Amount',
     icon: (state) => [WithdrawalType.PERCENTAGE, WithdrawalType.STATIC_PERCENTAGE].includes(state.type) ? <Percent /> :  <CurrencyPound />,
-    required: true
+    required: true,
+    useConstantOption: () => {
+      const constantValue = useStore(store => store.globalGrowth)
+      return { label: 'Use market growth?', constantValue, value: null }
+    }
   },
   taxRate: {
     type: 'number',

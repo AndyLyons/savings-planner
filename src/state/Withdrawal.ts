@@ -27,7 +27,7 @@ export class Withdrawal {
 
   id: WithdrawalId
   account: Account
-  amount: number
+  amount: number | null
   type: WithdrawalType
   startYear: YYYY | typeof RETIREMENT
   repeating: boolean
@@ -73,16 +73,20 @@ export class Withdrawal {
     return this.startYear === RETIREMENT ? this.store.retireOn : this.startYear
   }
 
+  get amountValue() {
+    return this.amount === null ? this.store.globalGrowth : this.amount
+  }
+
   get normalisedAmount() {
     if (this.type === WithdrawalType.FIXED_PER_MONTH) {
-      return this.amount * 12
+      return this.amountValue * 12
     }
 
     if (this.type === WithdrawalType.PERCENTAGE || this.type === WithdrawalType.STATIC_PERCENTAGE) {
-      return this.amount / 100
+      return this.amountValue / 100
     }
 
-    return this.amount
+    return this.amountValue
   }
 
   restore(json: WithdrawalJSON, copy?: boolean) {

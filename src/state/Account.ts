@@ -86,7 +86,7 @@ export class Account {
   }
 
   getStartingBalance(year: YYYY) {
-    return this.getBalance(subYear(year)) + this.getDeposits(year)
+    return this.getBalance(subYear(year)) + this.getDeposits(subYear(year))
   }
 
   getInterest = computedFn((year: YYYY): number => {
@@ -137,10 +137,7 @@ export class Account {
       return 0
     }
 
-    return this.getBalance(subYear(year))
-      + this.getInterest(year)
-      + this.getDeposits(year)
-      - this.getWithdrawals(year)
+    return this.getStartingBalance(year) + this.getInterest(year) - this.getWithdrawals(year)
   })
 
   getBalance = computedFn((year: YYYY): number => {
