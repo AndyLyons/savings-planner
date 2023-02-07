@@ -15,6 +15,7 @@ export const DepositDialog = createDialog<DepositJSON>('deposit schedule', <Depo
     label: 'Account',
     icon: <AccountBalance />,
     useOptions: () => useStore(store => store.accounts.values.map(({ id, name, owner }) => ({ id, label: `${name} (${owner.name})` }))),
+    readonly: true,
     required: true
   },
   amount: {

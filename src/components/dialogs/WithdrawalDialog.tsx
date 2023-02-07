@@ -65,6 +65,7 @@ export const WithdrawalDialog = createDialog<WithdrawalJSON>('withdrawal schedul
     type: 'yyyy',
     label: 'Until',
     icon: <Event />,
+    // getFrom: (store, state) => state.startYear === RETIREMENT ? store.retireOn : state.startYear,
     getVisible: (state) => state.repeating === true,
     required: true
   }

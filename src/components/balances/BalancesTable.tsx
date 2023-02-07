@@ -49,11 +49,11 @@ const getActionIcon = (account: Account, year: YYYY) => {
   }
 
   if (hasDeposit) {
-    return <ArrowRight />
+    return <ArrowRight className='deposit-icon' />
   }
 
   if (hasWithdrawal) {
-    return <ArrowLeft />
+    return <ArrowLeft className='withdrawal-icon' />
   }
 
   return null
@@ -109,7 +109,6 @@ const PredictedBalance = observer(function PredictedBalance({ account, year }: {
 
 const AccountBreakdown = observer(function AccountBreakdown({ year, accountId }: { year: YYYY, accountId: AccountId }) {
   const account = useStore(store => store.accounts.get(accountId))
-  const startingBalance = account.getStartingBalance(year)
   const previous = account.getBalance(subYear(year))
   const interest = account.getInterest(year)
   const prevDeposits = account.getDeposits(subYear(year))
@@ -118,11 +117,9 @@ const AccountBreakdown = observer(function AccountBreakdown({ year, accountId }:
 
   return (
     <ul className='account-breakdown'>
-      <li className='account-breakdown--year'>{year - 1}</li>
+      <li className='account-breakdown--year'>{year}</li>
       <li className='account-breakdown--existing'>£{formatNumber(previous)}</li>
       <li className='account-breakdown--add'>£{formatNumber(prevDeposits)} deposits</li>
-      <li className='account-breakdown--year'>{year}</li>
-      <li className='account-breakdown--existing'>£{formatNumber(startingBalance)}</li>
       <li className='account-breakdown--add'>£{formatNumber(interest)} interest</li>
       <li className='account-breakdown--subtract'>£{formatNumber(withdrawals)} withdrawals</li>
       <li className='account-breakdown--total'>£{formatNumber(calculatedBalance)}</li>

@@ -3,10 +3,10 @@ import { DatePicker } from '@mui/lab'
 import {
   Box,
   Button, Checkbox, Dialog as MUIDialog, DialogActions, DialogContent,
-  DialogTitle, FormControlLabel, IconButton, List, ListItemButton, ListItemIcon, ListItemText, TextField, TextFieldProps, Typography
+  DialogTitle, FormControl, FormControlLabel, FormLabel, IconButton, List, ListItemButton, ListItemIcon, ListItemText, Radio, RadioGroup, TextField, TextFieldProps, Typography
 } from '@mui/material'
 import { observer } from 'mobx-react-lite'
-import { cloneElement, Fragment, ReactElement, useReducer } from 'react'
+import React, { cloneElement, Fragment, ReactElement, useReducer, useState } from 'react'
 import type { DialogType } from '../../state/Dialogs'
 import type { Store } from '../../state/Store'
 import { useIsDesktop } from '../../utils/breakpoints'
@@ -16,21 +16,24 @@ import { getTargetChecked, getTargetValue, useKeyPress, useStopEvent } from '../
 import { useStore } from '../../utils/mobx'
 import { Autocomplete, IconField } from '../mui'
 
-type FieldType<T> =
-  T extends YYYY ? {
+type FieldType<T, V> =
+  V extends YYYY ? {
     type: 'yyyy'
+  } | {
+    type: 'duration'
+    getFrom: (store: Store, state: T) => YYYY
   } :
-  T extends string ? {
+  V extends string ? {
     type: 'string'
     useOptions?: () => Array<{ id: string, label: string }>
   } :
-  T extends number ? {
+  V extends number ? {
     type: 'number'
   } :
-  T extends boolean ? {
+  V extends boolean ? {
     type: 'boolean'
   } :
-  T extends Array<infer U> ? {
+  V extends Array<infer U> ? {
     type: 'collection'
     itemIcon: ReactElement
     dialogType: DialogType
@@ -39,7 +42,7 @@ type FieldType<T> =
   } :
   never
 
-type FormField<T, K extends keyof T> = FieldType<T[K]> & {
+type FormField<T, K extends keyof T> = FieldType<T, T[K]> & {
   autoFocus?: boolean
   icon: ReactElement | ((state: T) => ReactElement)
   label: string | ((state: T) => string)
@@ -146,20 +149,28 @@ export function createDialog<T>(name: string, icon: ReactElement, fields: Fields
               const isVisible = getVisible ? getVisible(state) : true
               const isDisabled = !isVisible || (isEdit && readonly)
 
-              return (
-                <Fragment key={String(name)}>
+              function FieldWrapper({ children }: React.PropsWithChildren<{}>) {
+                return (
                   <IconField
                     key={`${name}`}
                     icon={icon}
                     sx={isVisible ? {} : { display: 'none' }}
                   >
-                    {type === 'string' && field.useOptions && (() => {
-                      // This is OK because the fields can't change at runtime
-                      // and will always run in exactly the same order
-                      // eslint-disable-next-line react-hooks/rules-of-hooks
-                      const options = field.useOptions()
+                    {children}
+                  </IconField>
+                )
+              }
 
-                      return (
+              return (
+                <Fragment key={String(name)}>
+                  {type === 'string' && field.useOptions && (() => {
+                    // This is OK because the fields can't change at runtime
+                    // and will always run in exactly the same order
+                    // eslint-disable-next-line react-hooks/rules-of-hooks
+                    const options = field.useOptions()
+
+                    return (
+                      <FieldWrapper>
                         <Autocomplete
                           autoFocus={autoFocus}
                           disabled={isDisabled}
@@ -178,9 +189,11 @@ export function createDialog<T>(name: string, icon: ReactElement, fields: Fields
                           // even though it's typed to take only a string
                           value={(state[name] !== undefined ? `${state[name]}` : null) as string}
                         />
-                      )
-                    })()}
-                    {type === 'string' && !field.useOptions && (
+                      </FieldWrapper>
+                    )
+                  })()}
+                  {type === 'string' && !field.useOptions && (
+                    <FieldWrapper>
                       <TextField
                         autoFocus={autoFocus}
                         disabled={isDisabled}
@@ -199,8 +212,10 @@ export function createDialog<T>(name: string, icon: ReactElement, fields: Fields
                         type='text'
                         value={state[name] ?? ''}
                       />
-                    )}
-                    {type === 'number' && !useConstantOption && (
+                    </FieldWrapper>
+                  )}
+                  {type === 'number' && !useConstantOption && (
+                    <FieldWrapper>
                       <TextField
                         autoFocus={autoFocus}
                         disabled={isDisabled}
@@ -220,51 +235,53 @@ export function createDialog<T>(name: string, icon: ReactElement, fields: Fields
                         type='number'
                         value={`${state[name] ?? ''}`}
                       />
-                    )}
-                    {type === 'number' && useConstantOption && (() => {
-                      // These is OK because the fields can't change at runtime
-                      // and will always run in exactly the same order
+                    </FieldWrapper>
+                  )}
+                  {type === 'number' && useConstantOption && (() => {
+                    // These is OK because the fields can't change at runtime
+                    // and will always run in exactly the same order
 
-                      /* eslint-disable react-hooks/rules-of-hooks */
-                      const { label: constantLabel, constantValue, value: valueWhenConstant } = useConstantOption()
-                      /* eslint-enable react-hooks/rules-of-hooks */
+                    /* eslint-disable react-hooks/rules-of-hooks */
+                    const { label: constantLabel, constantValue, value: valueWhenConstant } = useConstantOption()
+                    /* eslint-enable react-hooks/rules-of-hooks */
 
-                      const value = state[name]
+                    const value = state[name]
 
-                      return (
-                        <>
-                          <TextField
-                            autoFocus={autoFocus}
-                            disabled={value === valueWhenConstant || isDisabled}
-                            label={label}
-                            onChange={(e) => {
-                              const value = getTargetValue(e)
-                              const parsed = parseFloat(value)
-                              dispatch({
-                                key: name,
-                                value: (Number.isNaN(parsed) ? undefined : parsed) as unknown as T[keyof T]
-                              })
-                            }}
-                            onKeyDown={onEnterKey}
-                            required={required}
-                            size='small'
-                            sx={{ width: '100px', mr: 1 }}
-                            type='number'
-                            value={`${value === valueWhenConstant ? constantValue : value ?? ''}`}
-                          />
-                          <FormControlLabel label={constantLabel} control={
-                            <Checkbox checked={value === null} onChange={(e) => {
-                              const isChecked = getTargetChecked(e)
-                              dispatch({
-                                key: name,
-                                value: (isChecked ? valueWhenConstant : constantValue) as unknown as T[keyof T]
-                              })
-                            }} />
-                          } />
-                        </>
-                      )
-                    })()}
-                    {type === 'yyyy' && !useConstantOption && (
+                    return (
+                      <FieldWrapper>
+                        <TextField
+                          autoFocus={autoFocus}
+                          disabled={value === valueWhenConstant || isDisabled}
+                          label={label}
+                          onChange={(e) => {
+                            const value = getTargetValue(e)
+                            const parsed = parseFloat(value)
+                            dispatch({
+                              key: name,
+                              value: (Number.isNaN(parsed) ? undefined : parsed) as unknown as T[keyof T]
+                            })
+                          }}
+                          onKeyDown={onEnterKey}
+                          required={required}
+                          size='small'
+                          sx={{ width: '100px', mr: 1 }}
+                          type='number'
+                          value={`${value === valueWhenConstant ? constantValue : value ?? ''}`}
+                        />
+                        <FormControlLabel label={constantLabel} control={
+                          <Checkbox checked={value === null} onChange={(e) => {
+                            const isChecked = getTargetChecked(e)
+                            dispatch({
+                              key: name,
+                              value: (isChecked ? valueWhenConstant : constantValue) as unknown as T[keyof T]
+                            })
+                          }} />
+                        } />
+                      </FieldWrapper>
+                    )
+                  })()}
+                  {type === 'yyyy' && !useConstantOption && (
+                    <FieldWrapper>
                       <DatePicker
                         disabled={isDisabled}
                         label={label}
@@ -285,22 +302,76 @@ export function createDialog<T>(name: string, icon: ReactElement, fields: Fields
                         value={state[name] ? fromYYYY(state[name] as unknown as YYYY) : null}
                         views={['year']}
                       />
-                    )}
-                    {type === 'yyyy' && useConstantOption && (() => {
-                      // These is OK because the fields can't change at runtime
-                      // and will always run in exactly the same order
+                    </FieldWrapper>
+                  )}
+                  {type === 'yyyy' && useConstantOption && (() => {
+                    // These is OK because the fields can't change at runtime
+                    // and will always run in exactly the same order
 
-                      /* eslint-disable react-hooks/rules-of-hooks */
-                      const { label: constantLabel, constantValue, value: valueWhenConstant } = useConstantOption()
-                      /* eslint-enable react-hooks/rules-of-hooks */
+                    /* eslint-disable react-hooks/rules-of-hooks */
+                    const { label: constantLabel, constantValue, value: valueWhenConstant } = useConstantOption()
+                    /* eslint-enable react-hooks/rules-of-hooks */
 
-                      const value = state[name]
+                    const value = state[name]
 
-                      return (
-                        <>
+                    return (
+                      <FieldWrapper>
+                        <DatePicker
+                          disabled={value === valueWhenConstant || isDisabled}
+                          label={label}
+                          onChange={(value) => dispatch({
+                            key: name,
+                            value: (isDate(value) ? toYYYY(value) : undefined) as unknown as T[keyof T]
+                          })}
+                          renderInput={(props: TextFieldProps) => (
+                            <TextField
+                              {...props}
+                              autoFocus={autoFocus}
+                              fullWidth
+                              onKeyDown={onEnterKey}
+                              required={required}
+                              size='small'
+                            />
+                          )}
+                          value={value === valueWhenConstant ? fromYYYY(constantValue as unknown as YYYY) : value ? fromYYYY(value as unknown as YYYY) : null}
+                          views={['year']}
+                        />
+                        <FormControlLabel label={constantLabel} control={
+                          <Checkbox checked={value === valueWhenConstant} disabled={isDisabled} onChange={(e) => {
+                            const isChecked = getTargetChecked(e)
+                            dispatch({
+                              key: name,
+                              value: (isChecked ? valueWhenConstant : constantValue) as unknown as T[keyof T]
+                            })
+                          }} />
+                        } />
+                      </FieldWrapper>
+                    )
+                  })()}
+                  {type === 'duration' && (() => {
+                    type Duration = 'date' | 'numYears'
+                    // eslint-disable-next-line react-hooks/rules-of-hooks
+                    const [durationType, setDurationType] = useState<Duration>('date')
+
+                    return (
+                      <>
+                        <FieldWrapper>
+                          <FormControl sx={{ flexDirection: 'row', alignItems: 'center' }}>
+                            <FormLabel sx={{ marginRight: 1 }}>{label}</FormLabel>
+                            <RadioGroup
+                              onChange={e => setDurationType(e.target.value as Duration)}
+                              row
+                              value={durationType}
+                            >
+                              <FormControlLabel value='date' control={<Radio />} label="End date" />
+                              <FormControlLabel value='numYears' control={<Radio />} label="Number of years" />
+                            </RadioGroup>
+                          </FormControl>
+                        </FieldWrapper>
+                        {durationType === 'date' && (
                           <DatePicker
-                            disabled={value === valueWhenConstant || isDisabled}
-                            label={label}
+                            disabled={isDisabled}
+                            label='End date'
                             onChange={(value) => dispatch({
                               key: name,
                               value: (isDate(value) ? toYYYY(value) : undefined) as unknown as T[keyof T]
@@ -315,22 +386,36 @@ export function createDialog<T>(name: string, icon: ReactElement, fields: Fields
                                 size='small'
                               />
                             )}
-                            value={value === valueWhenConstant ? fromYYYY(constantValue as unknown as YYYY) : value ? fromYYYY(value as unknown as YYYY) : null}
+                            value={state[name] ? fromYYYY(state[name] as unknown as YYYY) : null}
                             views={['year']}
                           />
-                          <FormControlLabel label={constantLabel} control={
-                            <Checkbox checked={value === valueWhenConstant} disabled={isDisabled} onChange={(e) => {
-                              const isChecked = getTargetChecked(e)
+                        )}
+                        {durationType === 'numYears' && (
+                          <TextField
+                            autoFocus={autoFocus}
+                            disabled={isDisabled}
+                            fullWidth
+                            label='Number of years'
+                            onChange={(e) => {
+                              const value = getTargetValue(e)
+                              const parsed = parseFloat(value)
                               dispatch({
                                 key: name,
-                                value: (isChecked ? valueWhenConstant : constantValue) as unknown as T[keyof T]
+                                value: (Number.isNaN(parsed) ? undefined : parsed) as unknown as T[keyof T]
                               })
-                            }} />
-                          } />
-                        </>
-                      )
-                    })()}
-                    {type === 'boolean' && (
+                            }}
+                            onKeyDown={onEnterKey}
+                            required={required}
+                            size='small'
+                            type='number'
+                            value={`${state[name] ?? ''}`}
+                          />
+                        )}
+                      </>
+                    )
+                  })()}
+                  {type === 'boolean' && (
+                    <FieldWrapper>
                       <FormControlLabel
                         label={label}
                         control={
@@ -345,27 +430,29 @@ export function createDialog<T>(name: string, icon: ReactElement, fields: Fields
                               })
                             }} />
                         } />
-                    )}
-                    {type === 'collection' && (() => {
-                      const onCreate = () => store.dialogs.open({
-                        type: field.dialogType,
-                        initialValues: {},
-                        onDone(details: unknown) {
-                          dispatch({
-                            key: name,
-                            value: [...state[name] as unknown as Array<unknown>, details] as unknown as T[keyof T]
-                          })
-                        }
-                      })
+                    </FieldWrapper>
+                  )}
+                  {type === 'collection' && (() => {
+                    const onCreate = () => store.dialogs.open({
+                      type: field.dialogType,
+                      initialValues: {},
+                      onDone(details: unknown) {
+                        dispatch({
+                          key: name,
+                          value: [...state[name] as unknown as Array<unknown>, details] as unknown as T[keyof T]
+                        })
+                      }
+                    })
 
-                      return (
-                        <>
+                    return (
+                      <>
+                        <FieldWrapper>
                           <Typography>{label}</Typography>
                           <IconButton onClick={onCreate} sx={{ ml: 1 }} size='small'><Add fontSize='inherit' /></IconButton>
-                        </>
-                      )
-                    })()}
-                  </IconField>
+                        </FieldWrapper>
+                      </>
+                    )
+                  })()}
                   {type === 'collection' && (() => {
                     /* eslint-disable react-hooks/rules-of-hooks */
 
