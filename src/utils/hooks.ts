@@ -26,8 +26,8 @@ export function useBindArr<
   P extends readonly any[],
   R
 >(callback: (...params: [...B, ...P]) => R, bound: [...B]) {
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    return useCallback((...params: P) => callback(...bound, ...params), [callback, ...bound])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  return useCallback((...params: P) => callback(...bound, ...params), [callback, ...bound])
 }
 
 export function useIf<P extends readonly any[]>(
