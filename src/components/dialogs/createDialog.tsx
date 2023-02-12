@@ -10,7 +10,7 @@ import React, { cloneElement, Fragment, ReactElement, useReducer, useState } fro
 import type { DialogType } from '../../state/Dialogs'
 import type { Store } from '../../state/Store'
 import { useIsDesktop } from '../../utils/breakpoints'
-import { fromYYYY, isDate, toYYYY, YYYY } from '../../utils/date'
+import { fromYYYY, isDate, toYYYY, YYYY, YYYYMM } from '../../utils/date'
 import { entries, KeyValues } from '../../utils/fn'
 import { getTargetChecked, getTargetValue, useKeyPress, useStopEvent } from '../../utils/hooks'
 import { useStore } from '../../utils/mobx'
@@ -22,6 +22,9 @@ type FieldType<T, V> =
   } | {
     type: 'duration'
     getFrom: (store: Store, state: T) => YYYY
+  } :
+  V extends YYYYMM ? {
+    type: 'yyyymm'
   } :
   V extends string ? {
     type: 'string'
@@ -133,7 +136,7 @@ export function createDialog<T>(name: string, icon: ReactElement, fields: Fields
         <DialogContent sx={{ display: 'flex', flexDirection: 'column', pb: 0 }}>
           <Box sx={{ mt: 1 }} />
           {
-            fieldEntries.map(([name, field], index) => {
+            fieldEntries.map(([name, field]) => {
               if (field === null || field.type === 'generate') {
                 return null
               }

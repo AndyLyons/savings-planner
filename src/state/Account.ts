@@ -2,8 +2,7 @@ import { AccountBalance } from '@mui/icons-material'
 import { makeAutoObservable } from 'mobx'
 import { computedFn } from 'mobx-utils'
 import { nanoid } from 'nanoid'
-import { subYear, YYYY } from '../utils/date'
-import { extract } from '../utils/fn'
+import { getMonth, Period, subMonth, YYYYMM } from '../utils/date'
 import { Balance } from './Balance'
 import { Collection } from './Collection'
 import type { Person } from './Person'
@@ -18,15 +17,15 @@ export const AccountIcon = AccountBalance
 
 export class Account {
   store: Store
-  balances: Collection<Balance, YYYY> = new Collection({
-    getId: balance => balance.year,
+  balances: Collection<Balance, YYYYMM> = new Collection({
+    getId: balance => balance.date,
     fromJSON: json => Balance.fromJSON(this.store, this, json)
   })
 
   id: AccountId
   name: string
   growth: number | null
-  compoundPeriod: number
+  compoundPeriod: Period
   owner: Person
 
   constructor(
@@ -68,11 +67,6 @@ export class Account {
     return (this.rate * 100).toFixed(2).replace(/\.?0+$/, '')
   }
 
-  // Annual Equivalence Rate
-  get aer() {
-    return Math.pow(1 + this.rate/this.compoundPeriod, this.compoundPeriod) - 1
-  }
-
   get deposits() {
     return this.store.strategy
       ? this.store.strategy.deposits.values.filter(deposit => deposit.account === this)
@@ -85,31 +79,36 @@ export class Account {
       : []
   }
 
-  getStartingBalance(year: YYYY) {
-    return this.getBalance(subYear(year)) + this.getDeposits(subYear(year))
+  getStartingBalance(date: YYYYMM) {
+    return this.getBalance(subMonth(date)) + this.getDeposits(subMonth(date))
   }
 
-  getInterest = computedFn((year: YYYY): number => {
-    return this.getStartingBalance(year) * this.aer
+  getInterest = computedFn((date: YYYYMM): number => {
+    if (this.compoundPeriod === Period.YEAR && getMonth(date) !== 1) {
+      return 0
+    }
+
+    const rate = this.compoundPeriod === Period.MONTH ? this.rate / 12 : this.rate
+    return this.getStartingBalance(date) * rate
   })
 
-  getDeposits = computedFn((year: YYYY): number => {
+  getDeposits = computedFn((date: YYYYMM): number => {
     return this.deposits.reduce((sum, deposit) => {
-      const isSingleDeposit = !deposit.repeating && deposit.startYearValue === year
-      const isRepeatingDeposit = deposit.repeating && deposit.endYearValue
-        && deposit.startYearValue <= year && year < deposit.endYearValue
+      const isSingleDeposit = !deposit.repeating && deposit.startDateValue === date
+      const isRepeatingDeposit = deposit.repeating && deposit.endDateValue
+        && deposit.startDateValue <= date && date < deposit.endDateValue
 
-      return isSingleDeposit || isRepeatingDeposit ? sum + deposit.normalisedAmount : sum
+      return isSingleDeposit || isRepeatingDeposit ? sum + deposit.amount : sum
     }, 0)
   })
 
-  getWithdrawals = computedFn((year: YYYY): number => {
+  getWithdrawals = computedFn((year: YYYYMM): number => {
     const previousBalance = this.getStartingBalance(year)
 
     const withdrawals = this.withdrawals.reduce((sum, withdrawal) => {
       const isSingleWithdrawal = !withdrawal.repeating && withdrawal.startYearValue === year
-      const isRepeatingWithdrawal = withdrawal.repeating && withdrawal.endYear
-        && withdrawal.startYearValue <= year && year <= withdrawal.endYear
+      const isRepeatingWithdrawal = withdrawal.repeating && withdrawal.endDate
+        && withdrawal.startYearValue <= year && year <= withdrawal.endDate
 
       let withdrawalAmount = 0
 
@@ -132,20 +131,20 @@ export class Account {
     return withdrawals > balanceWithInterest ? balanceWithInterest : withdrawals
   })
 
-  getCalculatedBalance = computedFn((year: YYYY): number => {
-    if (year < this.store.start) {
+  getCalculatedBalance = computedFn((date: YYYYMM): number => {
+    if (date < this.store.start) {
       return 0
     }
 
-    return this.getStartingBalance(year) + this.getInterest(year) - this.getWithdrawals(year)
+    return this.getStartingBalance(date) + this.getInterest(date) - this.getWithdrawals(date)
   })
 
-  getBalance = computedFn((year: YYYY): number => {
-    if (this.balances.has(year)) {
-      return this.balances.get(year).value
+  getBalance = computedFn((date: YYYYMM): number => {
+    if (this.balances.has(date)) {
+      return this.balances.get(date).value
     }
 
-    return this.getCalculatedBalance(year)
+    return this.getCalculatedBalance(date)
   })
 
   restore(json: AccountJSON, copy?: boolean) {
@@ -161,7 +160,10 @@ export class Account {
 
   get json() {
     return {
-      ...extract(this, 'id', 'name', 'growth', 'compoundPeriod'),
+      id: this.id,
+      name: this.name,
+      growth: this.growth,
+      compoundPeriod: this.compoundPeriod,
       owner: this.owner.id,
       balances: this.balances.toJSON()
     }

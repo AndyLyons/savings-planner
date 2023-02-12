@@ -45,8 +45,8 @@ export const WithdrawalDialog = createDialog<WithdrawalJSON>('withdrawal schedul
     icon: <Percent />,
     required: true
   },
-  startYear: {
-    type: 'yyyy',
+  startDate: {
+    type: 'yyyymm',
     label: (state) => state.repeating ? 'From' : 'In',
     icon: <Event />,
     required: true,
@@ -61,8 +61,8 @@ export const WithdrawalDialog = createDialog<WithdrawalJSON>('withdrawal schedul
     icon: <Loop />,
     required: false
   },
-  endYear: {
-    type: 'yyyy',
+  endDate: {
+    type: 'yyyymm',
     label: 'Until',
     icon: <Event />,
     // getFrom: (store, state) => state.startYear === RETIREMENT ? store.retireOn : state.startYear,

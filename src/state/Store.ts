@@ -1,8 +1,7 @@
-import { addYears, isBefore } from 'date-fns'
 import { makeAutoObservable } from 'mobx'
 import { computedFn } from 'mobx-utils'
 import React from 'react'
-import { addYear, fromYYYY, toYYYY, YYYY } from '../utils/date'
+import { addMonth, YYYYMM } from '../utils/date'
 import { extract } from '../utils/fn'
 import { Account, AccountId } from './Account'
 import { Collection } from './Collection'
@@ -18,9 +17,9 @@ export class Store {
   globalGrowth: number = 4
   showAges: boolean = true
   showIncomes: boolean = true
-  start: YYYY
-  end: YYYY
-  retireOn: YYYY
+  start: YYYYMM
+  end: YYYYMM
+  retireOn: YYYYMM
   strategy: Strategy | null = null
 
   dialogs: Dialogs = new Dialogs(this)
@@ -41,29 +40,21 @@ export class Store {
   constructor() {
     makeAutoObservable(this, undefined, { autoBind: true })
 
-    this.start = 2020 as YYYY
-    this.end = 2087 as YYYY
-    this.retireOn = 2037 as YYYY
+    this.start = 202001 as YYYYMM
+    this.end = 208712 as YYYYMM
+    this.retireOn = 203704 as YYYYMM
   }
 
-  get startYear() {
-    return fromYYYY(this.start)
-  }
-
-  get endYear() {
-    return fromYYYY(this.end)
-  }
-
-  get years() {
-    const years = []
-    for (let date = this.startYear; isBefore(date, this.endYear); date = addYears(date, 1)) {
-      years.push(toYYYY(date))
+  get dates() {
+    const dates: Array<YYYYMM> = []
+    for (let date = this.start; date < this.end; date = addMonth(date, 1)) {
+      dates.push(date)
     }
-    return years
+    return dates
   }
 
   getDate = computedFn((index: number) => {
-    return addYear(this.start, index)
+    return addMonth(this.start, index)
   })
 
   get globalRate() {
@@ -84,17 +75,14 @@ export class Store {
 
   get json() {
     return {
-      ...extract(
-        this,
-        'globalGrowth',
-        'showIncomes',
-        'showAges'
-      ),
-
+      globalGrowth: this.globalGrowth,
+      showIncomes: this.showIncomes,
+      showAges: this.showAges,
       strategy: this.strategy?.id ?? null,
       people: this.people.toJSON(),
       accounts: this.accounts.toJSON(),
-      strategies: this.strategies.toJSON()
+      strategies: this.strategies.toJSON(),
+      version: Store.version
     }
   }
 

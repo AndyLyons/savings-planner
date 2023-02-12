@@ -18,6 +18,6 @@ export const PersonDialog = createDialog<PersonJSON>('person', <PersonIcon />, {
     label: 'Year of birth',
     icon: <Event />,
     required: true,
-    type: 'yyyy'
+    type: 'yyyymm'
   }
 })

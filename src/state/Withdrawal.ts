@@ -1,7 +1,6 @@
 import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid';
-import type { YYYY } from '../utils/date';
-import { extract } from '../utils/fn';
+import type { YYYYMM } from '../utils/date';
 import type { Account } from './Account';
 import { Store } from './Store';
 import { Strategy } from './Strategy';
@@ -29,16 +28,16 @@ export class Withdrawal {
   account: Account
   amount: number | null
   type: WithdrawalType
-  startYear: YYYY | typeof RETIREMENT
+  startDate: YYYYMM | typeof RETIREMENT
   repeating: boolean
-  endYear: YYYY | null
+  endDate: YYYYMM | null
   taxRate: number
 
   constructor(
     store: Store,
     strategy: Strategy,
-    { id, account, amount, type, startYear, repeating, endYear, taxRate }:
-      Pick<Withdrawal, 'id' | 'account' | 'amount' | 'type' | 'startYear' | 'repeating' | 'endYear' | 'taxRate'>
+    { id, account, amount, type, startDate, repeating, endDate, taxRate }:
+      Pick<Withdrawal, 'id' | 'account' | 'amount' | 'type' | 'startDate' | 'repeating' | 'endDate' | 'taxRate'>
   ) {
     makeAutoObservable(this, { store: false, account: false }, { autoBind: true })
 
@@ -49,9 +48,9 @@ export class Withdrawal {
     this.account = account
     this.amount = amount
     this.type = type
-    this.startYear = startYear
+    this.startDate = startDate
     this.repeating = repeating
-    this.endYear = endYear
+    this.endDate = endDate
     this.taxRate = taxRate
   }
 
@@ -70,7 +69,7 @@ export class Withdrawal {
   }
 
   get startYearValue() {
-    return this.startYear === RETIREMENT ? this.store.retireOn : this.startYear
+    return this.startDate === RETIREMENT ? this.store.retireOn : this.startDate
   }
 
   get amountValue() {
@@ -90,20 +89,26 @@ export class Withdrawal {
   }
 
   restore(json: WithdrawalJSON, copy?: boolean) {
-    const { account, amount, type, startYear, repeating, endYear, taxRate } = json
+    const { account, amount, type, startDate, repeating, endDate, taxRate } = json
 
     this.account = this.store.accounts.get(account)
     this.amount = amount
     this.type = type
-    this.startYear = startYear
+    this.startDate = startDate
     this.repeating = repeating
-    this.endYear = endYear
+    this.endDate = endDate
     this.taxRate = taxRate
   }
 
   get json() {
     return {
-      ...extract(this, 'id', 'amount', 'type', 'startYear', 'repeating', 'endYear', 'taxRate'),
+      id: this.id,
+      amount: this.amount,
+      type: this.type,
+      startDate: this.startDate,
+      repeating: this.repeating,
+      endDate: this.endDate,
+      taxRate: this.taxRate,
       account: this.account.id
     }
   }

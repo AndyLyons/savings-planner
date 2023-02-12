@@ -31,8 +31,8 @@ export const DepositDialog = createDialog<DepositJSON>('deposit schedule', <Depo
     useOptions: () => [{ id: Period.MONTH, label: 'Month' }, { id: Period.YEAR, label: 'Year' }],
     required: true
   },
-  startYear: {
-    type: 'yyyy',
+  startDate: {
+    type: 'yyyymm',
     label: 'On',
     icon: <Event />,
     required: true,
@@ -47,8 +47,8 @@ export const DepositDialog = createDialog<DepositJSON>('deposit schedule', <Depo
     icon: <Loop />,
     required: false
   },
-  endYear: {
-    type: 'yyyy',
+  endDate: {
+    type: 'yyyymm',
     label: 'Until',
     icon: <Event />,
     getVisible: (state) => state.repeating === true,
@@ -61,5 +61,5 @@ export const DepositDialog = createDialog<DepositJSON>('deposit schedule', <Depo
 }, {
   period: Period.MONTH,
   repeating: true,
-  startYear: START
+  startDate: START
 })

@@ -1,8 +1,7 @@
 import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid';
-import type { YYYY } from '../utils/date';
+import type { YYYYMM } from '../utils/date';
 import { Period } from '../utils/date';
-import { extract } from '../utils/fn';
 import type { Account } from './Account';
 import { Store } from './Store';
 import type { Strategy } from './Strategy';
@@ -23,16 +22,16 @@ export class Deposit {
   id: DepositId
   account: Account
   amount: number
-  startYear: YYYY | typeof START
+  startDate: YYYYMM | typeof START
   period: Period
   repeating: boolean
-  endYear: YYYY | typeof RETIREMENT | null
+  endDate: YYYYMM | typeof RETIREMENT | null
 
   constructor(
     store: Store,
     strategy: Strategy,
-    { id, account, amount, startYear, repeating, endYear, period }:
-      Pick<Deposit, 'id' | 'account' | 'amount' | 'startYear' | 'repeating' | 'endYear' | 'period'>
+    { id, account, amount, startDate, repeating, endDate, period }:
+      Pick<Deposit, 'id' | 'account' | 'amount' | 'startDate' | 'repeating' | 'endDate' | 'period'>
   ) {
     makeAutoObservable(this, { store: false, strategy: false }, { autoBind: true })
 
@@ -42,10 +41,10 @@ export class Deposit {
     this.id = id
     this.account = account
     this.amount = amount
-    this.startYear = startYear
+    this.startDate = startDate
     this.period = period
     this.repeating = repeating
-    this.endYear = endYear
+    this.endDate = endDate
   }
 
   static createId() {
@@ -63,32 +62,33 @@ export class Deposit {
     })
   }
 
-  get startYearValue() {
-    return this.startYear === START ? this.store.start : this.startYear
+  get startDateValue() {
+    return this.startDate === START ? this.store.start : this.startDate
   }
 
-  get endYearValue() {
-    return this.endYear === RETIREMENT ? this.store.retireOn : this.endYear
-  }
-
-  get normalisedAmount() {
-    return this.period === Period.MONTH ? this.amount * 12 : this.amount
+  get endDateValue() {
+    return this.endDate === RETIREMENT ? this.store.retireOn : this.endDate
   }
 
   restore(json: DepositJSON, copy?: boolean) {
-    const { account: accountId, amount, startYear, repeating, endYear, period } = json
+    const { account: accountId, amount, startDate, repeating, endDate, period } = json
 
     this.account = this.store.accounts.get(accountId)
     this.amount = amount
-    this.startYear = startYear
+    this.startDate = startDate
     this.repeating = repeating
-    this.endYear = endYear
+    this.endDate = endDate
     this.period = period
   }
 
   get json() {
     return {
-      ...extract(this, 'id', 'amount', 'startYear', 'repeating', 'endYear', 'period'),
+      id: this.id,
+      amount: this.amount,
+      startDate: this.startDate,
+      repeating: this.repeating,
+      endDate: this.endDate,
+      period: this.period,
       account: this.account.id
     }
   }

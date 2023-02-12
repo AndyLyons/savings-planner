@@ -1,7 +1,6 @@
 import { CurrencyExchange } from '@mui/icons-material';
 import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid';
-import { extract } from '../utils/fn';
 import { Collection } from './Collection';
 import { Deposit, DepositId } from './Deposit';
 import type { Store } from './Store';
@@ -64,7 +63,8 @@ export class Strategy {
 
   get json() {
     return {
-      ...extract(this, 'id', 'name'),
+      id: this.id,
+      name: this.name,
       deposits: this.deposits.toJSON(),
       withdrawals: this.withdrawals.toJSON()
     }

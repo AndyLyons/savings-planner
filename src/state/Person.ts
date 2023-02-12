@@ -1,10 +1,9 @@
 import { Person as MUIPersonIcon } from '@mui/icons-material'
-import { addYears, differenceInYears } from 'date-fns'
+import { differenceInYears } from 'date-fns'
 import { makeAutoObservable } from 'mobx'
 import { computedFn } from 'mobx-utils'
 import { nanoid } from 'nanoid'
-import { fromYYYY, toYYYY, YYYY } from '../utils/date'
-import { extract } from '../utils/fn'
+import { fromYYYYMM, YYYYMM } from '../utils/date'
 import type { Store } from './Store'
 
 export type PersonId = string & { __personId__: never }
@@ -18,7 +17,7 @@ export class Person {
 
   id: PersonId
   name: string
-  dob: YYYY
+  dob: YYYYMM
 
   constructor(
     store: Store,
@@ -51,16 +50,12 @@ export class Person {
     return this.store.accounts.values.filter(account => account.owner === this)
   }
 
-  getAge = computedFn((date: YYYY) => {
-    return differenceInYears(fromYYYY(date), this.dobAsDate)
-  })
-
-  getDateWhenAge = computedFn((age: number) => {
-    return toYYYY(addYears(this.dobAsDate, age))
+  getAge = computedFn((date: YYYYMM) => {
+    return differenceInYears(fromYYYYMM(date), this.dobAsDate)
   })
 
   get dobAsDate() {
-    return fromYYYY(this.dob)
+    return fromYYYYMM(this.dob)
   }
 
   restore(details: PersonJSON, copy?: boolean) {
@@ -71,7 +66,11 @@ export class Person {
   }
 
   get json() {
-    return extract(this, 'id', 'name', 'dob')
+    return {
+      id: this.id,
+      name: this.name,
+      dob: this.dob
+    }
   }
 
   toJSON() {

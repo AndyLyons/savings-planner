@@ -10,8 +10,8 @@ export const BalanceDialog = createDialog<BalanceJSON>('balance', <BalanceIcon /
     icon: <CurrencyPound />,
     required: true
   },
-  year: {
-    type: 'yyyy',
+  date: {
+    type: 'yyyymm',
     label: 'Date',
     icon: <Event />,
     required: true

@@ -7,7 +7,7 @@ import {
 } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
-import { fromYYYY, isDate, toYYYY } from '../utils/date';
+import { fromYYYYMM, isDate, toYYYYMM } from '../utils/date';
 import type { ChangeEvent } from '../utils/hooks';
 import { getTargetValue } from '../utils/hooks';
 import { useAction, useStore } from '../utils/mobx';
@@ -30,7 +30,7 @@ export const Header = observer(function Header({ sx }: Props) {
   })
 
   const [retireOn, setRetireOn] = useState({
-    value: fromYYYY(store.retireOn) as Date | null,
+    value: fromYYYYMM(store.retireOn) as Date | null,
     isValid: true
   })
 
@@ -46,7 +46,7 @@ export const Header = observer(function Header({ sx }: Props) {
   }, [])
 
   const onRetireAtChanged = useAction((_, value: Date | null) => {
-    const parsedValue = isDate(value) ? toYYYY(value) : null
+    const parsedValue = isDate(value) ? toYYYYMM(value) : null
     const isValid = parsedValue !== null
     setRetireOn({ value, isValid })
 
