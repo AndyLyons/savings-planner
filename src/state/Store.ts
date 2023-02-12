@@ -2,7 +2,6 @@ import { makeAutoObservable } from 'mobx'
 import { computedFn } from 'mobx-utils'
 import React from 'react'
 import { addMonth, YYYYMM } from '../utils/date'
-import { extract } from '../utils/fn'
 import { Account, AccountId } from './Account'
 import { Collection } from './Collection'
 import { Dialogs } from './Dialogs'
@@ -10,10 +9,13 @@ import { Menu } from './Menu'
 import { Persistence } from './Persistence'
 import { Person, PersonId } from './Person'
 import { Strategy, StrategyId } from './Strategy'
+import { migrate } from './versions/migrate'
 
 export type StoreJSON = typeof Store.prototype.json
 
 export class Store {
+  static version = 2
+
   globalGrowth: number = 4
   showAges: boolean = true
   showIncomes: boolean = true
@@ -91,15 +93,17 @@ export class Store {
   }
 
   restore(json: StoreJSON, copy?: boolean) {
-    this.globalGrowth = json.globalGrowth
-    this.showIncomes = json.showIncomes
-    this.showAges = json.showAges
+    const migrated = migrate(json)
 
-    this.people.restore(json.people, copy)
-    this.accounts.restore(json.accounts, copy)
-    this.strategies.restore(json.strategies, copy)
+    this.globalGrowth = migrated.globalGrowth
+    this.showIncomes = migrated.showIncomes
+    this.showAges = migrated.showAges
 
-    this.strategy = json.strategy ? this.strategies.get(json.strategy) : null
+    this.people.restore(migrated.people, copy)
+    this.accounts.restore(migrated.accounts, copy)
+    this.strategies.restore(migrated.strategies, copy)
+
+    this.strategy = migrated.strategy ? this.strategies.get(migrated.strategy) : null
   }
 }
 

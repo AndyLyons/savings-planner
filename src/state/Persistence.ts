@@ -10,8 +10,9 @@ export class Persistence {
   }
 
   start() {
+    const persisted = localStorage.getItem('store')
+
     try {
-      const persisted = localStorage.getItem('store')
 
       if (persisted) {
         this.store.restore(JSON.parse(persisted), false)
@@ -21,8 +22,9 @@ export class Persistence {
         () => JSON.stringify(this.store.toJSON()),
         (serialized) => localStorage.setItem('store', serialized),
         { fireImmediately: false })
-    } catch {
+    } catch(e) {
       alert('Could not restore snapshot - data is corrupted')
+      console.error(e, persisted)
       localStorage.removeItem('store')
     }
   }
