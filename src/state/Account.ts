@@ -79,9 +79,9 @@ export class Account {
       : []
   }
 
-  getStartingBalance(date: YYYYMM) {
+  getStartingBalance = computedFn((date: YYYYMM): number => {
     return this.getBalance(subMonth(date)) + this.getDeposits(subMonth(date))
-  }
+  })
 
   getInterest = computedFn((date: YYYYMM): number => {
     if (this.compoundPeriod === Period.YEAR && getMonth(date) !== 1) {
@@ -98,35 +98,41 @@ export class Account {
       const isRepeatingDeposit = deposit.repeating && deposit.endDateValue
         && deposit.startDateValue <= date && date < deposit.endDateValue
 
-      return isSingleDeposit || isRepeatingDeposit ? sum + deposit.amount : sum
+      return isSingleDeposit || isRepeatingDeposit ? sum + deposit.monthlyAmount : sum
     }, 0)
   })
 
-  getWithdrawals = computedFn((year: YYYYMM): number => {
-    const previousBalance = this.getStartingBalance(year)
+  getWithdrawals = computedFn((date: YYYYMM): number => {
+    const previousBalance = this.getStartingBalance(date)
 
     const withdrawals = this.withdrawals.reduce((sum, withdrawal) => {
-      const isSingleWithdrawal = !withdrawal.repeating && withdrawal.startYearValue === year
+      const isSingleWithdrawal = !withdrawal.repeating && withdrawal.startDateValue === date
       const isRepeatingWithdrawal = withdrawal.repeating && withdrawal.endDate
-        && withdrawal.startYearValue <= year && year <= withdrawal.endDate
+        && withdrawal.startDateValue <= date && date <= withdrawal.endDate
 
       let withdrawalAmount = 0
 
       if (isSingleWithdrawal || isRepeatingWithdrawal) {
         if (withdrawal.type === WithdrawalType.PERCENTAGE) {
-          withdrawalAmount = previousBalance * withdrawal.normalisedAmount
+          if (getMonth(date) === 1) {
+            withdrawalAmount = previousBalance * withdrawal.amountValue / 100
+          }
         } else if (withdrawal.type === WithdrawalType.STATIC_PERCENTAGE) {
-          const staticBalance = this.getStartingBalance(withdrawal.startYearValue)
-          withdrawalAmount = staticBalance * withdrawal.normalisedAmount
+          if (getMonth(date) === 1) {
+            const staticBalance = this.getStartingBalance(withdrawal.startDateValue)
+            withdrawalAmount = staticBalance * withdrawal.amountValue / 100
+          }
+        } else if (withdrawal.type === WithdrawalType.FIXED_PER_YEAR) {
+          withdrawalAmount = withdrawal.amountValue / 12
         } else {
-          withdrawalAmount = withdrawal.normalisedAmount
+          withdrawalAmount = withdrawal.amountValue
         }
       }
 
       return sum + withdrawalAmount
     }, 0)
 
-    const balanceWithInterest = previousBalance + this.getInterest(year)
+    const balanceWithInterest = previousBalance + this.getInterest(date)
 
     return withdrawals > balanceWithInterest ? balanceWithInterest : withdrawals
   })

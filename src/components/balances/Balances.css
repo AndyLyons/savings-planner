@@ -54,6 +54,14 @@
   z-index: 1;
 }
 
+.table-column--month {
+  position: sticky;
+  left: 0;
+  justify-content: left;
+  width: 70px;
+  z-index: 1;
+}
+
 .table-column--age {
   justify-content: center;
   width: 40px;
@@ -75,7 +83,7 @@
   padding: 0;
 }
 
-.account-breakdown--year {
+.account-breakdown--date {
   list-style-type: '';
   font-weight: bolder;
   text-decoration: underline;

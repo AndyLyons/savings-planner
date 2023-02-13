@@ -25,7 +25,10 @@ export const StrategyDialog = createDialog<StrategyJSON>('strategy', <StrategyIc
     icon: <List />,
     itemIcon: <DepositIcon />,
     getKey: (store, deposit) => deposit.id,
-    getLabel: (store, deposit) => `${store.accounts.get(deposit.account).name}  - £${deposit.amount} / ${deposit.period === Period.MONTH ? 'month' : 'year'}`
+    getLabel: (store, deposit) => {
+      const account = store.accounts.get(deposit.account)
+      return `${account.name} (${account.owner.name}) - £${deposit.amount} / ${deposit.period === Period.MONTH ? 'month' : 'year'}`
+    }
   },
   withdrawals: {
     type: 'collection',

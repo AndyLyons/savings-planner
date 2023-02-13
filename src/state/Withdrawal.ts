@@ -68,24 +68,12 @@ export class Withdrawal {
     })
   }
 
-  get startYearValue() {
+  get startDateValue() {
     return this.startDate === RETIREMENT ? this.store.retireOn : this.startDate
   }
 
   get amountValue() {
     return this.amount === null ? this.store.globalGrowth : this.amount
-  }
-
-  get normalisedAmount() {
-    if (this.type === WithdrawalType.FIXED_PER_MONTH) {
-      return this.amountValue * 12
-    }
-
-    if (this.type === WithdrawalType.PERCENTAGE || this.type === WithdrawalType.STATIC_PERCENTAGE) {
-      return this.amountValue / 100
-    }
-
-    return this.amountValue
   }
 
   restore(json: WithdrawalJSON, copy?: boolean) {

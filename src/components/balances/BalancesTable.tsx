@@ -1,6 +1,7 @@
 import { Add, Edit, SwapHoriz } from '@mui/icons-material'
 import { Box, Button, SvgIcon, Tooltip } from '@mui/material'
 import classNames from 'classnames'
+import { format } from 'date-fns'
 import { observer } from 'mobx-react-lite'
 import { forwardRef, useMemo } from 'react'
 import AutoSizer from 'react-virtualized-auto-sizer'
@@ -8,7 +9,7 @@ import type { ListChildComponentProps, ListItemKeySelector } from 'react-window'
 import { VariableSizeList  } from 'react-window'
 import type { Account, AccountId } from '../../state/Account'
 import type { PersonId } from '../../state/Person'
-import { subMonth, YYYYMM } from '../../utils/date'
+import { fromYYYYMM, getMonth, getYear, subMonth, YYYYMM } from '../../utils/date'
 import { useAction, useStore } from '../../utils/mobx'
 
 type Dates = Array<YYYYMM>
@@ -117,7 +118,7 @@ const AccountBreakdown = observer(function AccountBreakdown({ date, accountId }:
 
   return (
     <ul className='account-breakdown'>
-      <li className='account-breakdown--year'>{date}</li>
+      <li className='account-breakdown--date'>{format(fromYYYYMM(date), 'MMM yyyy')}</li>
       <li className='account-breakdown--existing'>£{formatNumber(previous)}</li>
       <li className='account-breakdown--add'>£{formatNumber(prevDeposits)} deposits</li>
       <li className='account-breakdown--add'>£{formatNumber(interest)} interest</li>
@@ -194,7 +195,8 @@ const TableRow = observer(function TableRow(props: RowProps) {
 
   return (
     <div className='table-row' style={style}>
-      <div className='table-cell table-column--year'>{date}</div>
+      <div className='table-cell table-column--year'>{getMonth(date) === 1 ? getYear(date) : ''}</div>
+      <div className='table-cell table-column--month'>{format(fromYYYYMM(date), 'MMM')}</div>
       {people.keys.map(personId => (
         <AgeCell key={personId} date={date} personId={personId} />
       ))}
@@ -223,6 +225,7 @@ const TableHeader = observer(function TableHeader() {
       <div className="table-header">
         <div className="table-row table-row--groups">
           <div className='table-cell--empty table-column--year'></div>
+          <div className='table-cell--empty table-column--month'></div>
           {people.keys.map(personId => (
             <div key={personId} className='table-cell--empty table-column--age'></div>
           ))}
@@ -230,7 +233,8 @@ const TableHeader = observer(function TableHeader() {
           <Box className='table-cell table-columns--balances' sx={sxBalances}>Balance</Box>
         </div>
         <div className="table-row table-row--headers">
-          <div className='table-cell table-column--year'>Date</div>
+          <div className='table-cell table-column--year'>Year</div>
+          <div className='table-cell table-column--month'>Month</div>
           {people.values.map(person => (
             <div key={person.id} className='table-cell table-column--age'>{person.name}</div>
           ))}

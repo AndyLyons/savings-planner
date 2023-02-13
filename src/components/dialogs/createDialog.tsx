@@ -10,7 +10,7 @@ import React, { cloneElement, Fragment, ReactElement, useReducer, useState } fro
 import type { DialogType } from '../../state/Dialogs'
 import type { Store } from '../../state/Store'
 import { useIsDesktop } from '../../utils/breakpoints'
-import { fromYYYY, isDate, toYYYY, YYYY, YYYYMM } from '../../utils/date'
+import { fromYYYY, fromYYYYMM, isDate, toYYYY, toYYYYMM, YYYY, YYYYMM } from '../../utils/date'
 import { entries, KeyValues } from '../../utils/fn'
 import { getTargetChecked, getTargetValue, useKeyPress, useStopEvent } from '../../utils/hooks'
 import { useStore } from '../../utils/mobx'
@@ -338,6 +338,74 @@ export function createDialog<T>(name: string, icon: ReactElement, fields: Fields
                           )}
                           value={value === valueWhenConstant ? fromYYYY(constantValue as unknown as YYYY) : value ? fromYYYY(value as unknown as YYYY) : null}
                           views={['year']}
+                        />
+                        <FormControlLabel label={constantLabel} control={
+                          <Checkbox checked={value === valueWhenConstant} disabled={isDisabled} onChange={(e) => {
+                            const isChecked = getTargetChecked(e)
+                            dispatch({
+                              key: name,
+                              value: (isChecked ? valueWhenConstant : constantValue) as unknown as T[keyof T]
+                            })
+                          }} />
+                        } />
+                      </FieldWrapper>
+                    )
+                  })()}
+                  {type === 'yyyymm' && !useConstantOption && (
+                    <FieldWrapper>
+                      <DatePicker
+                        disabled={isDisabled}
+                        label={label}
+                        onChange={(value) => dispatch({
+                          key: name,
+                          value: (isDate(value) ? toYYYYMM(value) : undefined) as unknown as T[keyof T]
+                        })}
+                        renderInput={(props: TextFieldProps) => (
+                          <TextField
+                            {...props}
+                            autoFocus={autoFocus}
+                            fullWidth
+                            onKeyDown={onEnterKey}
+                            required={required}
+                            size='small'
+                          />
+                        )}
+                        value={state[name] ? fromYYYYMM(state[name] as unknown as YYYYMM) : null}
+                        views={['month', 'year']}
+                      />
+                    </FieldWrapper>
+                  )}
+                  {type === 'yyyymm' && useConstantOption && (() => {
+                    // These is OK because the fields can't change at runtime
+                    // and will always run in exactly the same order
+
+                    /* eslint-disable react-hooks/rules-of-hooks */
+                    const { label: constantLabel, constantValue, value: valueWhenConstant } = useConstantOption()
+                    /* eslint-enable react-hooks/rules-of-hooks */
+
+                    const value = state[name]
+
+                    return (
+                      <FieldWrapper>
+                        <DatePicker
+                          disabled={value === valueWhenConstant || isDisabled}
+                          label={label}
+                          onChange={(value) => dispatch({
+                            key: name,
+                            value: (isDate(value) ? toYYYYMM(value) : undefined) as unknown as T[keyof T]
+                          })}
+                          renderInput={(props: TextFieldProps) => (
+                            <TextField
+                              {...props}
+                              autoFocus={autoFocus}
+                              fullWidth
+                              onKeyDown={onEnterKey}
+                              required={required}
+                              size='small'
+                            />
+                          )}
+                          value={value === valueWhenConstant ? fromYYYYMM(constantValue as unknown as YYYYMM) : value ? fromYYYYMM(value as unknown as YYYYMM) : null}
+                          views={['month', 'year']}
                         />
                         <FormControlLabel label={constantLabel} control={
                           <Checkbox checked={value === valueWhenConstant} disabled={isDisabled} onChange={(e) => {

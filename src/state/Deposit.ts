@@ -62,6 +62,10 @@ export class Deposit {
     })
   }
 
+  get monthlyAmount() {
+    return this.period === Period.YEAR ? this.amount / 12 : this.amount
+  }
+
   get startDateValue() {
     return this.startDate === START ? this.store.start : this.startDate
   }

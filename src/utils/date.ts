@@ -17,12 +17,15 @@ export const subYear = (yyyy: YYYY, numYears = 1): YYYY => addYear(yyyy, numYear
 export const getYear = (yyyymm: YYYYMM): YYYY => Math.trunc(yyyymm / 100) as YYYY
 export const getMonth = (yyyymm: YYYYMM): MM => yyyymm % 100 as MM
 
+// mod operator but supports negative numbers
+const mod = (value: number, modulus: number) => ((value % modulus) + modulus) % modulus
+
 export const addMonth = (yyyymm: YYYYMM, numMonths = 1): YYYYMM => {
   const year = getYear(yyyymm)
   const month = getMonth(yyyymm)
 
   const newMonth = month + numMonths
-  const wrappedMonth = ((newMonth - 1) % 12) + 1
+  const wrappedMonth = mod(newMonth - 1, 12) + 1
   const yearsChange = Math.ceil(newMonth / 12) - 1
   const newYear = year + yearsChange
 
@@ -31,7 +34,7 @@ export const addMonth = (yyyymm: YYYYMM, numMonths = 1): YYYYMM => {
 
 export const subMonth = (yyyymm: YYYYMM, numMonths = 1): YYYYMM => addMonth(yyyymm, numMonths * -1)
 
-export const toYYYYMM = (date: Date): YYYYMM => (date.getFullYear() * 1000) + (date.getMonth() + 1) as YYYYMM
+export const toYYYYMM = (date: Date): YYYYMM => (date.getFullYear() * 100) + (date.getMonth() + 1) as YYYYMM
 export const fromYYYYMM = (yyyymm: YYYYMM): Date => {
   const date = new Date(0)
   const year = getYear(yyyymm)
@@ -47,6 +50,3 @@ export const fromYYYY = (yyyy: YYYY): Date => {
   date.setFullYear(yyyy)
   return date
 }
-
-export const formatDateYYYY = (date: Date): string => toYYYY(date).toString()
-export const formatDateYYYYMM = (date: Date): string => toYYYYMM(date).toString()

@@ -87,7 +87,7 @@ export const Header = observer(function Header({ sx }: Props) {
             value={store.strategy?.id ?? ''}
           />
           <DatePicker
-            label='Retirement year'
+            label='Retirement date'
             onChange={onRetireAtChanged}
             renderInput={(props: TextFieldProps) => (
               <TextField
@@ -99,7 +99,7 @@ export const Header = observer(function Header({ sx }: Props) {
               />
             )}
             value={retireOn.value}
-            views={['year']}
+            views={['month', 'year']}
           />
           <TextField
             InputLabelProps={{
