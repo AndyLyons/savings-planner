@@ -5,7 +5,6 @@ type StrategyId = string & { __strategyId__: never }
 type WithdrawalId = string & { __withdrawalId__: never }
 
 type YYYY = number & { __yyyy__: never }
-type YYYYMM = number & { __yyyymm__: never }
 
 enum Period {
     MONTH = 'month',
@@ -56,9 +55,9 @@ export type V1 = {
             id: WithdrawalId
             amount: number | null
             type: WithdrawalType
-            startDate: YYYYMM | '__RETIREMENT__'
+            startYear: YYYY | '__RETIREMENT__'
             repeating: boolean
-            endDate: YYYYMM | null
+            endYear: YYYY | null
             taxRate: number
             account: AccountId
         }>
