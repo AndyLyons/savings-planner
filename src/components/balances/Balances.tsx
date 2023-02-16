@@ -6,6 +6,7 @@ import { ShowIncomesToggle } from '../common/ShowIncomesToggle'
 import { ShowAgesToggle } from '../common/ShowAgesToggle'
 import './Balances.css'
 import { BalancesTable } from './BalancesTable'
+import { ShowMonthsToggle } from '../common/ShowMonthsToggle'
 
 export const Balances = observer(function Balances() {
   return (
@@ -22,6 +23,7 @@ export const Balances = observer(function Balances() {
         mb: 1,
         mt: 1
       }}>
+        <ShowMonthsToggle sx={{ mr: 2 }}  />
         <ShowAgesToggle sx={{ mr: 2 }} />
         <ShowIncomesToggle />
       </Box>

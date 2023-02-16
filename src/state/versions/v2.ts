@@ -12,6 +12,7 @@ export const migrateV2 = (json: V1): V2 => {
   return ({
     ...json,
     version: 2,
+    showMonths: false,
 
     accounts: json.accounts.map(account => ({
       ...account,

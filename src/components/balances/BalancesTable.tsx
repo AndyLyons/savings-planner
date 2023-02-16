@@ -109,11 +109,12 @@ const PredictedBalance = observer(function PredictedBalance({ account, date }: {
 })
 
 const AccountBreakdown = observer(function AccountBreakdown({ date, accountId }: { date: YYYYMM, accountId: AccountId }) {
-  const account = useStore(store => store.accounts.get(accountId))
-  const previous = account.getBalance(subMonth(date))
-  const interest = account.getInterest(date)
-  const prevDeposits = account.getDeposits(subMonth(date))
-  const withdrawals = account.getWithdrawals(date)
+  const { accounts, showMonths } = useStore()
+  const account = accounts.get(accountId)
+  const previous = account.getBalance(subMonth(date, showMonths ? 1 : 12))
+  const interest = showMonths ? account.getInterest(date) : account.getYearInterest(date)
+  const prevDeposits = showMonths ? account.getDeposits(subMonth(date)) : account.getYearDeposits(subMonth(date))
+  const withdrawals = showMonths ? account.getWithdrawals(date) : account.getPastYearWithdrawals(date)
   const calculatedBalance = account.getCalculatedBalance(date)
 
   return (
@@ -164,8 +165,9 @@ const TotalBalanceCell = observer(function TotalBalanceCell({ date }: { date: YY
 })
 
 const AccountIncomeCell = observer(function AccountIncomeCell({ date, accountId }: { date: YYYYMM, accountId: AccountId }) {
-  const account = useStore(store => store.accounts.get(accountId))
-  const income = account.getWithdrawals(date)
+  const { accounts, showMonths } = useStore()
+  const account = accounts.get(accountId)
+  const income = showMonths ? account.getWithdrawals(date) : account.getNextYearWithdrawals(date)
 
   return (
     <div className='table-cell table-column--account-income'>{income ? formatNumber(income) : ''}</div>
@@ -173,9 +175,9 @@ const AccountIncomeCell = observer(function AccountIncomeCell({ date, accountId 
 })
 
 const TotalIncomeCell = observer(function TotalIncomeCell({ date }: { date: YYYYMM }) {
-  const store = useStore()
-  const withdrawals = store.accounts.values.map(account =>
-    account.getWithdrawals(date)
+  const { accounts, showMonths } = useStore()
+  const withdrawals = accounts.values.map(account =>
+    showMonths ? account.getWithdrawals(date) : account.getNextYearWithdrawals(date)
   )
 
   const total = withdrawals.reduce((sum, value) => sum + value, 0)
@@ -189,14 +191,14 @@ type RowProps = ListChildComponentProps<Dates>
 
 const TableRow = observer(function TableRow(props: RowProps) {
   const { data, index, style } = props
-  const { accounts, people } = useStore()
+  const { accounts, people, showMonths } = useStore()
 
   const date = data[index - 2] // -2 because of header rows
 
   return (
     <div className='table-row' style={style}>
       <div className='table-cell table-column--year'>{getMonth(date) === 1 ? getYear(date) : ''}</div>
-      <div className='table-cell table-column--month'>{format(fromYYYYMM(date), 'MMM')}</div>
+      <div className='table-cell table-column--month'>{showMonths ? format(fromYYYYMM(date), 'MMM') : ''}</div>
       {people.keys.map(personId => (
         <AgeCell key={personId} date={date} personId={personId} />
       ))}

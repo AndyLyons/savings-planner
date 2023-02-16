@@ -2,7 +2,7 @@ import { AccountBalance } from '@mui/icons-material'
 import { makeAutoObservable } from 'mobx'
 import { computedFn } from 'mobx-utils'
 import { nanoid } from 'nanoid'
-import { getMonth, Period, subMonth, YYYYMM } from '../utils/date'
+import { lastTwelveMonths, getMonth, Period, subMonth, YYYYMM, nextTwelveMonths } from '../utils/date'
 import { Balance } from './Balance'
 import { Collection } from './Collection'
 import type { Person } from './Person'
@@ -92,6 +92,10 @@ export class Account {
     return this.getStartingBalance(date) * rate
   })
 
+  getYearInterest = computedFn((date: YYYYMM): number => {
+    return lastTwelveMonths(date).reduce((sum, nextDate) => sum + this.getInterest(nextDate), 0)
+  })
+
   getDeposits = computedFn((date: YYYYMM): number => {
     return this.deposits.reduce((sum, deposit) => {
       const isSingleDeposit = !deposit.repeating && deposit.startDateValue === date
@@ -100,6 +104,10 @@ export class Account {
 
       return isSingleDeposit || isRepeatingDeposit ? sum + deposit.monthlyAmount : sum
     }, 0)
+  })
+
+  getYearDeposits = computedFn((date: YYYYMM): number => {
+    return lastTwelveMonths(date).reduce((sum, nextDate) => sum + this.getDeposits(nextDate), 0)
   })
 
   getWithdrawals = computedFn((date: YYYYMM): number => {
@@ -135,6 +143,14 @@ export class Account {
     const balanceWithInterest = previousBalance + this.getInterest(date)
 
     return withdrawals > balanceWithInterest ? balanceWithInterest : withdrawals
+  })
+
+  getPastYearWithdrawals = computedFn((date: YYYYMM): number => {
+    return lastTwelveMonths(date).reduce((sum, nextDate) => sum + this.getWithdrawals(nextDate), 0)
+  })
+
+  getNextYearWithdrawals = computedFn((date: YYYYMM): number => {
+    return nextTwelveMonths(date).reduce((sum, nextDate) => sum + this.getWithdrawals(nextDate), 0)
   })
 
   getCalculatedBalance = computedFn((date: YYYYMM): number => {

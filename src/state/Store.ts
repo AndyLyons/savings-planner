@@ -19,6 +19,7 @@ export class Store {
   globalGrowth: number = 4
   showAges: boolean = true
   showIncomes: boolean = true
+  showMonths: boolean = false
   start: YYYYMM
   end: YYYYMM
   retireOn: YYYYMM
@@ -49,7 +50,7 @@ export class Store {
 
   get dates() {
     const dates: Array<YYYYMM> = []
-    for (let date = this.start; date < this.end; date = addMonth(date, 1)) {
+    for (let date = this.start; date < this.end; date = addMonth(date, this.showMonths ? 1 : 12)) {
       dates.push(date)
     }
     return dates
@@ -75,11 +76,16 @@ export class Store {
     this.showAges = !this.showAges
   }
 
+  toggleShowMonths() {
+    this.showMonths = !this.showMonths
+  }
+
   get json() {
     return {
       globalGrowth: this.globalGrowth,
       showIncomes: this.showIncomes,
       showAges: this.showAges,
+      showMonths: this.showMonths,
       strategy: this.strategy?.id ?? null,
       people: this.people.toJSON(),
       accounts: this.accounts.toJSON(),
@@ -98,6 +104,7 @@ export class Store {
     this.globalGrowth = migrated.globalGrowth
     this.showIncomes = migrated.showIncomes
     this.showAges = migrated.showAges
+    this.showMonths = migrated.showMonths
 
     this.people.restore(migrated.people, copy)
     this.accounts.restore(migrated.accounts, copy)
