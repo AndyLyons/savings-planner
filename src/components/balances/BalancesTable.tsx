@@ -41,9 +41,9 @@ function ArrowLeft(props: React.ComponentProps<typeof SvgIcon>) {
   )
 }
 
-const getActionIcon = (account: Account, date: YYYYMM) => {
-  const hasDeposit = account.getDeposits(date) !== 0
-  const hasWithdrawal = account.getWithdrawals(date) !== 0
+const getActionIcon = (showMonths: boolean, account: Account, date: YYYYMM) => {
+  const hasDeposit = showMonths ? account.getDeposits(date) !== 0 : account.getYearDeposits(date) !== 0
+  const hasWithdrawal = showMonths ? account.getWithdrawals(date) !== 0 : account.getYearWithdrawals(date) !== 0
 
   if (hasDeposit && hasWithdrawal) {
     return <SwapHoriz />
@@ -61,6 +61,7 @@ const getActionIcon = (account: Account, date: YYYYMM) => {
 }
 
 const KnownBalance = observer(function KnownBalance({ account, date }: { account: Account, date: YYYYMM }) {
+  const { showMonths } = useStore()
   const balance = account.balances.get(date)
   const predictedBalance = account.getCalculatedBalance(date)
   const isUp = predictedBalance !== 0 && balance.value / predictedBalance > 1.005
@@ -77,7 +78,7 @@ const KnownBalance = observer(function KnownBalance({ account, date }: { account
         'table-column--account_edit-balance--down': isDown
       })}
       onClick={editBalance}
-      startIcon={getActionIcon(account, date)}
+      startIcon={getActionIcon(showMonths, account, date)}
       endIcon={EditIcon}
       size='small'
       variant='contained'
@@ -88,6 +89,7 @@ const KnownBalance = observer(function KnownBalance({ account, date }: { account
 })
 
 const PredictedBalance = observer(function PredictedBalance({ account, date }: { account: Account, date: YYYYMM }) {
+  const { showMonths } = useStore()
   const balanceValue = account.getBalance(date)
 
   const createBalance = useAction((store) => {
@@ -98,7 +100,7 @@ const PredictedBalance = observer(function PredictedBalance({ account, date }: {
     <Button
       className="table-column--account_add-balance"
       onClick={createBalance}
-      startIcon={getActionIcon(account, date)}
+      startIcon={getActionIcon(showMonths, account, date)}
       endIcon={AddIcon}
       size='small'
       variant='contained'
@@ -113,15 +115,15 @@ const AccountBreakdown = observer(function AccountBreakdown({ date, accountId }:
   const account = accounts.get(accountId)
   const previous = account.getBalance(subMonth(date, showMonths ? 1 : 12))
   const interest = showMonths ? account.getInterest(date) : account.getYearInterest(date)
-  const prevDeposits = showMonths ? account.getDeposits(subMonth(date)) : account.getYearDeposits(subMonth(date))
-  const withdrawals = showMonths ? account.getWithdrawals(date) : account.getPastYearWithdrawals(date)
+  const deposits = showMonths ? account.getDeposits(date) : account.getYearDeposits(date)
+  const withdrawals = showMonths ? account.getWithdrawals(date) : account.getYearWithdrawals(date)
   const calculatedBalance = account.getCalculatedBalance(date)
 
   return (
     <ul className='account-breakdown'>
       <li className='account-breakdown--date'>{format(fromYYYYMM(date), 'MMM yyyy')}</li>
       <li className='account-breakdown--existing'>£{formatNumber(previous)}</li>
-      <li className='account-breakdown--add'>£{formatNumber(prevDeposits)} deposits</li>
+      <li className='account-breakdown--add'>£{formatNumber(deposits)} deposits</li>
       <li className='account-breakdown--add'>£{formatNumber(interest)} interest</li>
       <li className='account-breakdown--subtract'>£{formatNumber(withdrawals)} withdrawals</li>
       <li className='account-breakdown--total'>£{formatNumber(calculatedBalance)}</li>
@@ -167,7 +169,7 @@ const TotalBalanceCell = observer(function TotalBalanceCell({ date }: { date: YY
 const AccountIncomeCell = observer(function AccountIncomeCell({ date, accountId }: { date: YYYYMM, accountId: AccountId }) {
   const { accounts, showMonths } = useStore()
   const account = accounts.get(accountId)
-  const income = showMonths ? account.getWithdrawals(date) : account.getNextYearWithdrawals(date)
+  const income = showMonths ? account.getWithdrawals(date) : account.getYearWithdrawals(date)
 
   return (
     <div className='table-cell table-column--account-income'>{income ? formatNumber(income) : ''}</div>
@@ -177,7 +179,7 @@ const AccountIncomeCell = observer(function AccountIncomeCell({ date, accountId 
 const TotalIncomeCell = observer(function TotalIncomeCell({ date }: { date: YYYYMM }) {
   const { accounts, showMonths } = useStore()
   const withdrawals = accounts.values.map(account =>
-    showMonths ? account.getWithdrawals(date) : account.getNextYearWithdrawals(date)
+    showMonths ? account.getWithdrawals(date) : account.getYearWithdrawals(date)
   )
 
   const total = withdrawals.reduce((sum, value) => sum + value, 0)
@@ -197,7 +199,7 @@ const TableRow = observer(function TableRow(props: RowProps) {
 
   return (
     <div className='table-row' style={style}>
-      <div className='table-cell table-column--year'>{getMonth(date) === 1 ? getYear(date) : ''}</div>
+      <div className='table-cell table-column--year'>{!showMonths || getMonth(date) === 1 ? getYear(date) : ''}</div>
       <div className='table-cell table-column--month'>{showMonths ? format(fromYYYYMM(date), 'MMM') : ''}</div>
       {people.keys.map(personId => (
         <AgeCell key={personId} date={date} personId={personId} />

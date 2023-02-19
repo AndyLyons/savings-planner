@@ -177,9 +177,3 @@
 .table-column--account_add-balance:hover .MuiButton-endIcon {
   visibility: visible;
 }
-
-.deposit-icon {
-  position: relative;
-  top: 12px;
-  z-index: 1;
-}

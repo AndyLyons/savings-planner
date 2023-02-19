@@ -50,7 +50,11 @@ export class Store {
 
   get dates() {
     const dates: Array<YYYYMM> = []
-    for (let date = this.start; date < this.end; date = addMonth(date, this.showMonths ? 1 : 12)) {
+    for (
+      let date = this.showMonths ? this.start : addMonth(this.start, 11);
+      date < this.end;
+      date = addMonth(date, this.showMonths ? 1 : 12)
+    ) {
       dates.push(date)
     }
     return dates

@@ -79,21 +79,13 @@ export class Account {
       : []
   }
 
-  getStartingBalance = computedFn((date: YYYYMM): number => {
-    return this.getBalance(subMonth(date)) + this.getDeposits(subMonth(date))
-  })
-
   getInterest = computedFn((date: YYYYMM): number => {
-    if (this.compoundPeriod === Period.YEAR && getMonth(date) !== 1) {
+    if (this.compoundPeriod === Period.YEAR && getMonth(date) !== 12) {
       return 0
     }
 
     const rate = this.compoundPeriod === Period.MONTH ? this.rate / 12 : this.rate
-    return this.getStartingBalance(date) * rate
-  })
-
-  getYearInterest = computedFn((date: YYYYMM): number => {
-    return lastTwelveMonths(date).reduce((sum, nextDate) => sum + this.getInterest(nextDate), 0)
+    return this.getBalance(subMonth(date)) * rate
   })
 
   getDeposits = computedFn((date: YYYYMM): number => {
@@ -106,29 +98,29 @@ export class Account {
     }, 0)
   })
 
-  getYearDeposits = computedFn((date: YYYYMM): number => {
-    return lastTwelveMonths(date).reduce((sum, nextDate) => sum + this.getDeposits(nextDate), 0)
-  })
-
   getWithdrawals = computedFn((date: YYYYMM): number => {
-    const previousBalance = this.getStartingBalance(date)
+    const previousBalance = this.getBalance(subMonth(date))
 
     const withdrawals = this.withdrawals.reduce((sum, withdrawal) => {
       const isSingleWithdrawal = !withdrawal.repeating && withdrawal.startDateValue === date
       const isRepeatingWithdrawal = withdrawal.repeating && withdrawal.endDate
-        && withdrawal.startDateValue <= date && date <= withdrawal.endDate
+        && withdrawal.startDateValue <= date && date < withdrawal.endDate
 
       let withdrawalAmount = 0
 
       if (isSingleWithdrawal || isRepeatingWithdrawal) {
         if (withdrawal.type === WithdrawalType.PERCENTAGE) {
-          if (getMonth(date) === 1) {
+          if (getMonth(date) === getMonth(withdrawal.startDateValue)) {
             withdrawalAmount = previousBalance * withdrawal.amountValue / 100
           }
         } else if (withdrawal.type === WithdrawalType.STATIC_PERCENTAGE) {
-          if (getMonth(date) === 1) {
-            const staticBalance = this.getStartingBalance(withdrawal.startDateValue)
+          if (getMonth(date) === getMonth(withdrawal.startDateValue)) {
+            const staticBalance = this.getBalance(subMonth(withdrawal.startDateValue))
             withdrawalAmount = staticBalance * withdrawal.amountValue / 100
+          }
+        } else if (withdrawal.type === WithdrawalType.TAKE_INTEREST) {
+          if (getMonth(date) === 12) {
+            withdrawalAmount = previousBalance * withdrawal.amountValue / 100
           }
         } else if (withdrawal.type === WithdrawalType.FIXED_PER_YEAR) {
           withdrawalAmount = withdrawal.amountValue / 12
@@ -140,17 +132,21 @@ export class Account {
       return sum + withdrawalAmount
     }, 0)
 
-    const balanceWithInterest = previousBalance + this.getInterest(date)
+    const balanceBeforeWithdrawal = previousBalance + this.getInterest(date) + this.getDeposits(date)
 
-    return withdrawals > balanceWithInterest ? balanceWithInterest : withdrawals
+    return withdrawals > balanceBeforeWithdrawal ? balanceBeforeWithdrawal : withdrawals
   })
 
-  getPastYearWithdrawals = computedFn((date: YYYYMM): number => {
+  getYearInterest = computedFn((date: YYYYMM): number => {
+    return lastTwelveMonths(date).reduce((sum, nextDate) => sum + this.getInterest(nextDate), 0)
+  })
+
+  getYearDeposits = computedFn((date: YYYYMM): number => {
+    return lastTwelveMonths(date).reduce((sum, nextDate) => sum + this.getDeposits(nextDate), 0)
+  })
+
+  getYearWithdrawals = computedFn((date: YYYYMM): number => {
     return lastTwelveMonths(date).reduce((sum, nextDate) => sum + this.getWithdrawals(nextDate), 0)
-  })
-
-  getNextYearWithdrawals = computedFn((date: YYYYMM): number => {
-    return nextTwelveMonths(date).reduce((sum, nextDate) => sum + this.getWithdrawals(nextDate), 0)
   })
 
   getCalculatedBalance = computedFn((date: YYYYMM): number => {
@@ -158,7 +154,7 @@ export class Account {
       return 0
     }
 
-    return this.getStartingBalance(date) + this.getInterest(date) - this.getWithdrawals(date)
+    return this.getBalance(subMonth(date)) + this.getInterest(date) + this.getDeposits(date) - this.getWithdrawals(date)
   })
 
   getBalance = computedFn((date: YYYYMM): number => {
