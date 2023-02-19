@@ -194,16 +194,21 @@ const TableRow = observer(function TableRow(props: RowProps) {
   const { accounts, people, perspective, showMonths } = useStore()
 
   const date = data[index - 2] // -2 because of header rows
+  const now = new Date()
+  const isCurrentYear = getYear(date) === now.getFullYear()
+  const isCurrentMonth = getMonth(date) === now.getMonth() + 1
+  const isNow = showMonths ? isCurrentYear && isCurrentMonth : isCurrentYear
 
   const onClickYear = useAction(store => store.togglePerspective(date), [date])
 
   return (
     <div className={classNames('table-body table-row', {
       'table-row--perspective': perspective && date <= perspective,
-      'table-row--perspective_first': date === perspective
+      'table-row--perspective_first': date === perspective,
+      'table-row--now': isNow
     })} style={style}>
       <div className='table-cell table-column--date' onClick={onClickYear}>
-        <span className='table-column--date_year'>{getYear(date)}</span>
+        <span className='table-column--date_year'>{!showMonths || getMonth(date) === 1 ? getYear(date) : ''}</span>
         {showMonths && <span className='table-column--date_month'>{format(fromYYYYMM(date), 'MMM')}</span>}
       </div>
       {people.keys.map(personId => (

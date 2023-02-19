@@ -30,6 +30,10 @@
   width: max-content !important;
 }
 
+.table-row--now .table-column--date {
+  background-color: #Eff3FF;
+}
+
 .table-row--perspective_first .table-cell {
   border-bottom: 1px solid gray;
 }
@@ -70,6 +74,8 @@
 
 .table-column--date_year {
   width: 32px;
+  flex-grow: 0;
+  flex-shrink: 0;
 }
 
 .table-column--date_month {
