@@ -187,13 +187,3 @@
 .table-column--account_add-balance.MuiButton-root {
   background-color: white;
 }
-
-.table-column--account_edit-balance .MuiButton-endIcon,
-.table-column--account_add-balance .MuiButton-endIcon {
-  visibility: hidden;
-}
-
-.table-column--account_edit-balance:hover .MuiButton-endIcon,
-.table-column--account_add-balance:hover .MuiButton-endIcon {
-  visibility: visible;
-}

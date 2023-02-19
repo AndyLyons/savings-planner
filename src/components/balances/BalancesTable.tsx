@@ -1,15 +1,17 @@
-import { Add, Edit, SwapHoriz } from '@mui/icons-material'
-import { Box, Button, SvgIcon, Tooltip } from '@mui/material'
+import { CurrencyPound, SwapHoriz } from '@mui/icons-material'
+import { Box, Button, Divider, ListItemIcon, ListSubheader, Menu, MenuItem, SvgIcon, Tooltip } from '@mui/material'
 import classNames from 'classnames'
 import { format } from 'date-fns'
 import { observer } from 'mobx-react-lite'
-import { forwardRef, useMemo } from 'react'
+import { forwardRef, useCallback, useMemo, useRef } from 'react'
 import AutoSizer from 'react-virtualized-auto-sizer'
 import type { ListChildComponentProps, ListItemKeySelector } from 'react-window'
 import { VariableSizeList  } from 'react-window'
 import type { Account, AccountId } from '../../state/Account'
+import type { Deposit } from '../../state/Deposit'
 import type { PersonId } from '../../state/Person'
-import { fromYYYYMM, getYear, subMonth, YYYYMM } from '../../utils/date'
+import { fromYYYYMM, getYear, getMonth, subMonth, YYYYMM } from '../../utils/date'
+import { useBoolean } from '../../utils/hooks'
 import { useAction, useStore } from '../../utils/mobx'
 
 type Dates = Array<YYYYMM>
@@ -22,8 +24,26 @@ const AgeCell = observer(function AgeCell({ date, personId }: { date: YYYYMM, pe
   return <div className='table-cell table-column--age'>{age}</div>
 })
 
-const AddIcon = <Add sx={{ fontSize: 'inherit !important' }} />
-const EditIcon = <Edit sx={{ fontSize: 'inherit !important' }} />
+const AccountBreakdown = observer(function AccountBreakdown({ date, accountId }: { date: YYYYMM, accountId: AccountId }) {
+  const { accounts, showMonths } = useStore()
+  const account = accounts.get(accountId)
+  const previous = account.getBalance(subMonth(date, showMonths ? 1 : 12))
+  const interest = showMonths ? account.getInterest(date) : account.getYearInterest(date)
+  const deposits = showMonths ? account.getDeposits(date) : account.getYearDeposits(date)
+  const withdrawals = showMonths ? account.getWithdrawals(date) : account.getYearWithdrawals(date)
+  const calculatedBalance = account.getCalculatedBalance(date)
+
+  return (
+    <ul className='account-breakdown'>
+      <li className='account-breakdown--date'>{format(fromYYYYMM(date), 'MMM yyyy')}</li>
+      <li className='account-breakdown--existing'>£{formatNumber(previous)}</li>
+      <li className='account-breakdown--add'>£{formatNumber(deposits)} deposits</li>
+      <li className='account-breakdown--add'>£{formatNumber(interest)} interest</li>
+      <li className='account-breakdown--subtract'>£{formatNumber(withdrawals)} withdrawals</li>
+      <li className='account-breakdown--total'>£{formatNumber(calculatedBalance)}</li>
+    </ul>
+  )
+})
 
 function ArrowRight(props: React.ComponentProps<typeof SvgIcon>) {
   return (
@@ -60,95 +80,107 @@ const getActionIcon = (showMonths: boolean, account: Account, date: YYYYMM) => {
   return null
 }
 
-const KnownBalance = observer(function KnownBalance({ account, date }: { account: Account, date: YYYYMM }) {
-  const { showMonths } = useStore()
+const EditBalanceMenu = observer(function EditBalanceMenu({ account, date }: { account: Account, date: YYYYMM }) {
   const balance = account.balances.get(date)
-  const predictedBalance = account.getCalculatedBalance(date)
-  const isUp = predictedBalance !== 0 && balance.value / predictedBalance > 1.005
-  const isDown = predictedBalance !== 0 && balance.value / predictedBalance < 0.995
 
-  const editBalance = useAction(store => {
-    store.dialogs.editBalance(balance)
-  }, [balance])
+  const editBalance = useAction(store => store.dialogs.editBalance(balance), [balance])
 
   return (
-    <Button
-      className={classNames('table-column--account_edit-balance', {
-        'table-column--account_edit-balance--up': isUp,
-        'table-column--account_edit-balance--down': isDown
-      })}
-      onClick={editBalance}
-      startIcon={getActionIcon(showMonths, account, date)}
-      endIcon={EditIcon}
-      size='small'
-      variant='contained'
-    >
-      {formatNumber(balance.value)}
-    </Button>
+    <MenuItem onClick={editBalance}>
+      <ListItemIcon><CurrencyPound fontSize='small' /></ListItemIcon> Balance
+    </MenuItem>
   )
 })
 
-const PredictedBalance = observer(function PredictedBalance({ account, date }: { account: Account, date: YYYYMM }) {
-  const { showMonths } = useStore()
-  const balanceValue = account.getBalance(date)
-
-  const createBalance = useAction((store) => {
-    store.dialogs.createBalance(account, { date })
-  }, [date, account])
+const AddBalanceMenu = observer(function AddBalanceMenu({ account, date }: { account: Account, date: YYYYMM }) {
+  const createBalance = useAction(store => store.dialogs.createBalance(account, { date }), [date, account])
 
   return (
-    <Button
-      className="table-column--account_add-balance"
-      onClick={createBalance}
-      startIcon={getActionIcon(showMonths, account, date)}
-      endIcon={AddIcon}
-      size='small'
-      variant='contained'
-    >
-      {balanceValue ? formatNumber(balanceValue) : ''}
-    </Button>
+    <MenuItem onClick={createBalance}>
+      <ListItemIcon><CurrencyPound fontSize='small' /></ListItemIcon> Balance
+    </MenuItem>
   )
 })
 
-const AccountBreakdown = observer(function AccountBreakdown({ date, accountId }: { date: YYYYMM, accountId: AccountId }) {
-  const { accounts, showMonths } = useStore()
-  const account = accounts.get(accountId)
-  const previous = account.getBalance(subMonth(date, showMonths ? 1 : 12))
-  const interest = showMonths ? account.getInterest(date) : account.getYearInterest(date)
-  const deposits = showMonths ? account.getDeposits(date) : account.getYearDeposits(date)
-  const withdrawals = showMonths ? account.getWithdrawals(date) : account.getYearWithdrawals(date)
-  const calculatedBalance = account.getCalculatedBalance(date)
+const EditDepositMenu = observer(function DepositMenu({ deposit }: { deposit: Deposit }) {
+  const editDeposit = useAction(store => store.dialogs.editDeposit(deposit), [deposit])
 
   return (
-    <ul className='account-breakdown'>
-      <li className='account-breakdown--date'>{format(fromYYYYMM(date), 'MMM yyyy')}</li>
-      <li className='account-breakdown--existing'>£{formatNumber(previous)}</li>
-      <li className='account-breakdown--add'>£{formatNumber(deposits)} deposits</li>
-      <li className='account-breakdown--add'>£{formatNumber(interest)} interest</li>
-      <li className='account-breakdown--subtract'>£{formatNumber(withdrawals)} withdrawals</li>
-      <li className='account-breakdown--total'>£{formatNumber(calculatedBalance)}</li>
-    </ul>
+    <MenuItem onClick={editDeposit}>£{deposit.monthlyAmount} / month</MenuItem>
+  )
+})
+
+const DepositsMenu = observer(function DepositsMenu({ account, date }: { account: Account, date: YYYYMM }) {
+  const deposits = account.getDepositsForDate(date)
+
+  return (
+    <>
+      <ListSubheader sx={{ lineHeight: '20px' }}>Deposits</ListSubheader>
+      {deposits.map(deposit => (
+        <EditDepositMenu key={deposit.id} deposit={deposit} />
+      ))}
+    </>
   )
 })
 
 const AccountBalanceCell = observer(function AccountBalanceCell({ date, accountId }: { date: YYYYMM, accountId: AccountId }) {
-  const account = useStore(store => store.accounts.get(accountId))
-  const hasConcreteBalance = account.hasBalance(date)
+  const { accounts, showMonths} = useStore()
+  const account = accounts.get(accountId)
+  const balance = account.getBalance(date)
+  const hasBalance = account.hasBalance(date)
+  const predictedBalance = account.getCalculatedBalance(date)
+  const enteredBalance = account.balances.get(date)
+
+  const isUp = enteredBalance && predictedBalance !== 0 && (enteredBalance.value / predictedBalance) > 1.005
+  const isDown = enteredBalance && predictedBalance !== 0 && (enteredBalance.value / predictedBalance) < 0.995
+
+  const [isTooltipOpen, showTooltip, hideTooltip] = useBoolean(false)
+  const [isMenuOpen, showMenu, hideMenu] = useBoolean(false)
+  const onButtonClick = useCallback(() => {
+    hideTooltip()
+    showMenu()
+  }, [showMenu, hideTooltip])
+
+  const buttonRef = useRef<HTMLButtonElement>(null)
 
   return (
-    <Tooltip
-      disableInteractive
-      placement='bottom'
-      title={<AccountBreakdown date={date} accountId={accountId} />}
-    >
-      <div className='table-cell table-column--account-balance'>
-        {
-          hasConcreteBalance
-            ? <KnownBalance account={account} date={date} />
-            : <PredictedBalance account={account} date={date} />
-        }
-      </div>
-    </Tooltip>
+    <div className='table-cell table-column--account-balance'>
+      <Tooltip
+        disableInteractive
+        open={isTooltipOpen}
+        onOpen={showTooltip}
+        onClose={hideTooltip}
+        placement='bottom'
+        title={<AccountBreakdown date={date} accountId={accountId} />}
+      >
+        <Button
+          className={classNames({
+            'table-column--account_add-balance': !hasBalance,
+            'table-column--account_edit-balance': hasBalance,
+            'table-column--account_edit-balance--up': isUp,
+            'table-column--account_edit-balance--down': isDown
+          })}
+          onClick={onButtonClick}
+          startIcon={getActionIcon(showMonths, account, date)}
+          size='small'
+          variant='contained'
+          ref={buttonRef}
+        >
+          {balance ? formatNumber(balance) : ''}
+        </Button>
+      </Tooltip>
+      <Menu
+        anchorEl={buttonRef.current}
+        open={isMenuOpen}
+        onClick={hideMenu}
+        onClose={hideMenu}
+      >
+        {hasBalance && <EditBalanceMenu account={account} date={date} />}
+        {!hasBalance && <AddBalanceMenu account={account} date={date} />}
+        <Divider />
+        <DepositsMenu account={account} date={date} />
+      </Menu>
+    </div>
   )
 })
 

@@ -5,6 +5,7 @@ import { nanoid } from 'nanoid'
 import { lastTwelveMonths, getMonth, Period, subMonth, YYYYMM } from '../utils/date'
 import { Balance } from './Balance'
 import { Collection } from './Collection'
+import { Deposit } from './Deposit'
 import type { Person } from './Person'
 import type { Store } from './Store'
 import { WithdrawalType } from './Withdrawal'
@@ -89,45 +90,53 @@ export class Account {
     return this.getBalance(subMonth(date)) * rate
   })
 
-  getDeposits = computedFn((date: YYYYMM): number => {
-    return this.deposits.reduce((sum, deposit) => {
+  getDepositsForDate = computedFn((date: YYYYMM): Array<Deposit> =>
+    this.deposits.filter(deposit => {
       const isSingleDeposit = !deposit.repeating && deposit.startDateValue === date
       const isRepeatingDeposit = deposit.repeating && deposit.endDateValue
         && deposit.startDateValue <= date && date < deposit.endDateValue
 
-      return isSingleDeposit || isRepeatingDeposit ? sum + deposit.monthlyAmount : sum
-    }, 0)
-  })
+      return isSingleDeposit || isRepeatingDeposit
+    })
+  )
 
-  getWithdrawals = computedFn((date: YYYYMM): number => {
-    const previousBalance = this.getBalance(subMonth(date))
+  getDeposits = computedFn((date: YYYYMM): number =>
+    this.getDepositsForDate(date).reduce((sum, deposit) => sum + deposit.monthlyAmount, 0)
+  )
 
-    const withdrawals = this.withdrawals.reduce((sum, withdrawal) => {
+  getWithdrawalsForDate = computedFn((date: YYYYMM) =>
+    this.withdrawals.filter(withdrawal => {
       const isSingleWithdrawal = !withdrawal.repeating && withdrawal.startDateValue === date
       const isRepeatingWithdrawal = withdrawal.repeating && withdrawal.endDate
         && withdrawal.startDateValue <= date && date < withdrawal.endDate
 
+      return isSingleWithdrawal || isRepeatingWithdrawal
+    })
+  )
+
+  getWithdrawals = computedFn((date: YYYYMM): number => {
+    const previousBalance = this.getBalance(subMonth(date))
+
+    const withdrawals = this.getWithdrawalsForDate(date).reduce((sum, withdrawal) => {
       let withdrawalAmount = 0
 
-      if (isSingleWithdrawal || isRepeatingWithdrawal) {
-        if (withdrawal.type === WithdrawalType.PERCENTAGE) {
-          if (getMonth(date) === getMonth(withdrawal.startDateValue)) {
-            withdrawalAmount = previousBalance * withdrawal.amountValue / 100
-          }
-        } else if (withdrawal.type === WithdrawalType.STATIC_PERCENTAGE) {
-          if (getMonth(date) === getMonth(withdrawal.startDateValue)) {
-            const staticBalance = this.getBalance(subMonth(withdrawal.startDateValue))
-            withdrawalAmount = staticBalance * withdrawal.amountValue / 100
-          }
-        } else if (withdrawal.type === WithdrawalType.TAKE_INTEREST) {
-          if (getMonth(date) === 12) {
-            withdrawalAmount = previousBalance * withdrawal.amountValue / 100
-          }
-        } else if (withdrawal.type === WithdrawalType.FIXED_PER_YEAR) {
-          withdrawalAmount = withdrawal.amountValue / 12
-        } else {
-          withdrawalAmount = withdrawal.amountValue
+      if (withdrawal.type === WithdrawalType.PERCENTAGE) {
+        if (getMonth(date) === getMonth(withdrawal.startDateValue)) {
+          withdrawalAmount = previousBalance * withdrawal.amountValue / 100
         }
+      } else if (withdrawal.type === WithdrawalType.STATIC_PERCENTAGE) {
+        if (getMonth(date) === getMonth(withdrawal.startDateValue)) {
+          const staticBalance = this.getBalance(subMonth(withdrawal.startDateValue))
+          withdrawalAmount = staticBalance * withdrawal.amountValue / 100
+        }
+      } else if (withdrawal.type === WithdrawalType.TAKE_INTEREST) {
+        if (getMonth(date) === 12) {
+          withdrawalAmount = previousBalance * withdrawal.amountValue / 100
+        }
+      } else if (withdrawal.type === WithdrawalType.FIXED_PER_YEAR) {
+        withdrawalAmount = withdrawal.amountValue / 12
+      } else {
+        withdrawalAmount = withdrawal.amountValue
       }
 
       return sum + withdrawalAmount
