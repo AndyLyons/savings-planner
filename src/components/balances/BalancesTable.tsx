@@ -9,7 +9,7 @@ import type { ListChildComponentProps, ListItemKeySelector } from 'react-window'
 import { VariableSizeList  } from 'react-window'
 import type { Account, AccountId } from '../../state/Account'
 import type { PersonId } from '../../state/Person'
-import { fromYYYYMM, getMonth, getYear, subMonth, YYYYMM } from '../../utils/date'
+import { fromYYYYMM, getYear, subMonth, YYYYMM } from '../../utils/date'
 import { useAction, useStore } from '../../utils/mobx'
 
 type Dates = Array<YYYYMM>
