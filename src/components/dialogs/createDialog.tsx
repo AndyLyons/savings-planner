@@ -71,6 +71,17 @@ const isGenerateFieldEntry = <T, K extends keyof T>(entry: [K, Field<T, K>]): en
   return field !== null && field.type === 'generate'
 }
 
+function FieldWrapper({ children, icon, isVisible }: React.PropsWithChildren<{ icon: ReactElement, isVisible: boolean }>) {
+  return (
+    <IconField
+      icon={icon}
+      sx={isVisible ? {} : { display: 'none' }}
+    >
+      {children}
+    </IconField>
+  )
+}
+
 export function createDialog<T>(name: string, icon: ReactElement, fields: Fields<T>, defaults: Partial<T> = {}) {
   const fieldEntries = entries(fields)
 
@@ -146,23 +157,8 @@ export function createDialog<T>(name: string, icon: ReactElement, fields: Fields
               const icon = typeof iconGetter === 'function' ? iconGetter(state) : iconGetter
               const label = typeof labelGetter === 'function' ? labelGetter(state) : labelGetter
 
-              // Fields are static at runtime - this will either always be called
-              // or never be called and wont change each render
-              // eslint-disable-next-line react-hooks/rules-of-hooks
               const isVisible = getVisible ? getVisible(state) : true
               const isDisabled = !isVisible || (isEdit && readonly)
-
-              function FieldWrapper({ children }: React.PropsWithChildren<{}>) {
-                return (
-                  <IconField
-                    key={`${name}`}
-                    icon={icon}
-                    sx={isVisible ? {} : { display: 'none' }}
-                  >
-                    {children}
-                  </IconField>
-                )
-              }
 
               return (
                 <Fragment key={String(name)}>
@@ -173,7 +169,7 @@ export function createDialog<T>(name: string, icon: ReactElement, fields: Fields
                     const options = field.useOptions()
 
                     return (
-                      <FieldWrapper>
+                      <FieldWrapper icon={icon} isVisible={isVisible}>
                         <Autocomplete
                           autoFocus={autoFocus}
                           disabled={isDisabled}
@@ -196,7 +192,7 @@ export function createDialog<T>(name: string, icon: ReactElement, fields: Fields
                     )
                   })()}
                   {type === 'string' && !field.useOptions && (
-                    <FieldWrapper>
+                    <FieldWrapper icon={icon} isVisible={isVisible}>
                       <TextField
                         autoFocus={autoFocus}
                         disabled={isDisabled}
@@ -218,7 +214,7 @@ export function createDialog<T>(name: string, icon: ReactElement, fields: Fields
                     </FieldWrapper>
                   )}
                   {type === 'number' && !useConstantOption && (
-                    <FieldWrapper>
+                    <FieldWrapper icon={icon} isVisible={isVisible}>
                       <TextField
                         autoFocus={autoFocus}
                         disabled={isDisabled}
@@ -251,7 +247,7 @@ export function createDialog<T>(name: string, icon: ReactElement, fields: Fields
                     const value = state[name]
 
                     return (
-                      <FieldWrapper>
+                      <FieldWrapper icon={icon} isVisible={isVisible}>
                         <TextField
                           autoFocus={autoFocus}
                           disabled={value === valueWhenConstant || isDisabled}
@@ -284,7 +280,7 @@ export function createDialog<T>(name: string, icon: ReactElement, fields: Fields
                     )
                   })()}
                   {type === 'yyyy' && !useConstantOption && (
-                    <FieldWrapper>
+                    <FieldWrapper icon={icon} isVisible={isVisible}>
                       <DatePicker
                         disabled={isDisabled}
                         label={label}
@@ -318,7 +314,7 @@ export function createDialog<T>(name: string, icon: ReactElement, fields: Fields
                     const value = state[name]
 
                     return (
-                      <FieldWrapper>
+                      <FieldWrapper icon={icon} isVisible={isVisible}>
                         <DatePicker
                           disabled={value === valueWhenConstant || isDisabled}
                           label={label}
@@ -352,7 +348,7 @@ export function createDialog<T>(name: string, icon: ReactElement, fields: Fields
                     )
                   })()}
                   {type === 'yyyymm' && !useConstantOption && (
-                    <FieldWrapper>
+                    <FieldWrapper icon={icon} isVisible={isVisible}>
                       <DatePicker
                         disabled={isDisabled}
                         label={label}
@@ -386,7 +382,7 @@ export function createDialog<T>(name: string, icon: ReactElement, fields: Fields
                     const value = state[name]
 
                     return (
-                      <FieldWrapper>
+                      <FieldWrapper icon={icon} isVisible={isVisible}>
                         <DatePicker
                           disabled={value === valueWhenConstant || isDisabled}
                           label={label}
@@ -426,7 +422,7 @@ export function createDialog<T>(name: string, icon: ReactElement, fields: Fields
 
                     return (
                       <>
-                        <FieldWrapper>
+                        <FieldWrapper icon={icon} isVisible={isVisible}>
                           <FormControl sx={{ flexDirection: 'row', alignItems: 'center' }}>
                             <FormLabel sx={{ marginRight: 1 }}>{label}</FormLabel>
                             <RadioGroup
@@ -486,7 +482,7 @@ export function createDialog<T>(name: string, icon: ReactElement, fields: Fields
                     )
                   })()}
                   {type === 'boolean' && (
-                    <FieldWrapper>
+                    <FieldWrapper icon={icon} isVisible={isVisible}>
                       <FormControlLabel
                         label={label}
                         control={
@@ -517,7 +513,7 @@ export function createDialog<T>(name: string, icon: ReactElement, fields: Fields
 
                     return (
                       <>
-                        <FieldWrapper>
+                        <FieldWrapper icon={icon} isVisible={isVisible}>
                           <Typography>{label}</Typography>
                           <IconButton onClick={onCreate} sx={{ ml: 1 }} size='small'><Add fontSize='inherit' /></IconButton>
                         </FieldWrapper>
