@@ -30,15 +30,36 @@ export class Store {
   menu: Menu = new Menu(this)
   accounts: Collection<Account, AccountId> = new Collection({
     getId: account => account.id,
-    fromJSON: (json, copy) => Account.fromJSON(this, json, copy)
+    fromJSON: (json, copy) => Account.fromJSON(this, json, copy),
+    onDelete: account => {
+      this.strategies.values.forEach(({ deposits, withdrawals }) => {
+        deposits.values.forEach(deposit => {
+          if (deposit.account === account) {
+            deposits.remove(deposit)
+          }
+        })
+
+        withdrawals.values.forEach(withdrawal => {
+          if (withdrawal.account === account) {
+            withdrawals.remove(withdrawal)
+          }
+        })
+      })
+    }
   })
+
   people: Collection<Person, PersonId> = new Collection({
     getId: person => person.id,
-    fromJSON: (json, copy) => Person.fromJSON(this, json, copy)
+    fromJSON: (json, copy) => Person.fromJSON(this, json, copy),
+    onDelete: person => {
+      person.accounts.forEach(account => this.accounts.remove(account))
+    }
   })
+
   strategies: Collection<Strategy, StrategyId> = new Collection({
     getId: strategy => strategy.id,
-    fromJSON: (json, copy) => Strategy.fromJSON(this, json, copy)
+    fromJSON: (json, copy) => Strategy.fromJSON(this, json, copy),
+    onDelete: () => {}
   })
 
   constructor() {

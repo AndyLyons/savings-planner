@@ -19,7 +19,8 @@ export class Account {
   store: Store
   balances: Collection<Balance, YYYYMM> = new Collection({
     getId: balance => balance.date,
-    fromJSON: json => Balance.fromJSON(this.store, this, json)
+    fromJSON: json => Balance.fromJSON(this.store, this, json),
+    onDelete: () => {}
   })
 
   id: AccountId

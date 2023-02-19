@@ -1,5 +1,5 @@
 import { makeAutoObservable } from 'mobx'
-import { keys, values } from '../utils/fn'
+import { entries, keys, values } from '../utils/fn'
 
 type JSONValue =
   | string
@@ -22,12 +22,14 @@ export class Collection<T extends Item<J>, K extends string | number, J extends 
   data: Record<K, T> = {} as Record<K, T>
   getId: (item: T | J) => K
   fromJSON: (json: J, newIds?: boolean) => T
+  onDelete: (item: T) => void
 
-  constructor({ getId, fromJSON }: Pick<Collection<T, K, J>, 'getId' | 'fromJSON'>) {
+  constructor({ getId, fromJSON, onDelete }: Pick<Collection<T, K, J>, 'getId' | 'fromJSON' | 'onDelete'>) {
     makeAutoObservable(this, { getId: false, fromJSON: false }, { autoBind: true })
 
     this.getId = getId
     this.fromJSON = fromJSON
+    this.onDelete = onDelete
   }
 
   get keys() {
@@ -64,6 +66,7 @@ export class Collection<T extends Item<J>, K extends string | number, J extends 
   remove(idOrItem: K | T) {
     const id = typeof idOrItem === 'string' || typeof idOrItem === 'number' ? idOrItem : this.getId(idOrItem as T)
     const item = this.data[id]
+    this.onDelete(item)
     delete this.data[id]
     return item
   }
