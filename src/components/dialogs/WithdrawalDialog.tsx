@@ -25,14 +25,15 @@ export const WithdrawalDialog = createDialog<WithdrawalJSON>('withdrawal schedul
       { id: WithdrawalType.FIXED_PER_MONTH, label: '£ / month' },
       { id: WithdrawalType.FIXED_PER_YEAR, label: '£ / year' },
       { id: WithdrawalType.PERCENTAGE, label: '% / year' },
+      { id: WithdrawalType.TAKE_INTEREST, label: 'Take interest' },
       { id: WithdrawalType.STATIC_PERCENTAGE, label: 'Fixed %' }
     ],
     required: true
   },
   amount: {
     type: 'number',
-    label: (state) => [WithdrawalType.PERCENTAGE, WithdrawalType.STATIC_PERCENTAGE].includes(state.type) ? 'Percentage' : 'Amount',
-    icon: (state) => [WithdrawalType.PERCENTAGE, WithdrawalType.STATIC_PERCENTAGE].includes(state.type) ? <Percent /> :  <CurrencyPound />,
+    label: (state) => [WithdrawalType.PERCENTAGE, WithdrawalType.STATIC_PERCENTAGE, WithdrawalType.TAKE_INTEREST].includes(state.type) ? 'Percentage' : 'Amount',
+    icon: (state) => [WithdrawalType.PERCENTAGE, WithdrawalType.STATIC_PERCENTAGE, WithdrawalType.TAKE_INTEREST].includes(state.type) ? <Percent /> :  <CurrencyPound />,
     required: true,
     useConstantOption: () => {
       const constantValue = useStore(store => store.globalGrowth)

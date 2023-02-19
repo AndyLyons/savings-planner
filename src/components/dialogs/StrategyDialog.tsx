@@ -40,7 +40,7 @@ export const StrategyDialog = createDialog<StrategyJSON>('strategy', <StrategyIc
     getLabel: (store, withdrawal) => {
       const amountValue = withdrawal.amount === null ? store.globalGrowth : withdrawal.amount
       const prefix = withdrawal.type === WithdrawalType.STATIC_PERCENTAGE ? 'Fixed ' : ''
-      const symbol = [WithdrawalType.PERCENTAGE, WithdrawalType.STATIC_PERCENTAGE].includes(withdrawal.type) ? '%' : '£'
+      const symbol = [WithdrawalType.PERCENTAGE, WithdrawalType.STATIC_PERCENTAGE, WithdrawalType.TAKE_INTEREST].includes(withdrawal.type) ? '%' : '£'
       const per = withdrawal.type === WithdrawalType.FIXED_PER_MONTH ? 'month' : 'year'
       const account = store.accounts.get(withdrawal.account)
       return `${account.name} (${account.owner.name}) - ${prefix}${symbol}${amountValue} / ${per}`
