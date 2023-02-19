@@ -133,7 +133,7 @@ const AccountBreakdown = observer(function AccountBreakdown({ date, accountId }:
 
 const AccountBalanceCell = observer(function AccountBalanceCell({ date, accountId }: { date: YYYYMM, accountId: AccountId }) {
   const account = useStore(store => store.accounts.get(accountId))
-  const hasConcreteBalance = account.balances.has(date)
+  const hasConcreteBalance = account.hasBalance(date)
 
   return (
     <Tooltip
@@ -153,13 +153,11 @@ const AccountBalanceCell = observer(function AccountBalanceCell({ date, accountI
 })
 
 const TotalBalanceCell = observer(function TotalBalanceCell({ date }: { date: YYYYMM }) {
-  const store = useStore()
-  const balances = store.accounts.values.map(account => {
-    const balance = account.balances.get(date)?.value
-    return balance ?? account.getBalance(date)
-  })
-
-  const total = balances.reduce((sum, value) => sum + value, 0)
+  const total = useStore(store =>
+    store.accounts.values
+      .map(account => account.getBalance(date))
+      .reduce((sum, value) => sum + value, 0)
+  )
 
   return (
     <div className='table-cell table-column--total'>{total ? formatNumber(total) : ''}</div>
@@ -193,14 +191,21 @@ type RowProps = ListChildComponentProps<Dates>
 
 const TableRow = observer(function TableRow(props: RowProps) {
   const { data, index, style } = props
-  const { accounts, people, showMonths } = useStore()
+  const { accounts, people, perspective, showMonths } = useStore()
 
   const date = data[index - 2] // -2 because of header rows
 
+  const onClickYear = useAction(store => store.togglePerspective(date), [date])
+
   return (
-    <div className='table-row' style={style}>
-      <div className='table-cell table-column--year'>{!showMonths || getMonth(date) === 1 ? getYear(date) : ''}</div>
-      <div className='table-cell table-column--month'>{showMonths ? format(fromYYYYMM(date), 'MMM') : ''}</div>
+    <div className={classNames('table-body table-row', {
+      'table-row--perspective': perspective && date <= perspective,
+      'table-row--perspective_first': date === perspective
+    })} style={style}>
+      <div className='table-cell table-column--date' onClick={onClickYear}>
+        <span className='table-column--date_year'>{getYear(date)}</span>
+        {showMonths && <span className='table-column--date_month'>{format(fromYYYYMM(date), 'MMM')}</span>}
+      </div>
       {people.keys.map(personId => (
         <AgeCell key={personId} date={date} personId={personId} />
       ))}
@@ -225,38 +230,34 @@ const TableHeader = observer(function TableHeader() {
   const sxBalances = useMemo(() => ({ width: `${110 + (numAccounts * 110)}px` }), [numAccounts])
 
   return (
-    <>
-      <div className="table-header">
-        <div className="table-row table-row--groups">
-          <div className='table-cell--empty table-column--year'></div>
-          <div className='table-cell--empty table-column--month'></div>
-          {people.keys.map(personId => (
-            <div key={personId} className='table-cell--empty table-column--age'></div>
-          ))}
-          <Box className='table-cell table-columns--incomes' sx={sxIncomes}>Income</Box>
-          <Box className='table-cell table-columns--balances' sx={sxBalances}>Balance</Box>
-        </div>
-        <div className="table-row table-row--headers">
-          <div className='table-cell table-column--year'>Year</div>
-          <div className='table-cell table-column--month'>Month</div>
-          {people.values.map(person => (
-            <div key={person.id} className='table-cell table-column--age'>{person.name}</div>
-          ))}
-          <div className='table-cell table-column--total'>Total (£)</div>
-          {accounts.values.map(account => (
-            <div key={account.id} className='table-cell table-column--account-income'>{account.name} ({account.owner.name})</div>
-          ))}
-          <div className='table-cell table-column--total'>Total (£)</div>
-          {accounts.values.map(account => (
-            <div key={account.id} className='table-cell table-column--account-balance'>{account.name} ({account.owner.name})</div>
-          ))}
-        </div>
+    <div className="table-header">
+      <div className="table-row table-row--groups">
+        <div className='table-cell--empty table-column--date'></div>
+        {people.keys.map(personId => (
+          <div key={personId} className='table-cell--empty table-column--age'></div>
+        ))}
+        <Box className='table-cell table-columns--incomes' sx={sxIncomes}>Income</Box>
+        <Box className='table-cell table-columns--balances' sx={sxBalances}>Balance</Box>
       </div>
-    </>
+      <div className="table-row table-row--headers">
+        <div className='table-cell table-column--date'>Date</div>
+        {people.values.map(person => (
+          <div key={person.id} className='table-cell table-column--age'>{person.name}</div>
+        ))}
+        <div className='table-cell table-column--total'>Total (£)</div>
+        {accounts.values.map(account => (
+          <div key={account.id} className='table-cell table-column--account-income'>{account.name} ({account.owner.name})</div>
+        ))}
+        <div className='table-cell table-column--total'>Total (£)</div>
+        {accounts.values.map(account => (
+          <div key={account.id} className='table-cell table-column--account-balance'>{account.name} ({account.owner.name})</div>
+        ))}
+      </div>
+    </div>
   )
 })
 
-const TableRowWrapper = function TableRowWrapper(props: RowProps) {
+function TableRowWrapper(props: RowProps) {
   // Index 0 & 1 are the headers which are rendered separately
   return props.index <= 1 ? null : <TableRow {...props} />
 }

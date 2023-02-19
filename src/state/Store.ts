@@ -24,6 +24,7 @@ export class Store {
   end: YYYYMM
   retireOn: YYYYMM
   strategy: Strategy | null = null
+  perspective: YYYYMM | null = null
 
   dialogs: Dialogs = new Dialogs(this)
   menu: Menu = new Menu(this)
@@ -84,12 +85,17 @@ export class Store {
     this.showMonths = !this.showMonths
   }
 
+  togglePerspective(date: YYYYMM) {
+    this.perspective = this.perspective === date ? null : date
+  }
+
   get json() {
     return {
       globalGrowth: this.globalGrowth,
       showIncomes: this.showIncomes,
       showAges: this.showAges,
       showMonths: this.showMonths,
+      perspective: this.perspective,
       strategy: this.strategy?.id ?? null,
       people: this.people.toJSON(),
       accounts: this.accounts.toJSON(),
@@ -109,6 +115,7 @@ export class Store {
     this.showIncomes = migrated.showIncomes
     this.showAges = migrated.showAges
     this.showMonths = migrated.showMonths
+    this.perspective = migrated.perspective
 
     this.people.restore(migrated.people, copy)
     this.accounts.restore(migrated.accounts, copy)

@@ -30,6 +30,14 @@
   width: max-content !important;
 }
 
+.table-row--perspective_first .table-cell {
+  border-bottom: 1px solid gray;
+}
+
+.table-row--perspective .table-cell:nth-child(1) {
+  border-left: 1px solid gray;
+}
+
 .table-cell {
   background-color: white;
 
@@ -37,6 +45,8 @@
   align-items: center;
   flex-shrink: 0;
 
+  border-top: 1px solid transparent;
+  border-left: 1px solid transparent;
   border-right: 1px solid rgba(224, 224, 224, 1);
   border-bottom: 1px solid rgba(224, 224, 224, 1);
   padding: 6px 16px;
@@ -46,20 +56,24 @@
   background-color: white;
 }
 
-.table-column--year {
-  position: sticky;
-  left: 0;
-  justify-content: right;
-  width: 70px;
-  z-index: 1;
-}
-
-.table-column--month {
+.table-column--date {
   position: sticky;
   left: 0;
   justify-content: left;
-  width: 70px;
+  width: 100px;
   z-index: 1;
+}
+
+.table-body .table-column--date {
+  cursor: pointer;
+}
+
+.table-column--date_year {
+  width: 32px;
+}
+
+.table-column--date_month {
+  margin-left: 15px;
 }
 
 .table-column--age {

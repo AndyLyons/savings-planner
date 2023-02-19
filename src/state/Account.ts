@@ -157,8 +157,13 @@ export class Account {
     return this.getBalance(subMonth(date)) + this.getInterest(date) + this.getDeposits(date) - this.getWithdrawals(date)
   })
 
+  hasBalance = computedFn((date: YYYYMM): boolean => {
+    const inPerspective = !this.store.perspective || date <= this.store.perspective
+    return inPerspective && this.balances.has(date)
+  })
+
   getBalance = computedFn((date: YYYYMM): number => {
-    if (this.balances.has(date)) {
+    if (this.hasBalance(date)) {
       return this.balances.get(date).value
     }
 
