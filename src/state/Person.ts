@@ -21,8 +21,7 @@ export class Person {
 
   constructor(
     store: Store,
-    { id, name, dob }:
-      Pick<Person, 'id' | 'name' | 'dob'>
+    { id, name, dob }: Pick<Person, 'id' | 'name' | 'dob'>
   ) {
     makeAutoObservable(this, { store: false }, { autoBind: true })
 

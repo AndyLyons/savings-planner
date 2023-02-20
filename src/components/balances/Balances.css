@@ -31,7 +31,7 @@
 }
 
 .table-row--now .table-column--date {
-  background-color: #Eff3FF;
+  background-color: rgba(25, 118, 210, 0.1);
 }
 
 .table-row--perspective_first .table-cell {

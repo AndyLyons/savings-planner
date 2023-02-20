@@ -2,13 +2,12 @@ import { AccountBalance } from '@mui/icons-material'
 import { makeAutoObservable } from 'mobx'
 import { computedFn } from 'mobx-utils'
 import { nanoid } from 'nanoid'
-import { lastTwelveMonths, getMonth, Period, subMonth, YYYYMM } from '../utils/date'
+import { datesInYear, getMonth, Period, subMonth, YYYYMM, getYear, YYYY } from '../utils/date'
 import { Balance } from './Balance'
 import { Collection } from './Collection'
 import { Deposit } from './Deposit'
-import type { Person } from './Person'
+import type { Person, PersonJSON } from './Person'
 import type { Store } from './Store'
-import { WithdrawalType } from './Withdrawal'
 
 export type AccountId = string & { __accountId__: never }
 
@@ -61,8 +60,16 @@ export class Account {
     return account
   }
 
+  static getDescription({ name }: Pick<AccountJSON, 'name'>, { name: ownerName }: Pick<PersonJSON, 'name'>) {
+    return `${name} (${ownerName})`
+  }
+
   get rate() {
     return this.growth === null ? this.store.globalRate : this.growth / 100
+  }
+
+  get monthlyRate() {
+    return this.compoundPeriod === Period.MONTH ? this.rate / 12 : this.rate
   }
 
   get ratePercentage() {
@@ -81,90 +88,63 @@ export class Account {
       : []
   }
 
-  getInterest = computedFn((date: YYYYMM): number => {
-    if (this.compoundPeriod === Period.YEAR && getMonth(date) !== 12) {
-      return 0
-    }
+  get description() {
+    return Account.getDescription(this, this.owner)
+  }
 
-    const rate = this.compoundPeriod === Period.MONTH ? this.rate / 12 : this.rate
-    return this.getBalance(subMonth(date)) * rate
+  getDepositsForDate = computedFn((date: YYYYMM): Array<Deposit> => this.deposits.filter(deposit => deposit.isValidOn(date)))
+  getDepositsForYear = computedFn((year: YYYY): Array<Deposit> => this.deposits.filter(deposit => deposit.isValidIn(year)))
+
+  getWithdrawalsForDate = computedFn((date: YYYYMM) => this.withdrawals.filter(withdrawal => withdrawal.isValidOn(date)))
+  getWithdrawalsForYear = computedFn((year: YYYY) => this.withdrawals.filter(withdrawal => withdrawal.isValidIn(year)))
+
+  getInterestTotal = computedFn((date: YYYYMM): number => {
+    if (this.compoundPeriod === Period.YEAR && getMonth(date) !== 12) return 0
+
+    return this.getBalance(subMonth(date)) * this.monthlyRate
   })
 
-  getDepositsForDate = computedFn((date: YYYYMM): Array<Deposit> =>
-    this.deposits.filter(deposit => {
-      const isSingleDeposit = !deposit.repeating && deposit.startDateValue === date
-      const isRepeatingDeposit = deposit.repeating && deposit.endDateValue
-        && deposit.startDateValue <= date && date < deposit.endDateValue
+  getDepositsTotal = computedFn((date: YYYYMM): number => {
+    return this.deposits.reduce((sum, deposit) => sum + deposit.getValue(date), 0)
+  })
 
-      return isSingleDeposit || isRepeatingDeposit
-    })
-  )
-
-  getDeposits = computedFn((date: YYYYMM): number =>
-    this.getDepositsForDate(date).reduce((sum, deposit) => sum + deposit.monthlyAmount, 0)
-  )
-
-  getWithdrawalsForDate = computedFn((date: YYYYMM) =>
-    this.withdrawals.filter(withdrawal => {
-      const isSingleWithdrawal = !withdrawal.repeating && withdrawal.startDateValue === date
-      const isRepeatingWithdrawal = withdrawal.repeating && withdrawal.endDate
-        && withdrawal.startDateValue <= date && date < withdrawal.endDate
-
-      return isSingleWithdrawal || isRepeatingWithdrawal
-    })
-  )
-
-  getWithdrawals = computedFn((date: YYYYMM): number => {
+  getWithdrawalsTotal = computedFn((date: YYYYMM): number => {
     const previousBalance = this.getBalance(subMonth(date))
 
-    const withdrawals = this.getWithdrawalsForDate(date).reduce((sum, withdrawal) => {
-      let withdrawalAmount = 0
+    const withdrawals = this.withdrawals.reduce((sum, withdrawal) => sum + withdrawal.getValue(date), 0)
 
-      if (withdrawal.type === WithdrawalType.PERCENTAGE) {
-        if (getMonth(date) === getMonth(withdrawal.startDateValue)) {
-          withdrawalAmount = previousBalance * withdrawal.amountValue / 100
-        }
-      } else if (withdrawal.type === WithdrawalType.STATIC_PERCENTAGE) {
-        if (getMonth(date) === getMonth(withdrawal.startDateValue)) {
-          const staticBalance = this.getBalance(subMonth(withdrawal.startDateValue))
-          withdrawalAmount = staticBalance * withdrawal.amountValue / 100
-        }
-      } else if (withdrawal.type === WithdrawalType.TAKE_INTEREST) {
-        if (getMonth(date) === 12) {
-          withdrawalAmount = previousBalance * withdrawal.amountValue / 100
-        }
-      } else if (withdrawal.type === WithdrawalType.FIXED_PER_YEAR) {
-        withdrawalAmount = withdrawal.amountValue / 12
-      } else {
-        withdrawalAmount = withdrawal.amountValue
-      }
-
-      return sum + withdrawalAmount
-    }, 0)
-
-    const balanceBeforeWithdrawal = previousBalance + this.getInterest(date) + this.getDeposits(date)
+    const balanceBeforeWithdrawal = previousBalance + this.getInterestTotal(date) + this.getDepositsTotal(date)
 
     return withdrawals > balanceBeforeWithdrawal ? balanceBeforeWithdrawal : withdrawals
   })
 
-  getYearInterest = computedFn((date: YYYYMM): number => {
-    return lastTwelveMonths(date).reduce((sum, nextDate) => sum + this.getInterest(nextDate), 0)
+  getIncomeTotal = computedFn((year: YYYYMM): number =>
+    this.getWithdrawalsForDate(year).reduce((sum, withdrawal) => sum + withdrawal.getValueAfterTax(year), 0)
+  )
+
+  getYearInterestTotal = computedFn((year: YYYY): number => {
+    return datesInYear(year).reduce((sum, date) => sum + this.getInterestTotal(date), 0)
   })
 
-  getYearDeposits = computedFn((date: YYYYMM): number => {
-    return lastTwelveMonths(date).reduce((sum, nextDate) => sum + this.getDeposits(nextDate), 0)
+  getYearDepositsTotal = computedFn((year: YYYY): number => {
+    return datesInYear(year).reduce((sum, date) => sum + this.getDepositsTotal(date), 0)
   })
 
-  getYearWithdrawals = computedFn((date: YYYYMM): number => {
-    return lastTwelveMonths(date).reduce((sum, nextDate) => sum + this.getWithdrawals(nextDate), 0)
+  getYearWithdrawalsTotal = computedFn((year: YYYY): number => {
+    return datesInYear(year).reduce((sum, date) => sum + this.getWithdrawalsTotal(date), 0)
+  })
+
+  getYearIncomeTotal = computedFn((year: YYYY): number => {
+    return datesInYear(year).reduce((sum, date) => sum + this.getIncomeTotal(date), 0)
   })
 
   getCalculatedBalance = computedFn((date: YYYYMM): number => {
-    if (date < this.store.start) {
-      return 0
-    }
+    if (date < this.store.start) return 0
 
-    return this.getBalance(subMonth(date)) + this.getInterest(date) + this.getDeposits(date) - this.getWithdrawals(date)
+    const total = this.getBalance(subMonth(date)) + this.getInterestTotal(date) + this.getDepositsTotal(date) - this.getWithdrawalsTotal(date)
+
+    // Treat <1 as 0 to avoid having pennies left in an account due to rounding issues
+    return total < 1 ? 0 : total
   })
 
   hasBalance = computedFn((date: YYYYMM): boolean => {

@@ -9,11 +9,10 @@ export const WithdrawalDialog = createDialog<WithdrawalJSON>('withdrawal schedul
     generate: () => Withdrawal.createId()
   },
   account: {
-    autoFocus: true,
     type: 'string',
     label: 'Account',
     icon: <AccountBalance />,
-    useOptions: () => useStore(store => store.accounts.values.map(({ id, name, owner }) => ({ id, label: `${name} (${owner.name})` }))),
+    useOptions: () => useStore(store => store.accounts.values.map(({ id, description }) => ({ id, label: description }))),
     readonly: true,
     required: true
   },
@@ -26,15 +25,17 @@ export const WithdrawalDialog = createDialog<WithdrawalJSON>('withdrawal schedul
       { id: WithdrawalType.FIXED_PER_YEAR, label: '£ / year' },
       { id: WithdrawalType.PERCENTAGE, label: '% / year' },
       { id: WithdrawalType.TAKE_INTEREST, label: 'Take interest' },
-      { id: WithdrawalType.STATIC_PERCENTAGE, label: 'Fixed %' }
+      { id: WithdrawalType.STATIC_PERCENTAGE, label: '% of initial / year' }
     ],
     required: true
   },
   amount: {
+    autoFocus: true,
     type: 'number',
     label: (state) => [WithdrawalType.PERCENTAGE, WithdrawalType.STATIC_PERCENTAGE, WithdrawalType.TAKE_INTEREST].includes(state.type) ? 'Percentage' : 'Amount',
     icon: (state) => [WithdrawalType.PERCENTAGE, WithdrawalType.STATIC_PERCENTAGE, WithdrawalType.TAKE_INTEREST].includes(state.type) ? <Percent /> :  <CurrencyPound />,
-    required: true,
+    required: state => state.type !== WithdrawalType.TAKE_INTEREST,
+    getVisible: state => state.type !== WithdrawalType.TAKE_INTEREST,
     useConstantOption: () => {
       const constantValue = useStore(store => store.globalGrowth)
       return { label: 'Use market growth?', constantValue, value: null }
@@ -66,7 +67,6 @@ export const WithdrawalDialog = createDialog<WithdrawalJSON>('withdrawal schedul
     type: 'yyyymm',
     label: 'Until',
     icon: <Event />,
-    // getFrom: (store, state) => state.startYear === RETIREMENT ? store.retireOn : state.startYear,
     getVisible: (state) => state.repeating === true,
     required: true
   }

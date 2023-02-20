@@ -15,21 +15,19 @@ export const AccountListItem = observer(function AccountListItem({ account, onCl
   const onClickAccount = useBind(onClick, account)
 
   return (
-    <>
-      <ListItemButton onClick={onClickAccount} sx={{ pl: 4, justifyContent: 'flex-start' }}>
-        <ListItemIcon>
-          <AccountBalance />
-        </ListItemIcon>
-        <ListItemText
-          primary={
-            <>
-              <Typography sx={{ fontWeight: 'bold' }} component='span'>{account.name}</Typography>
-              {' '}
-              <Typography component='span'>({account.owner.name}) - {account.growth === null ? 'Market growth' : `${account.ratePercentage}%`}</Typography>
-            </>
-          }
-        />
-      </ListItemButton>
-    </>
+    <ListItemButton onClick={onClickAccount} sx={{ pl: 4, justifyContent: 'flex-start' }}>
+      <ListItemIcon>
+        <AccountBalance />
+      </ListItemIcon>
+      <ListItemText
+        primary={
+          <>
+            <Typography sx={{ fontWeight: 'bold' }} component='span'>{account.description}</Typography>
+            {' - '}
+            <Typography component='span'>{account.growth === null ? 'Market growth' : `${account.ratePercentage}%`}</Typography>
+          </>
+        }
+      />
+    </ListItemButton>
   )
 })

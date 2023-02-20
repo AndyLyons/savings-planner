@@ -1,6 +1,7 @@
 import { makeAutoObservable } from 'mobx';
+import { computedFn } from 'mobx-utils';
 import { nanoid } from 'nanoid';
-import type { YYYYMM } from '../utils/date';
+import { getMonth, getYear, subMonth, YYYY, YYYYMM } from '../utils/date';
 import type { Account } from './Account';
 import { Store } from './Store';
 import { Strategy } from './Strategy';
@@ -69,6 +70,25 @@ export class Withdrawal {
     })
   }
 
+  static getDescription({ type, amount }: Pick<WithdrawalJSON, 'type' | 'amount'>) {
+    const amountText = amount ?? '<Growth>'
+
+    switch(type) {
+    case WithdrawalType.FIXED_PER_YEAR:
+      return `£${amountText} / year`
+    case WithdrawalType.FIXED_PER_MONTH:
+      return `£${amountText} / month`
+    case WithdrawalType.PERCENTAGE:
+      return `${amountText}% / year`
+    case WithdrawalType.STATIC_PERCENTAGE:
+      return `${amountText}% of initial / year`
+    case WithdrawalType.TAKE_INTEREST:
+      return 'Take interest'
+    default:
+      return 'Unknown'
+    }
+  }
+
   get startDateValue() {
     return this.startDate === RETIREMENT ? this.store.retireOn : this.startDate
   }
@@ -76,6 +96,52 @@ export class Withdrawal {
   get amountValue() {
     return this.amount === null ? this.store.globalGrowth : this.amount
   }
+
+  get description() {
+    return Withdrawal.getDescription(this)
+  }
+
+  isValidOn = computedFn((date: YYYYMM) => {
+    const isSingleWithdrawal = !this.repeating && this.startDateValue === date
+    const isRepeatingWithdrawal = this.repeating && this.endDate
+      && this.startDateValue <= date && date < this.endDate
+
+    return isSingleWithdrawal || isRepeatingWithdrawal
+  })
+
+  isValidIn = computedFn((year: YYYY) => {
+    const isSingleWithdrawal = !this.repeating && getYear(this.startDateValue) === year
+    const isRepeatingWithdrawal = this.repeating && this.endDate
+      && getYear(this.startDateValue) <= year && year <= getYear(subMonth(this.endDate))
+
+    return isSingleWithdrawal || isRepeatingWithdrawal
+  })
+
+  getValue = computedFn((date: YYYYMM) => {
+    if (!this.isValidOn(date)) return 0
+
+    const previousBalance = this.account.getBalance(subMonth(date))
+
+    if (this.type === WithdrawalType.PERCENTAGE) {
+      const isWithdrawalMonth = getMonth(date) === getMonth(this.startDateValue)
+      return isWithdrawalMonth ? previousBalance * this.amountValue / 100 : 0
+    } else if (this.type === WithdrawalType.STATIC_PERCENTAGE) {
+      const isWithdrawalMonth = getMonth(date) === getMonth(this.startDateValue)
+      return isWithdrawalMonth ? this.account.getBalance(subMonth(this.startDateValue)) * this.amountValue / 100 : 0
+    } else if (this.type === WithdrawalType.TAKE_INTEREST) {
+      return this.account.getInterestTotal(date)
+    } else if (this.type === WithdrawalType.FIXED_PER_YEAR) {
+      return this.amountValue / 12
+    } else if (this.type === WithdrawalType.FIXED_PER_MONTH) {
+      return this.amountValue
+    }
+
+    return 0
+  })
+
+  getValueAfterTax = computedFn((date: YYYYMM) => {
+    return this.getValue(date) * (1 - this.taxRate / 100)
+  })
 
   restore(json: WithdrawalJSON, copy?: boolean) {
     const { account, amount, type, startDate, repeating, endDate, taxRate } = json

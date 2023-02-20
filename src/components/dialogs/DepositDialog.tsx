@@ -10,15 +10,15 @@ export const DepositDialog = createDialog<DepositJSON>('deposit schedule', <Depo
     generate: () => Deposit.createId()
   },
   account: {
-    autoFocus: true,
     type: 'string',
     label: 'Account',
     icon: <AccountBalance />,
-    useOptions: () => useStore(store => store.accounts.values.map(({ id, name, owner }) => ({ id, label: `${name} (${owner.name})` }))),
+    useOptions: () => useStore(store => store.accounts.values.map(({ id, description }) => ({ id, label: description }))),
     readonly: true,
     required: true
   },
   amount: {
+    autoFocus: true,
     type: 'number',
     label: 'Deposit',
     icon: <CurrencyPound />,

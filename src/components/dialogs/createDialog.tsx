@@ -50,7 +50,7 @@ type FormField<T, K extends keyof T> = FieldType<T, T[K]> & {
   icon: ReactElement | ((state: T) => ReactElement)
   label: string | ((state: T) => string)
   readonly?: boolean
-  required?: boolean
+  required?: boolean | ((state: T) => boolean)
   useConstantOption?: () => { label: string, value: T[K], constantValue: T[K] }
   getVisible?: (state: T) => boolean
 }
@@ -152,10 +152,11 @@ export function createDialog<T>(name: string, icon: ReactElement, fields: Fields
                 return null
               }
 
-              const { type, icon: iconGetter, label: labelGetter, autoFocus, readonly, required, getVisible, useConstantOption } = field
+              const { type, icon: iconGetter, label: labelGetter, autoFocus, readonly, required: requiredGetter, getVisible, useConstantOption } = field
 
               const icon = typeof iconGetter === 'function' ? iconGetter(state) : iconGetter
               const label = typeof labelGetter === 'function' ? labelGetter(state) : labelGetter
+              const required = typeof requiredGetter === 'function' ? requiredGetter(state) : requiredGetter
 
               const isVisible = getVisible ? getVisible(state) : true
               const isDisabled = !isVisible || (isEdit && readonly)

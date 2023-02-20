@@ -1,5 +1,5 @@
-import { CurrencyPound, SwapHoriz } from '@mui/icons-material'
-import { Box, Button, Divider, ListItemIcon, ListSubheader, Menu, MenuItem, SvgIcon, Tooltip } from '@mui/material'
+import { SwapHoriz } from '@mui/icons-material'
+import { Box, Button, Divider, ListSubheader, Menu, MenuItem, SvgIcon, Tooltip } from '@mui/material'
 import classNames from 'classnames'
 import { format } from 'date-fns'
 import { observer } from 'mobx-react-lite'
@@ -10,6 +10,7 @@ import { VariableSizeList  } from 'react-window'
 import type { Account, AccountId } from '../../state/Account'
 import type { Deposit } from '../../state/Deposit'
 import type { PersonId } from '../../state/Person'
+import { Withdrawal } from '../../state/Withdrawal'
 import { fromYYYYMM, getYear, getMonth, subMonth, YYYYMM } from '../../utils/date'
 import { useBoolean } from '../../utils/hooks'
 import { useAction, useStore } from '../../utils/mobx'
@@ -24,13 +25,12 @@ const AgeCell = observer(function AgeCell({ date, personId }: { date: YYYYMM, pe
   return <div className='table-cell table-column--age'>{age}</div>
 })
 
-const AccountBreakdown = observer(function AccountBreakdown({ date, accountId }: { date: YYYYMM, accountId: AccountId }) {
-  const { accounts, showMonths } = useStore()
-  const account = accounts.get(accountId)
+const AccountBreakdown = observer(function AccountBreakdown({ account, date }: { account: Account, date: YYYYMM }) {
+  const { showMonths } = useStore()
   const previous = account.getBalance(subMonth(date, showMonths ? 1 : 12))
-  const interest = showMonths ? account.getInterest(date) : account.getYearInterest(date)
-  const deposits = showMonths ? account.getDeposits(date) : account.getYearDeposits(date)
-  const withdrawals = showMonths ? account.getWithdrawals(date) : account.getYearWithdrawals(date)
+  const interest = showMonths ? account.getInterestTotal(date) : account.getYearInterestTotal(getYear(date))
+  const deposits = showMonths ? account.getDepositsTotal(date) : account.getYearDepositsTotal(getYear(date))
+  const withdrawals = showMonths ? account.getWithdrawalsTotal(date) : account.getYearWithdrawalsTotal(getYear(date))
   const calculatedBalance = account.getCalculatedBalance(date)
 
   return (
@@ -62,8 +62,8 @@ function ArrowLeft(props: React.ComponentProps<typeof SvgIcon>) {
 }
 
 const getActionIcon = (showMonths: boolean, account: Account, date: YYYYMM) => {
-  const hasDeposit = showMonths ? account.getDeposits(date) !== 0 : account.getYearDeposits(date) !== 0
-  const hasWithdrawal = showMonths ? account.getWithdrawals(date) !== 0 : account.getYearWithdrawals(date) !== 0
+  const hasDeposit = showMonths ? account.getDepositsTotal(date) !== 0 : account.getYearDepositsTotal(getYear(date)) !== 0
+  const hasWithdrawal = showMonths ? account.getWithdrawalsTotal(date) !== 0 : account.getYearWithdrawalsTotal(getYear(date)) !== 0
 
   if (hasDeposit && hasWithdrawal) {
     return <SwapHoriz />
@@ -86,9 +86,7 @@ const EditBalanceMenu = observer(function EditBalanceMenu({ account, date }: { a
   const editBalance = useAction(store => store.dialogs.editBalance(balance), [balance])
 
   return (
-    <MenuItem onClick={editBalance}>
-      <ListItemIcon><CurrencyPound fontSize='small' /></ListItemIcon> Balance
-    </MenuItem>
+    <MenuItem onClick={editBalance}>£{formatNumber(balance.value)}</MenuItem>
   )
 })
 
@@ -96,9 +94,7 @@ const AddBalanceMenu = observer(function AddBalanceMenu({ account, date }: { acc
   const createBalance = useAction(store => store.dialogs.createBalance(account, { date }), [date, account])
 
   return (
-    <MenuItem onClick={createBalance}>
-      <ListItemIcon><CurrencyPound fontSize='small' /></ListItemIcon> Balance
-    </MenuItem>
+    <MenuItem onClick={createBalance}>Add...</MenuItem>
   )
 })
 
@@ -106,52 +102,86 @@ const EditDepositMenu = observer(function DepositMenu({ deposit }: { deposit: De
   const editDeposit = useAction(store => store.dialogs.editDeposit(deposit), [deposit])
 
   return (
-    <MenuItem onClick={editDeposit}>£{deposit.monthlyAmount} / month</MenuItem>
+    <MenuItem onClick={editDeposit}>{deposit.description}</MenuItem>
   )
 })
 
 const DepositsMenu = observer(function DepositsMenu({ account, date }: { account: Account, date: YYYYMM }) {
-  const deposits = account.getDepositsForDate(date)
+  const { strategy: currentStrategy, showMonths } = useStore()
+
+  const deposits = showMonths ? account.getDepositsForDate(date) : account.getDepositsForYear(getYear(date))
+
+  const createDeposit = useAction(({ dialogs, strategy }) => {
+    if (strategy) {
+      dialogs.createDeposit(strategy, { account: account.id, startDate: date })
+    }
+  }, [account, date])
 
   return (
     <>
-      <ListSubheader sx={{ lineHeight: '20px' }}>Deposits</ListSubheader>
       {deposits.map(deposit => (
         <EditDepositMenu key={deposit.id} deposit={deposit} />
       ))}
+      <MenuItem disabled={!currentStrategy} onClick={createDeposit}>Add...</MenuItem>
     </>
   )
 })
 
-const AccountBalanceCell = observer(function AccountBalanceCell({ date, accountId }: { date: YYYYMM, accountId: AccountId }) {
-  const { accounts, showMonths} = useStore()
-  const account = accounts.get(accountId)
-  const balance = account.getBalance(date)
-  const hasBalance = account.hasBalance(date)
-  const predictedBalance = account.getCalculatedBalance(date)
-  const enteredBalance = account.balances.get(date)
-
-  const isUp = enteredBalance && predictedBalance !== 0 && (enteredBalance.value / predictedBalance) > 1.005
-  const isDown = enteredBalance && predictedBalance !== 0 && (enteredBalance.value / predictedBalance) < 0.995
-
-  const [isTooltipOpen, showTooltip, hideTooltip] = useBoolean(false)
-  const [isMenuOpen, showMenu, hideMenu] = useBoolean(false)
-  const onButtonClick = useCallback(() => {
-    hideTooltip()
-    showMenu()
-  }, [showMenu, hideTooltip])
-
-  const buttonRef = useRef<HTMLButtonElement>(null)
+const EditWithdrawalMenu = observer(function EditWithdrawalMenu({ withdrawal }: { withdrawal: Withdrawal }) {
+  const editDeposit = useAction(store => store.dialogs.editWithdrawal(withdrawal), [withdrawal])
 
   return (
-    <div className='table-cell table-column--account-balance'>
+    <MenuItem onClick={editDeposit}>{withdrawal.description}</MenuItem>
+  )
+})
+
+const WithdrawalsMenu = observer(function WithdrawalsMenu({ account, date }: { account: Account, date: YYYYMM }) {
+  const { strategy: currentStrategy, showMonths } = useStore()
+
+  const withdrawals = showMonths ? account.getWithdrawalsForDate(date) : account.getWithdrawalsForYear(getYear(date))
+
+  const createWithdrawal = useAction(({ dialogs, strategy }) => {
+    if (strategy) {
+      dialogs.createWithdrawal(strategy, { account: account.id, startDate: date })
+    }
+  }, [account, date])
+
+  return (
+    <>
+      {withdrawals.map(withdrawal => (
+        <EditWithdrawalMenu key={withdrawal.id} withdrawal={withdrawal} />
+      ))}
+      <MenuItem disabled={!currentStrategy} onClick={createWithdrawal}>Add...</MenuItem>
+    </>
+  )
+})
+
+const AccountBalanceButton = observer(forwardRef<HTMLButtonElement, { account: Account, date: YYYYMM, onClick: () => void }>(
+  function AccountBalanceButton({ account, date, onClick }, ref) {
+    const { showMonths } = useStore()
+    const [isTooltipOpen, showTooltip, hideTooltip] = useBoolean(false)
+
+    const hasBalance = account.hasBalance(date)
+    const balance = account.getBalance(date)
+    const enteredBalance = account.balances.get(date)
+    const predictedBalance = account.getCalculatedBalance(date)
+
+    const isUp = hasBalance && predictedBalance !== 0 && (enteredBalance.value / predictedBalance) > 1.005
+    const isDown = hasBalance && predictedBalance !== 0 && (enteredBalance.value / predictedBalance) < 0.995
+
+    const onClickInternal = useCallback(() => {
+      hideTooltip()
+      onClick()
+    }, [onClick, hideTooltip])
+
+    return (
       <Tooltip
         disableInteractive
         open={isTooltipOpen}
         onOpen={showTooltip}
         onClose={hideTooltip}
         placement='bottom'
-        title={<AccountBreakdown date={date} accountId={accountId} />}
+        title={<AccountBreakdown account={account} date={date} />}
       >
         <Button
           className={classNames({
@@ -160,25 +190,55 @@ const AccountBalanceCell = observer(function AccountBalanceCell({ date, accountI
             'table-column--account_edit-balance--up': isUp,
             'table-column--account_edit-balance--down': isDown
           })}
-          onClick={onButtonClick}
+          onClick={onClickInternal}
           startIcon={getActionIcon(showMonths, account, date)}
           size='small'
           variant='contained'
-          ref={buttonRef}
+          ref={ref}
         >
           {balance ? formatNumber(balance) : ''}
         </Button>
       </Tooltip>
+    )
+  })
+)
+
+const AccountBalanceCell = observer(function AccountBalanceCell({ date, accountId }: { date: YYYYMM, accountId: AccountId }) {
+  const { accounts } = useStore()
+  const account = accounts.get(accountId)
+  const hasBalance = account.hasBalance(date)
+
+  const [isMenuOpen, showMenu, hideMenu] = useBoolean(false)
+
+  const buttonRef = useRef<HTMLButtonElement>(null)
+
+  return (
+    <div className='table-cell table-column--account-balance'>
+      <AccountBalanceButton
+        account={account}
+        date={date}
+        onClick={showMenu}
+        ref={buttonRef}
+      />
       <Menu
         anchorEl={buttonRef.current}
         open={isMenuOpen}
         onClick={hideMenu}
         onClose={hideMenu}
       >
+        <ListSubheader sx={{ lineHeight: '20px' }}>Balance</ListSubheader>
         {hasBalance && <EditBalanceMenu account={account} date={date} />}
         {!hasBalance && <AddBalanceMenu account={account} date={date} />}
+
         <Divider />
+
+        <ListSubheader sx={{ lineHeight: '20px' }}>Deposits</ListSubheader>
         <DepositsMenu account={account} date={date} />
+
+        <Divider />
+
+        <ListSubheader sx={{ lineHeight: '20px' }}>Withdrawals</ListSubheader>
+        <WithdrawalsMenu account={account} date={date} />
       </Menu>
     </div>
   )
@@ -199,7 +259,7 @@ const TotalBalanceCell = observer(function TotalBalanceCell({ date }: { date: YY
 const AccountIncomeCell = observer(function AccountIncomeCell({ date, accountId }: { date: YYYYMM, accountId: AccountId }) {
   const { accounts, showMonths } = useStore()
   const account = accounts.get(accountId)
-  const income = showMonths ? account.getWithdrawals(date) : account.getYearWithdrawals(date)
+  const income = showMonths ? account.getIncomeTotal(date) : account.getYearIncomeTotal(getYear(date))
 
   return (
     <div className='table-cell table-column--account-income'>{income ? formatNumber(income) : ''}</div>
@@ -208,14 +268,12 @@ const AccountIncomeCell = observer(function AccountIncomeCell({ date, accountId 
 
 const TotalIncomeCell = observer(function TotalIncomeCell({ date }: { date: YYYYMM }) {
   const { accounts, showMonths } = useStore()
-  const withdrawals = accounts.values.map(account =>
-    showMonths ? account.getWithdrawals(date) : account.getYearWithdrawals(date)
-  )
-
-  const total = withdrawals.reduce((sum, value) => sum + value, 0)
+  const income = accounts.values
+    .map(account => showMonths ? account.getIncomeTotal(date) : account.getYearIncomeTotal(getYear(date)))
+    .reduce((sum, value) => sum + value, 0)
 
   return (
-    <div className='table-cell table-column--total'>{total ? formatNumber(total) : ''}</div>
+    <div className='table-cell table-column--total'>{income ? formatNumber(income) : ''}</div>
   )
 })
 
@@ -283,11 +341,11 @@ const TableHeader = observer(function TableHeader() {
         ))}
         <div className='table-cell table-column--total'>Total (£)</div>
         {accounts.values.map(account => (
-          <div key={account.id} className='table-cell table-column--account-income'>{account.name} ({account.owner.name})</div>
+          <div key={account.id} className='table-cell table-column--account-income'>{account.description}</div>
         ))}
         <div className='table-cell table-column--total'>Total (£)</div>
         {accounts.values.map(account => (
-          <div key={account.id} className='table-cell table-column--account-balance'>{account.name} ({account.owner.name})</div>
+          <div key={account.id} className='table-cell table-column--account-balance'>{account.description}</div>
         ))}
       </div>
     </div>

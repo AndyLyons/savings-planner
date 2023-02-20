@@ -1,6 +1,7 @@
 import { makeAutoObservable } from 'mobx';
+import { computedFn } from 'mobx-utils';
 import { nanoid } from 'nanoid';
-import type { YYYYMM } from '../utils/date';
+import { getYear, subMonth, YYYY, YYYYMM } from '../utils/date';
 import { Period } from '../utils/date';
 import type { Account } from './Account';
 import { Store } from './Store';
@@ -62,6 +63,10 @@ export class Deposit {
     })
   }
 
+  static getDescription({ amount, period }: Pick<DepositJSON, 'amount' | 'period'>) {
+    return `£${amount} / ${period === Period.YEAR ? 'year' : 'month'}`
+  }
+
   get monthlyAmount() {
     return this.period === Period.YEAR ? this.amount / 12 : this.amount
   }
@@ -73,6 +78,32 @@ export class Deposit {
   get endDateValue() {
     return this.endDate === RETIREMENT ? this.store.retireOn : this.endDate
   }
+
+  get description() {
+    return Deposit.getDescription(this)
+  }
+
+  isValidOn = computedFn((date: YYYYMM): boolean =>{
+    const isSingleDeposit = !this.repeating && this.startDateValue === date
+    const isRepeatingDeposit = this.repeating && this.endDateValue
+      && this.startDateValue <= date && date < this.endDateValue
+
+    return Boolean(isSingleDeposit || isRepeatingDeposit)
+  })
+
+  isValidIn = computedFn((year: YYYY): boolean =>{
+    const isSingleDeposit = !this.repeating && getYear(this.startDateValue) === year
+    const isRepeatingDeposit = this.repeating && this.endDateValue
+      && getYear(this.startDateValue) <= year && year <= getYear(subMonth(this.endDateValue))
+
+    return Boolean(isSingleDeposit || isRepeatingDeposit)
+  })
+
+  getValue = computedFn((date: YYYYMM) => {
+    if (!this.isValidOn(date)) return 0
+
+    return this.period === Period.YEAR ? this.amount / 12 : this.amount
+  })
 
   restore(json: DepositJSON, copy?: boolean) {
     const { account: accountId, amount, startDate, repeating, endDate, period } = json
