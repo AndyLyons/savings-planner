@@ -2,7 +2,7 @@ import { makeAutoObservable } from 'mobx'
 import { computedFn } from 'mobx-utils'
 import React from 'react'
 import { compareKeys } from '../utils/compare'
-import { addMonth, YYYYMM } from '../utils/date'
+import { addMonth, getNow, YYYYMM } from '../utils/date'
 import { Account, AccountId } from './Account'
 import { Collection } from './Collection'
 import { Dialogs } from './Dialogs'
@@ -17,14 +17,15 @@ export type StoreJSON = typeof Store.prototype.json
 export class Store {
   static version = 3
 
-  globalGrowth: number = 4
+  globalGrowth: number = 2
   showAges: boolean = true
   showMonths: boolean = false
   start: YYYYMM
   end: YYYYMM
   retireOn: YYYYMM
   strategy: Strategy | null = null
-  perspective: YYYYMM | null = null
+  perspective: YYYYMM = getNow()
+  showPerspective: boolean = false
 
   dialogs: Dialogs = new Dialogs(this)
   menu: Menu = new Menu(this)
@@ -105,16 +106,22 @@ export class Store {
     this.showMonths = !this.showMonths
   }
 
-  togglePerspective(date: YYYYMM) {
-    this.perspective = this.perspective === date ? null : date
+  setPerspective(date: YYYYMM) {
+    if (this.perspective === date) {
+      this.togglePerspective()
+    } else {
+      this.perspective = date
+      this.showPerspective = true
+    }
+  }
+
+  togglePerspective() {
+    this.showPerspective = !this.showPerspective
   }
 
   get json() {
     return {
       globalGrowth: this.globalGrowth,
-      showAges: this.showAges,
-      showMonths: this.showMonths,
-      perspective: this.perspective,
       strategy: this.strategy?.id ?? null,
       people: this.people.toJSON(),
       accounts: this.accounts.toJSON(),
@@ -131,9 +138,6 @@ export class Store {
     const migrated = migrate(json)
 
     this.globalGrowth = migrated.globalGrowth
-    this.showAges = migrated.showAges
-    this.showMonths = migrated.showMonths
-    this.perspective = migrated.perspective
 
     this.people.restore(migrated.people, copy)
     this.accounts.restore(migrated.accounts, copy)

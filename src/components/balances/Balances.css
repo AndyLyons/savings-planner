@@ -30,16 +30,28 @@
   width: max-content !important;
 }
 
-.table-row--now .table-column--date {
+.table__show-perspective .table-row__in-perspective .table-column--date--perspective-icon,
+.table__show-perspective .table-row--headers .table-column--date .MuiSvgIcon-root {
+  visibility: visible;
+}
+
+.table-row--headers .table-column--date .MuiSvgIcon-root {
+  visibility: hidden;
+  font-size: 14px;
+  margin-right: 4px;
+}
+
+.table-row--headers .table-column--date {
+  cursor: pointer;
+}
+
+.table__show-perspective .table-row--headers .table-column--date,
+.table__show-perspective .table-row__in-perspective .table-column--date {
+  background-color: yellow;
+}
+
+.table-row__now .table-column--date {
   background-color: rgba(25, 118, 210, 0.1);
-}
-
-.table-row--perspective_first .table-cell {
-  border-bottom: 1px solid gray;
-}
-
-.table-row--perspective .table-cell:nth-child(1) {
-  border-left: 1px solid gray;
 }
 
 .table-cell {
@@ -49,8 +61,6 @@
   align-items: center;
   flex-shrink: 0;
 
-  border-top: 1px solid transparent;
-  border-left: 1px solid transparent;
   border-right: 1px solid rgba(224, 224, 224, 1);
   border-bottom: 1px solid rgba(224, 224, 224, 1);
   padding: 6px 16px;
@@ -64,7 +74,7 @@
   position: sticky;
   left: 0;
   justify-content: left;
-  width: 100px;
+  width: 120px;
   z-index: 1;
 }
 
@@ -72,14 +82,27 @@
   cursor: pointer;
 }
 
+.table-column--date--perspective-icon {
+  visibility: hidden;
+  display: flex;
+  width: 20px;
+  flex-grow: 0;
+  flex-shrink: 0;
+}
+
+.table-column--date--perspective-icon .MuiSvgIcon-root {
+  font-size: 14px;
+}
+
 .table-column--date_year {
+  margin-left: 10px;
   width: 32px;
   flex-grow: 0;
   flex-shrink: 0;
 }
 
 .table-column--date_month {
-  margin-left: 15px;
+  margin-left: 10px;
 }
 
 .table-column--age {
@@ -160,7 +183,6 @@
 .table-column--account-balance .MuiButton-root .MuiButton-startIcon {
   margin-right: auto;
 }
-
 
 .table-column--account_edit-balance.MuiButton-root,
 .table-column--account_add-balance.MuiButton-root {

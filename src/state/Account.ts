@@ -173,7 +173,7 @@ export class Account {
   })
 
   hasBalance = computedFn((date: YYYYMM): boolean => {
-    const inPerspective = !this.store.perspective || date <= this.store.perspective
+    const inPerspective = !this.store.showPerspective || date <= this.store.perspective
     return (inPerspective || this.balances.last?.date === date) && this.balances.has(date)
   })
 

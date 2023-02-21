@@ -23,9 +23,6 @@ enum WithdrawalType {
 
 export type V3 = {
   globalGrowth: number;
-  showAges: boolean;
-  showMonths: boolean;
-  perspective: YYYYMM | null;
   strategy: StrategyId | null;
   people: {
       id: PersonId;
@@ -71,7 +68,7 @@ export type V3 = {
 
 export const isV3 = (json: any): json is V3 => json.version === 3
 
-export const migrateV3 = ({ showIncomes, ...rest }: V2): V3 => {
+export const migrateV3 = ({ showIncomes, showAges, showMonths, perspective, ...rest }: V2): V3 => {
   return {
     ...rest,
     version: 3,

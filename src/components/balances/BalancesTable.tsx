@@ -1,4 +1,4 @@
-import { SwapHoriz } from '@mui/icons-material'
+import { SwapHoriz, VisibilityOutlined } from '@mui/icons-material'
 import { Box, Button, Divider, ListSubheader, Menu, MenuItem, SvgIcon, Tooltip } from '@mui/material'
 import classNames from 'classnames'
 import { format } from 'date-fns'
@@ -11,8 +11,8 @@ import type { Account, AccountId } from '../../state/Account'
 import type { Deposit } from '../../state/Deposit'
 import type { PersonId } from '../../state/Person'
 import { Withdrawal } from '../../state/Withdrawal'
-import { fromYYYYMM, getYear, getMonth, subMonth, YYYYMM } from '../../utils/date'
-import { useBoolean } from '../../utils/hooks'
+import { fromYYYYMM, getYear, getMonth, subMonth, YYYYMM, getNow } from '../../utils/date'
+import { useBind, useBoolean } from '../../utils/hooks'
 import { useAction, useStore } from '../../utils/mobx'
 
 type Dates = Array<YYYYMM>
@@ -305,23 +305,20 @@ type RowProps = ListChildComponentProps<Dates>
 
 const TableRow = observer(function TableRow(props: RowProps) {
   const { data, index, style } = props
-  const { accounts, people, perspective, showMonths } = useStore()
+  const { accounts, people, perspective, showMonths, setPerspective } = useStore()
 
   const date = data[index - 2] // -2 because of header rows
-  const now = new Date()
-  const isCurrentYear = getYear(date) === now.getFullYear()
-  const isCurrentMonth = getMonth(date) === now.getMonth() + 1
-  const isNow = showMonths ? isCurrentYear && isCurrentMonth : isCurrentYear
+  const now = getNow()
 
-  const onClickYear = useAction(store => store.togglePerspective(date), [date])
+  const onClickYear = useBind(setPerspective, date)
 
   return (
     <div className={classNames('table-body table-row', {
-      'table-row--perspective': perspective && date <= perspective,
-      'table-row--perspective_first': date === perspective,
-      'table-row--now': isNow
+      'table-row__in-perspective': showMonths ? date === perspective : getYear(date) === getYear(perspective),
+      'table-row__now': showMonths ? date === now : getYear(date) === getYear(now)
     })} style={style}>
       <div className='table-cell table-column--date' onClick={onClickYear}>
+        <div className='table-column--date--perspective-icon'><VisibilityOutlined /></div>
         <span className='table-column--date_year'>{!showMonths || getMonth(date) === 1 ? getYear(date) : ''}</span>
         {showMonths && <span className='table-column--date_month'>{format(fromYYYYMM(date), 'MMM')}</span>}
       </div>
@@ -338,7 +335,7 @@ const TableRow = observer(function TableRow(props: RowProps) {
 })
 
 const TableHeader = observer(function TableHeader() {
-  const { people, accounts } = useStore()
+  const { people, accounts, togglePerspective } = useStore()
   const numAccounts = accounts.keys.length
 
   const sxIncomes = useMemo(() => ({ width: '110px' }), [])
@@ -355,7 +352,7 @@ const TableHeader = observer(function TableHeader() {
         <Box className='table-cell table-columns--balances' sx={sxBalances}>Balance</Box>
       </div>
       <div className="table-row table-row--headers">
-        <div className='table-cell table-column--date'>Date</div>
+        <div className='table-cell table-column--date' onClick={togglePerspective}><VisibilityOutlined /> Date</div>
         {people.values.map(person => (
           <div key={person.id} className='table-cell table-column--age'>{person.name}</div>
         ))}
@@ -387,12 +384,13 @@ const getItemSize = (index: number) => index === 1 ? 60 : 24
 const getKey: ListItemKeySelector<Dates> = (index, years) => index === 0 ? '__HEADER__' : years[index - 1]
 
 const Table = observer(function Table({ height, width }: { height: number, width: number }) {
-  const { dates, showAges } = useStore()
+  const { dates, showAges, showPerspective } = useStore()
 
   return (
     <VariableSizeList
       className={classNames('table', {
-        'hide-ages': !showAges
+        'hide-ages': !showAges,
+        'table__show-perspective': showPerspective
       })}
       height={height}
       width={width}
