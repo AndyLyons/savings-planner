@@ -25,7 +25,6 @@ export class Persistence {
     } catch(e) {
       alert('Could not restore snapshot - data is corrupted')
       console.error(e, persisted)
-      localStorage.removeItem('store')
     }
   }
 

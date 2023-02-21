@@ -1,6 +1,7 @@
 import { Alert, Button, Card, CardContent, SxProps, TextField, Theme, Typography } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { useCallback, useState } from 'react';
+import { migrate } from '../../state/versions/migrate';
 import { ChangeEvent, selectTarget } from '../../utils/hooks';
 import { useAction } from '../../utils/mobx';
 
@@ -24,7 +25,8 @@ export const Import = observer(function Import({ sx }: Props) {
       store.restore(parsedImportString, false)
       setImportedString('')
       setImportSucceeded(true)
-    } catch {
+    } catch(e) {
+      console.error(e);
       setImportSucceeded(false)
     }
   }, [importedString])
