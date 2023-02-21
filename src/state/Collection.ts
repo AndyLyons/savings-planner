@@ -1,5 +1,5 @@
 import { makeAutoObservable } from 'mobx'
-import { entries, keys, values } from '../utils/fn'
+import { keys, values } from '../utils/object'
 
 type JSONValue =
   | string
