@@ -1,4 +1,4 @@
-import { AccountBalance, CurrencyPound, Event, Loop, Percent, RadioButtonChecked } from '@mui/icons-material'
+import { AccountBalance, CurrencyPound, Event, Loop, Percent, QuestionMark, RadioButtonChecked } from '@mui/icons-material'
 import { RETIREMENT, Withdrawal, WithdrawalIcon, WithdrawalJSON, WithdrawalType } from '../../state/Withdrawal'
 import { useStore } from '../../utils/mobx'
 import { createDialog } from './createDialog'
@@ -41,10 +41,10 @@ export const WithdrawalDialog = createDialog<WithdrawalJSON>('withdrawal schedul
       return { label: 'Use market growth?', constantValue, value: null }
     }
   },
-  taxRate: {
-    type: 'number',
-    label: 'Tax rate',
-    icon: <Percent />,
+  taxable: {
+    type: 'boolean',
+    label: 'Taxable?',
+    icon: <QuestionMark />,
     required: true
   },
   startDate: {
@@ -72,5 +72,5 @@ export const WithdrawalDialog = createDialog<WithdrawalJSON>('withdrawal schedul
   }
 }, {
   type: WithdrawalType.FIXED_PER_MONTH,
-  taxRate: 0
+  taxable: true
 })

@@ -33,13 +33,13 @@ export class Withdrawal {
   startDate: YYYYMM | typeof RETIREMENT
   repeating: boolean
   endDate: YYYYMM | null
-  taxRate: number
+  taxable: boolean
 
   constructor(
     store: Store,
     strategy: Strategy,
-    { id, account, amount, type, startDate, repeating, endDate, taxRate }:
-      Pick<Withdrawal, 'id' | 'account' | 'amount' | 'type' | 'startDate' | 'repeating' | 'endDate' | 'taxRate'>
+    { id, account, amount, type, startDate, repeating, endDate, taxable }:
+      Pick<Withdrawal, 'id' | 'account' | 'amount' | 'type' | 'startDate' | 'repeating' | 'endDate' | 'taxable'>
   ) {
     makeAutoObservable(this, { store: false, account: false }, { autoBind: true })
 
@@ -53,7 +53,7 @@ export class Withdrawal {
     this.startDate = startDate
     this.repeating = repeating
     this.endDate = endDate
-    this.taxRate = taxRate
+    this.taxable = taxable
   }
 
   static createId() {
@@ -139,12 +139,8 @@ export class Withdrawal {
     return 0
   })
 
-  getValueAfterTax = computedFn((date: YYYYMM) => {
-    return this.getValue(date) * (1 - this.taxRate / 100)
-  })
-
   restore(json: WithdrawalJSON, copy?: boolean) {
-    const { account, amount, type, startDate, repeating, endDate, taxRate } = json
+    const { account, amount, type, startDate, repeating, endDate, taxable } = json
 
     this.account = this.store.accounts.get(account)
     this.amount = amount
@@ -152,7 +148,7 @@ export class Withdrawal {
     this.startDate = startDate
     this.repeating = repeating
     this.endDate = endDate
-    this.taxRate = taxRate
+    this.taxable = taxable
   }
 
   get json() {
@@ -163,7 +159,7 @@ export class Withdrawal {
       startDate: this.startDate,
       repeating: this.repeating,
       endDate: this.endDate,
-      taxRate: this.taxRate,
+      taxable: this.taxable,
       account: this.account.id
     }
   }

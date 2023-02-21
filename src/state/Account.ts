@@ -2,12 +2,32 @@ import { AccountBalance } from '@mui/icons-material'
 import { makeAutoObservable } from 'mobx'
 import { computedFn } from 'mobx-utils'
 import { nanoid } from 'nanoid'
-import { datesInYear, getMonth, Period, subMonth, YYYYMM, getYear, YYYY } from '../utils/date'
+import { datesInYear, getMonth, Period, subMonth, YYYYMM, YYYY } from '../utils/date'
 import { Balance } from './Balance'
 import { Collection } from './Collection'
 import { Deposit } from './Deposit'
 import type { Person, PersonJSON } from './Person'
 import type { Store } from './Store'
+
+const TAX_BANDS = [
+  { to: 12570, rate: 0 },
+  { to: 50270, rate: 0.2 },
+  { to: 100000, rate: 0.4 },
+  // The 0.6 band accounts for the reduction in personal allowance at 100k
+  { to: 125140, rate: 0.6 },
+  { to: 150000, rate: 0.4 },
+  { to: Infinity, rate: 0.45 }
+]
+
+const getTax = (taxable: number): number => {
+  let alreadyTaxed = 0
+  return TAX_BANDS.reduce((sum, { to, rate }) => {
+    const taxableAtBand = Math.min(taxable, to)
+    const untaxed = taxableAtBand - alreadyTaxed
+    alreadyTaxed += untaxed
+    return sum + (untaxed * rate)
+  },  0)
+}
 
 export type AccountId = string & { __accountId__: never }
 
@@ -109,18 +129,22 @@ export class Account {
   })
 
   getWithdrawalsTotal = computedFn((date: YYYYMM): number => {
-    const previousBalance = this.getBalance(subMonth(date))
-
+    const balanceBeforeWithdrawal = this.getBalance(subMonth(date)) + this.getInterestTotal(date) + this.getDepositsTotal(date)
     const withdrawals = this.withdrawals.reduce((sum, withdrawal) => sum + withdrawal.getValue(date), 0)
-
-    const balanceBeforeWithdrawal = previousBalance + this.getInterestTotal(date) + this.getDepositsTotal(date)
-
-    return withdrawals > balanceBeforeWithdrawal ? balanceBeforeWithdrawal : withdrawals
+    return Math.min(withdrawals, balanceBeforeWithdrawal)
   })
 
-  getIncomeTotal = computedFn((year: YYYYMM): number =>
-    this.getWithdrawalsForDate(year).reduce((sum, withdrawal) => sum + withdrawal.getValueAfterTax(year), 0)
-  )
+  getTax = computedFn((date: YYYYMM): number => {
+    const withdrawals = this.getWithdrawalsTotal(date)
+    const taxFreeWithdrawals = this.withdrawals.reduce((sum, withdrawal) => !withdrawal.taxable ? sum + withdrawal.getValue(date) : sum, 0)
+    return getTax(withdrawals - taxFreeWithdrawals)
+  })
+
+  getIncomeTotal = computedFn((date: YYYYMM): number => {
+    const total = this.getWithdrawalsTotal(date)
+    const tax = this.getTax(date)
+    return total - tax
+  })
 
   getYearInterestTotal = computedFn((year: YYYY): number => {
     return datesInYear(year).reduce((sum, date) => sum + this.getInterestTotal(date), 0)

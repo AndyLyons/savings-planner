@@ -92,7 +92,6 @@
 }
 
 .table-column--total,
-.table-column--account-income,
 .table-column--account-balance {
   width: 110px;
   justify-content: right;
@@ -103,37 +102,39 @@
   padding: 0;
 }
 
-.account-breakdown--date {
+.account-breakdown--date,
+.income-breakdown--date {
   list-style-type: '';
   font-weight: bolder;
   text-decoration: underline;
 }
 
-.account-breakdown {
+.account-breakdown,
+.income-breakdown {
   list-style-position: inside;
   padding-left: 0;
 }
 
-.account-breakdown--existing {
+.account-breakdown--existing,
+.income-breakdown--existing {
   list-style-type: '';
 }
 
-.account-breakdown--add {
+.account-breakdown--add,
+.income-breakdown--add {
   color: rgb(220, 255, 220);
   list-style-type: '+ ';
 }
 
-.account-breakdown--subtract {
+.account-breakdown--subtract,
+.income-breakdown--subtract {
   color: rgb(255, 220, 220);
   list-style-type: '– ';
 }
 
-.account-breakdown--total {
+.account-breakdown--total,
+.income-breakdown--total {
   list-style-type: '= ';
-}
-
-.hide-incomes .table-column--account-income {
-  display: none;
 }
 
 .table-column--total {
@@ -149,7 +150,6 @@
   border-left: 0;
 }
 
-.table-column--account-income .MuiButton-root,
 .table-column--account-balance .MuiButton-root {
   height: 100%;
   width: 100%;
@@ -157,7 +157,6 @@
   border-radius: 0;
 }
 
-.table-column--account-income .MuiButton-root .MuiButton-startIcon,
 .table-column--account-balance .MuiButton-root .MuiButton-startIcon {
   margin-right: auto;
 }

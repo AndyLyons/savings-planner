@@ -14,11 +14,10 @@ import { migrate } from './versions/migrate'
 export type StoreJSON = typeof Store.prototype.json
 
 export class Store {
-  static version = 2
+  static version = 3
 
   globalGrowth: number = 4
   showAges: boolean = true
-  showIncomes: boolean = true
   showMonths: boolean = false
   start: YYYYMM
   end: YYYYMM
@@ -94,10 +93,6 @@ export class Store {
     return (this.globalRate * 100).toFixed(2).replace(/\.?0+$/, '')
   }
 
-  toggleShowIncomes() {
-    this.showIncomes = !this.showIncomes
-  }
-
   toggleShowAges() {
     this.showAges = !this.showAges
   }
@@ -113,7 +108,6 @@ export class Store {
   get json() {
     return {
       globalGrowth: this.globalGrowth,
-      showIncomes: this.showIncomes,
       showAges: this.showAges,
       showMonths: this.showMonths,
       perspective: this.perspective,
@@ -133,7 +127,6 @@ export class Store {
     const migrated = migrate(json)
 
     this.globalGrowth = migrated.globalGrowth
-    this.showIncomes = migrated.showIncomes
     this.showAges = migrated.showAges
     this.showMonths = migrated.showMonths
     this.perspective = migrated.perspective

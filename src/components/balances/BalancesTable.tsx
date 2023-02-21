@@ -35,12 +35,35 @@ const AccountBreakdown = observer(function AccountBreakdown({ account, date }: {
 
   return (
     <ul className='account-breakdown'>
-      <li className='account-breakdown--date'>{format(fromYYYYMM(date), 'MMM yyyy')}</li>
+      <li className='account-breakdown--date'>{format(fromYYYYMM(date), showMonths ? 'MMM yyyy' : 'yyyy')}</li>
       <li className='account-breakdown--existing'>£{formatNumber(previous)}</li>
       <li className='account-breakdown--add'>£{formatNumber(deposits)} deposits</li>
       <li className='account-breakdown--add'>£{formatNumber(interest)} interest</li>
-      <li className='account-breakdown--subtract'>£{formatNumber(withdrawals)} withdrawals</li>
+      <li className='account-breakdown--subtract'>£{formatNumber(withdrawals)} w/d</li>
       <li className='account-breakdown--total'>£{formatNumber(calculatedBalance)}</li>
+    </ul>
+  )
+})
+
+const IncomeBreakdown = observer(function IncomeBreakdown({ date }: { date: YYYYMM }) {
+  const { accounts, showMonths } = useStore()
+
+  const withdrawals = accounts.values
+    .map(account => showMonths ? account.getWithdrawalsTotal(date) : account.getYearWithdrawalsTotal(getYear(date)))
+    .reduce((sum, value) => sum + value, 0)
+
+  const income = accounts.values
+    .map(account => showMonths ? account.getIncomeTotal(date) : account.getYearIncomeTotal(getYear(date)))
+    .reduce((sum, value) => sum + value, 0)
+
+  const tax = withdrawals - income
+
+  return (
+    <ul className='income-breakdown'>
+      <li className='income-breakdown--date'>{format(fromYYYYMM(date), showMonths ? 'MMM yyyy' : 'yyyy')}</li>
+      <li className='income-breakdown--add'>£{formatNumber(withdrawals)} w/d</li>
+      <li className='income-breakdown--subtract'>£{formatNumber(tax)} tax</li>
+      <li className='income-breakdown--total'>£{formatNumber(income)}</li>
     </ul>
   )
 })
@@ -212,6 +235,8 @@ const AccountBalanceCell = observer(function AccountBalanceCell({ date, accountI
 
   const buttonRef = useRef<HTMLButtonElement>(null)
 
+  const sxLineHeight = useMemo(() => ({ lineHeight: '20px' }), [])
+
   return (
     <div className='table-cell table-column--account-balance'>
       <AccountBalanceButton
@@ -226,18 +251,18 @@ const AccountBalanceCell = observer(function AccountBalanceCell({ date, accountI
         onClick={hideMenu}
         onClose={hideMenu}
       >
-        <ListSubheader sx={{ lineHeight: '20px' }}>Balance</ListSubheader>
+        <ListSubheader sx={sxLineHeight}>Balance</ListSubheader>
         {hasBalance && <EditBalanceMenu account={account} date={date} />}
         {!hasBalance && <AddBalanceMenu account={account} date={date} />}
 
         <Divider />
 
-        <ListSubheader sx={{ lineHeight: '20px' }}>Deposits</ListSubheader>
+        <ListSubheader sx={sxLineHeight}>Deposits</ListSubheader>
         <DepositsMenu account={account} date={date} />
 
         <Divider />
 
-        <ListSubheader sx={{ lineHeight: '20px' }}>Withdrawals</ListSubheader>
+        <ListSubheader sx={sxLineHeight}>Withdrawals</ListSubheader>
         <WithdrawalsMenu account={account} date={date} />
       </Menu>
     </div>
@@ -256,16 +281,6 @@ const TotalBalanceCell = observer(function TotalBalanceCell({ date }: { date: YY
   )
 })
 
-const AccountIncomeCell = observer(function AccountIncomeCell({ date, accountId }: { date: YYYYMM, accountId: AccountId }) {
-  const { accounts, showMonths } = useStore()
-  const account = accounts.get(accountId)
-  const income = showMonths ? account.getIncomeTotal(date) : account.getYearIncomeTotal(getYear(date))
-
-  return (
-    <div className='table-cell table-column--account-income'>{income ? formatNumber(income) : ''}</div>
-  )
-})
-
 const TotalIncomeCell = observer(function TotalIncomeCell({ date }: { date: YYYYMM }) {
   const { accounts, showMonths } = useStore()
   const income = accounts.values
@@ -273,7 +288,15 @@ const TotalIncomeCell = observer(function TotalIncomeCell({ date }: { date: YYYY
     .reduce((sum, value) => sum + value, 0)
 
   return (
-    <div className='table-cell table-column--total'>{income ? formatNumber(income) : ''}</div>
+    <div className='table-cell table-column--total'>
+      <Tooltip
+        disableInteractive
+        placement='bottom'
+        title={<IncomeBreakdown date={date} />}
+      >
+        <span>{income ? formatNumber(income) : ''}</span>
+      </Tooltip>
+    </div>
   )
 })
 
@@ -305,9 +328,6 @@ const TableRow = observer(function TableRow(props: RowProps) {
         <AgeCell key={personId} date={date} personId={personId} />
       ))}
       <TotalIncomeCell date={date} />
-      {accounts.keys.map(accountId => (
-        <AccountIncomeCell key={accountId} date={date} accountId={accountId} />
-      ))}
       <TotalBalanceCell date={date} />
       {accounts.keys.map(accountId => (
         <AccountBalanceCell key={accountId} date={date} accountId={accountId} />
@@ -317,11 +337,10 @@ const TableRow = observer(function TableRow(props: RowProps) {
 })
 
 const TableHeader = observer(function TableHeader() {
-  const { people, accounts, showIncomes } = useStore()
+  const { people, accounts } = useStore()
   const numAccounts = accounts.keys.length
-  const numVisibleIncomes = showIncomes ? numAccounts : 0
 
-  const sxIncomes = useMemo(() => ({ width: `${110 + (numVisibleIncomes * 110)}px` }), [numVisibleIncomes])
+  const sxIncomes = useMemo(() => ({ width: '110px' }), [])
   const sxBalances = useMemo(() => ({ width: `${110 + (numAccounts * 110)}px` }), [numAccounts])
 
   return (
@@ -340,9 +359,6 @@ const TableHeader = observer(function TableHeader() {
           <div key={person.id} className='table-cell table-column--age'>{person.name}</div>
         ))}
         <div className='table-cell table-column--total'>Total (£)</div>
-        {accounts.values.map(account => (
-          <div key={account.id} className='table-cell table-column--account-income'>{account.description}</div>
-        ))}
         <div className='table-cell table-column--total'>Total (£)</div>
         {accounts.values.map(account => (
           <div key={account.id} className='table-cell table-column--account-balance'>{account.description}</div>
@@ -370,13 +386,12 @@ const getItemSize = (index: number) => index === 1 ? 60 : 24
 const getKey: ListItemKeySelector<Dates> = (index, years) => index === 0 ? '__HEADER__' : years[index - 1]
 
 const Table = observer(function Table({ height, width }: { height: number, width: number }) {
-  const { dates, showIncomes, showAges } = useStore()
+  const { dates, showAges } = useStore()
 
   return (
     <VariableSizeList
       className={classNames('table', {
-        'hide-ages': !showAges,
-        'hide-incomes': !showIncomes
+        'hide-ages': !showAges
       })}
       height={height}
       width={width}

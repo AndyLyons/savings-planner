@@ -1,4 +1,4 @@
-import type { V1 } from './v1';
+import type { V2 } from './v2';
 
 type AccountId = string & { __accountId__: never }
 type DepositId = string & { depositId__: never }
@@ -21,9 +21,8 @@ enum WithdrawalType {
   TAKE_INTEREST = 'TAKE_INTEREST'
 }
 
-export type V2 = {
+export type V3 = {
   globalGrowth: number;
-  showIncomes: boolean;
   showAges: boolean;
   showMonths: boolean;
   perspective: YYYYMM | null;
@@ -63,53 +62,25 @@ export type V2 = {
       startDate: '__RETIREMENT__' | YYYYMM;
       repeating: boolean;
       endDate: YYYYMM | null;
-      taxRate: number;
+      taxable: boolean;
       account: AccountId;
     }[];
   }[];
-  version: 2;
+  version: 3;
 }
 
-const migrateYearToDate = (yyyy: number, isStart: boolean): YYYYMM => Number(`${yyyy}${isStart ? '01' : '12'}`) as YYYYMM
+export const isV3 = (json: any): json is V3 => json.version === 3
 
-export const isV2 = (json: any): json is V2 => json.version === 2
-
-export const migrateV2 = (json: V1): V2 => {
-  return ({
-    ...json,
-    version: 2,
-    showMonths: false,
-    perspective: null,
-
-    accounts: json.accounts.map(account => ({
-      ...account,
-      compoundPeriod: account.compoundPeriod === 1 ? Period.YEAR : Period.MONTH,
-
-      balances: account.balances.map(({ year, ...balance }) => ({
-        ...balance,
-        date: migrateYearToDate(year, true)
-      }))
-    })),
-
-    strategies: json.strategies.map(strategy => ({
+export const migrateV3 = ({ showIncomes, ...rest }: V2): V3 => {
+  return {
+    ...rest,
+    version: 3,
+    strategies: rest.strategies.map(strategy => ({
       ...strategy,
-
-      deposits: strategy.deposits.map(({ startYear, endYear, ...deposit }) => ({
-        ...deposit,
-        startDate: startYear === '__START__' ? startYear : migrateYearToDate(startYear, true),
-        endDate: endYear === '__RETIREMENT__' || endYear === null ? endYear : migrateYearToDate(endYear, false)
-      })),
-
-      withdrawals: strategy.withdrawals.map(({ startYear, endYear, ...withdrawal }) => ({
+      withdrawals: strategy.withdrawals.map(withdrawal => ({
         ...withdrawal,
-        startDate: startYear === '__RETIREMENT__' ? startYear : migrateYearToDate(startYear, true),
-        endDate: endYear === null ? endYear : migrateYearToDate(endYear, false)
+        taxable: withdrawal.taxRate !== 0
       }))
-    })),
-
-    people: json.people.map(person => ({
-      ...person,
-      dob: migrateYearToDate(person.dob, true)
     }))
-  })
+  }
 }
