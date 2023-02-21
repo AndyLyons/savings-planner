@@ -51,6 +51,14 @@ export class Collection<T extends Item<J>, K extends string | number, J extends 
     return this.entries.map(([, value]) => value)
   }
 
+  get first(): T | undefined {
+    return this.values[0]
+  }
+
+  get last(): T | undefined {
+    return this.values[this.values.length - 1]
+  }
+
   add(item: T) {
     this.data[this.getId(item)] = item
     return item
