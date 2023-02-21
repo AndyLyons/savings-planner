@@ -17,12 +17,14 @@ export class Strategy {
   deposits: Collection<Deposit, DepositId> = new Collection({
     getId: deposit => deposit.id,
     fromJSON: (json, copy) => Deposit.fromJSON(this.store, this, json, copy),
-    onDelete: () => {}
+    onDelete: () => {},
+    sort: null
   })
   withdrawals: Collection<Withdrawal, WithdrawalId> = new Collection({
     getId: withdrawal => withdrawal.id,
     fromJSON: (json, copy) => Withdrawal.fromJSON(this.store, this, json, copy),
-    onDelete: () => {}
+    onDelete: () => {},
+    sort: null
   })
 
   id: StrategyId

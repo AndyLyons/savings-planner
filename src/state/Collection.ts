@@ -1,5 +1,5 @@
 import { makeAutoObservable } from 'mobx'
-import { keys, values } from '../utils/object'
+import { entries } from '../utils/object'
 
 type JSONValue =
   | string
@@ -23,21 +23,32 @@ export class Collection<T extends Item<J>, K extends string | number, J extends 
   getId: (item: T | J) => K
   fromJSON: (json: J, newIds?: boolean) => T
   onDelete: (item: T) => void
+  sort: ((a: T, b: T) => number) | null
 
-  constructor({ getId, fromJSON, onDelete }: Pick<Collection<T, K, J>, 'getId' | 'fromJSON' | 'onDelete'>) {
-    makeAutoObservable(this, { getId: false, fromJSON: false }, { autoBind: true })
+  constructor({ getId, fromJSON, onDelete, sort }: Pick<Collection<T, K, J>, 'getId' | 'fromJSON' | 'onDelete' | 'sort'>) {
+    makeAutoObservable(this, { getId: false, fromJSON: false, sort: false }, { autoBind: true })
 
     this.getId = getId
     this.fromJSON = fromJSON
     this.onDelete = onDelete
+    this.sort = sort
+  }
+
+  get entries() {
+    const allEntries = entries(this.data)
+
+    const sort = this.sort
+    if (!sort) return allEntries
+
+    return allEntries.sort(([, a], [, b]) => sort(a, b))
   }
 
   get keys() {
-    return keys(this.data)
+    return this.entries.map(([key]) => key)
   }
 
   get values() {
-    return values(this.data)
+    return this.entries.map(([, value]) => value)
   }
 
   add(item: T) {

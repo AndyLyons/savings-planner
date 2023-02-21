@@ -1,6 +1,7 @@
 import { makeAutoObservable } from 'mobx'
 import { computedFn } from 'mobx-utils'
 import React from 'react'
+import { compareKeys } from '../utils/compare'
 import { addMonth, YYYYMM } from '../utils/date'
 import { Account, AccountId } from './Account'
 import { Collection } from './Collection'
@@ -44,7 +45,8 @@ export class Store {
           }
         })
       })
-    }
+    },
+    sort: compareKeys('owner.name', 'name')
   })
 
   people: Collection<Person, PersonId> = new Collection({
@@ -52,13 +54,15 @@ export class Store {
     fromJSON: (json, copy) => Person.fromJSON(this, json, copy),
     onDelete: person => {
       person.accounts.forEach(account => this.accounts.remove(account))
-    }
+    },
+    sort: compareKeys('name')
   })
 
   strategies: Collection<Strategy, StrategyId> = new Collection({
     getId: strategy => strategy.id,
     fromJSON: (json, copy) => Strategy.fromJSON(this, json, copy),
-    onDelete: () => {}
+    onDelete: () => {},
+    sort: compareKeys('name')
   })
 
   constructor() {

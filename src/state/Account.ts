@@ -40,7 +40,8 @@ export class Account {
   balances: Collection<Balance, YYYYMM> = new Collection({
     getId: balance => balance.date,
     fromJSON: json => Balance.fromJSON(this.store, this, json),
-    onDelete: () => {}
+    onDelete: () => {},
+    sort: (a, b) => a.value - b.value
   })
 
   id: AccountId
@@ -210,3 +211,5 @@ export class Account {
     return this.json
   }
 }
+
+
