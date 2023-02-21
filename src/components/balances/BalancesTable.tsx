@@ -64,6 +64,7 @@ const IncomeBreakdown = observer(function IncomeBreakdown({ date }: { date: YYYY
       <li className='income-breakdown--add'>£{formatNumber(withdrawals)} w/d</li>
       <li className='income-breakdown--subtract'>£{formatNumber(tax)} tax</li>
       <li className='income-breakdown--total'>£{formatNumber(income)}</li>
+      <li className='income-breakdown--total'>£{formatNumber(income / 12)} / month</li>
     </ul>
   )
 })
