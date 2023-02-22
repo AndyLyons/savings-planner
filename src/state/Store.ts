@@ -78,7 +78,7 @@ export class Store {
     const dates: Array<YYYYMM> = []
     for (
       let date = this.showMonths ? this.start : addMonth(this.start, 11);
-      date < this.end;
+      date <= this.end;
       date = addMonth(date, this.showMonths ? 1 : 12)
     ) {
       dates.push(date)

@@ -307,7 +307,7 @@ const TableRow = observer(function TableRow(props: RowProps) {
   const { data, index, style } = props
   const { accounts, people, perspective, showMonths, setPerspective } = useStore()
 
-  const date = data[index - 2] // -2 because of header rows
+  const date = data[index]
   const now = getNow()
 
   const onClickYear = useBind(setPerspective, date)
@@ -366,9 +366,9 @@ const TableHeader = observer(function TableHeader() {
   )
 })
 
-function TableRowWrapper(props: RowProps) {
-  // Index 0 & 1 are the headers which are rendered separately
-  return <>{props.index < 2 ? null : <TableRow {...props} />}</>
+function TableRowWrapper({ index, ...rest }: RowProps) {
+  // Index 0 is the header which is rendered separately
+  return index === 0 ? null : <TableRow index={index - 1} {...rest} />
 }
 
 const TableBody = forwardRef<HTMLDivElement>(function TableBody({ children, ...rest }, ref) {
@@ -380,9 +380,8 @@ const TableBody = forwardRef<HTMLDivElement>(function TableBody({ children, ...r
   )
 })
 
-const HEADER_KEYS = ['GROUPS', 'HEADERS']
-const getItemSize = (index: number) => index === 1 ? 60 : 24
-const getKey: ListItemKeySelector<Dates> = (index, years) => index < 2 ? HEADER_KEYS[index] : years[index - 2]
+const getItemSize = (index: number) => index === 0 ? 84 : 24
+const getKey: ListItemKeySelector<Dates> = (index, dates) => index === 0 ? '__HEADER__' : dates[index - 1]
 
 const Table = observer(function Table({ height, width }: { height: number, width: number }) {
   const { dates, showAges, showPerspective } = useStore()
@@ -395,7 +394,7 @@ const Table = observer(function Table({ height, width }: { height: number, width
       })}
       height={height}
       width={width}
-      itemCount={dates.length + 2} // +2 for header rows
+      itemCount={dates.length + 1} // +1 for header row
       itemData={dates}
       innerElementType={TableBody}
       itemKey={getKey}
