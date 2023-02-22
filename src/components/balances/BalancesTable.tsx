@@ -187,11 +187,11 @@ const AccountBalanceButton = observer(forwardRef<HTMLButtonElement, { account: A
 
     const hasBalance = account.hasBalance(date)
     const balance = account.getBalance(date)
-    const enteredBalance = account.balances.get(date)
+    const enteredBalance = hasBalance ? account.balances.get(date) : null
     const predictedBalance = account.getCalculatedBalance(date)
 
-    const isUp = hasBalance && predictedBalance !== 0 && (enteredBalance.value / predictedBalance) > 1.005
-    const isDown = hasBalance && predictedBalance !== 0 && (enteredBalance.value / predictedBalance) < 0.995
+    const isUp = enteredBalance && predictedBalance !== 0 && (enteredBalance.value / predictedBalance) > 1.005
+    const isDown = enteredBalance && predictedBalance !== 0 && (enteredBalance.value / predictedBalance) < 0.995
 
     const onClickInternal = useCallback(() => {
       hideTooltip()

@@ -1,5 +1,4 @@
 import { makeAutoObservable } from 'mobx'
-import { entries } from '../utils/object'
 
 type JSONValue =
   | string
@@ -19,7 +18,7 @@ export type Item<J extends JSON> = {
 type GetJSON<T> = T extends { toJSON: () => infer J } ? J : never
 
 export class Collection<T extends Item<J>, K extends string | number, J extends JSON = GetJSON<T>> {
-  data: Record<K, T> = {} as Record<K, T>
+  data: Map<K, T> = new Map<K, T>()
   getId: (item: T | J) => K
   fromJSON: (json: J, newIds?: boolean) => T
   onDelete: (item: T) => void
@@ -35,7 +34,7 @@ export class Collection<T extends Item<J>, K extends string | number, J extends 
   }
 
   get entries() {
-    const allEntries = entries(this.data)
+    const allEntries = Array.from(this.data.entries())
 
     const sort = this.sort
     if (!sort) return allEntries
@@ -60,7 +59,7 @@ export class Collection<T extends Item<J>, K extends string | number, J extends 
   }
 
   add(item: T) {
-    this.data[this.getId(item)] = item
+    this.data.set(this.getId(item), item)
     return item
   }
 
@@ -68,44 +67,31 @@ export class Collection<T extends Item<J>, K extends string | number, J extends 
     return this.add(this.fromJSON(json, copy))
   }
 
-  clear() {
-    this.keys.forEach(key => {
-      delete this.data[key]
-    })
-  }
-
   get(id: K): T {
-    return this.data[id]
+    const item = this.data.get(id)
+
+    if (!item) throw new Error(`Id <${id}> does not exist in collection`)
+
+    return item
   }
 
   has(id: string | number | undefined): id is K {
-    return id !== undefined && id in this.data
+    return id !== undefined && this.data.has(id as K)
   }
 
   remove(idOrItem: K | T) {
     const id = typeof idOrItem === 'string' || typeof idOrItem === 'number' ? idOrItem : this.getId(idOrItem as T)
-    const item = this.data[id]
+    const item = this.get(id)
     this.onDelete(item)
-    delete this.data[id]
+    this.data.delete(id)
     return item
   }
 
   restore(json: Array<J>, copy?: boolean) {
-    const deleted = new Set(this.keys)
+    this.data.clear()
 
     json.forEach(itemJson => {
-      const id = this.getId(itemJson)
-      deleted.delete(id)
-
-      if (this.has(id)) {
-        this.data[id].restore(itemJson)
-      } else {
-        this.add(this.fromJSON(itemJson, copy))
-      }
-    })
-
-    deleted.forEach(id => {
-      delete this.data[id]
+      this.add(this.fromJSON(itemJson, copy))
     })
   }
 
