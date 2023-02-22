@@ -368,7 +368,7 @@ const TableHeader = observer(function TableHeader() {
 
 function TableRowWrapper(props: RowProps) {
   // Index 0 & 1 are the headers which are rendered separately
-  return props.index <= 1 ? null : <TableRow {...props} />
+  return <>{props.index < 2 ? null : <TableRow {...props} />}</>
 }
 
 const TableBody = forwardRef<HTMLDivElement>(function TableBody({ children, ...rest }, ref) {
@@ -380,8 +380,9 @@ const TableBody = forwardRef<HTMLDivElement>(function TableBody({ children, ...r
   )
 })
 
+const HEADER_KEYS = ['GROUPS', 'HEADERS']
 const getItemSize = (index: number) => index === 1 ? 60 : 24
-const getKey: ListItemKeySelector<Dates> = (index, years) => index === 0 ? '__HEADER__' : years[index - 1]
+const getKey: ListItemKeySelector<Dates> = (index, years) => index < 2 ? HEADER_KEYS[index] : years[index - 2]
 
 const Table = observer(function Table({ height, width }: { height: number, width: number }) {
   const { dates, showAges, showPerspective } = useStore()

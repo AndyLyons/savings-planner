@@ -113,55 +113,55 @@ export class Account {
     return Account.getDescription(this, this.owner)
   }
 
-  getDepositsForDate = computedFn((date: YYYYMM): Array<Deposit> => this.deposits.filter(deposit => deposit.isValidOn(date)))
-  getDepositsForYear = computedFn((year: YYYY): Array<Deposit> => this.deposits.filter(deposit => deposit.isValidIn(year)))
+  getDepositsForDate = computedFn((date: YYYYMM): Array<Deposit> => this.deposits.filter(deposit => deposit.isValidOn(date)), true)
+  getDepositsForYear = computedFn((year: YYYY): Array<Deposit> => this.deposits.filter(deposit => deposit.isValidIn(year)), true)
 
-  getWithdrawalsForDate = computedFn((date: YYYYMM) => this.withdrawals.filter(withdrawal => withdrawal.isValidOn(date)))
-  getWithdrawalsForYear = computedFn((year: YYYY) => this.withdrawals.filter(withdrawal => withdrawal.isValidIn(year)))
+  getWithdrawalsForDate = computedFn((date: YYYYMM) => this.withdrawals.filter(withdrawal => withdrawal.isValidOn(date)), true)
+  getWithdrawalsForYear = computedFn((year: YYYY) => this.withdrawals.filter(withdrawal => withdrawal.isValidIn(year)), true)
 
   getInterestTotal = computedFn((date: YYYYMM): number => {
     if (this.compoundPeriod === Period.YEAR && getMonth(date) !== 12) return 0
 
     return this.getBalance(subMonth(date)) * this.monthlyRate
-  })
+  }, true)
 
   getDepositsTotal = computedFn((date: YYYYMM): number => {
     return this.deposits.reduce((sum, deposit) => sum + deposit.getValue(date), 0)
-  })
+  }, true)
 
   getWithdrawalsTotal = computedFn((date: YYYYMM): number => {
     const balanceBeforeWithdrawal = this.getBalance(subMonth(date)) + this.getInterestTotal(date) + this.getDepositsTotal(date)
     const withdrawals = this.withdrawals.reduce((sum, withdrawal) => sum + withdrawal.getValue(date), 0)
     return Math.min(withdrawals, balanceBeforeWithdrawal)
-  })
+  }, true)
 
   getTax = computedFn((date: YYYYMM): number => {
     const withdrawals = this.getWithdrawalsTotal(date)
     const taxFreeWithdrawals = this.withdrawals.reduce((sum, withdrawal) => !withdrawal.taxable ? sum + withdrawal.getValue(date) : sum, 0)
     return getTax(withdrawals - taxFreeWithdrawals)
-  })
+  }, true)
 
   getIncomeTotal = computedFn((date: YYYYMM): number => {
     const total = this.getWithdrawalsTotal(date)
     const tax = this.getTax(date)
     return total - tax
-  })
+  }, true)
 
   getYearInterestTotal = computedFn((year: YYYY): number => {
     return datesInYear(year).reduce((sum, date) => sum + this.getInterestTotal(date), 0)
-  })
+  }, true)
 
   getYearDepositsTotal = computedFn((year: YYYY): number => {
     return datesInYear(year).reduce((sum, date) => sum + this.getDepositsTotal(date), 0)
-  })
+  }, true)
 
   getYearWithdrawalsTotal = computedFn((year: YYYY): number => {
     return datesInYear(year).reduce((sum, date) => sum + this.getWithdrawalsTotal(date), 0)
-  })
+  }, true)
 
   getYearIncomeTotal = computedFn((year: YYYY): number => {
     return datesInYear(year).reduce((sum, date) => sum + this.getIncomeTotal(date), 0)
-  })
+  }, true)
 
   getCalculatedBalance = computedFn((date: YYYYMM): number => {
     if (date < this.store.start) return 0
@@ -170,12 +170,12 @@ export class Account {
 
     // Treat <1 as 0 to avoid having pennies left in an account due to rounding issues
     return total < 1 ? 0 : total
-  })
+  }, true)
 
   hasBalance = computedFn((date: YYYYMM): boolean => {
     const inPerspective = !this.store.showPerspective || date <= this.store.perspective
     return (inPerspective || this.balances.last?.date === date) && this.balances.has(date)
-  })
+  }, true)
 
   getBalance = computedFn((date: YYYYMM): number => {
     if (this.hasBalance(date)) {
@@ -183,7 +183,7 @@ export class Account {
     }
 
     return this.getCalculatedBalance(date)
-  })
+  }, true)
 
   restore(json: AccountJSON, copy?: boolean) {
     const { name, growth, compoundPeriod, owner: ownerId, balances } = json
