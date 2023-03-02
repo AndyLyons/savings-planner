@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/savings-planner/static/css/main.468dee14.css",
-    "main.js": "/savings-planner/static/js/main.2beea59f.js",
+    "main.js": "/savings-planner/static/js/main.c6ac1421.js",
     "index.html": "/savings-planner/index.html",
     "main.468dee14.css.map": "/savings-planner/static/css/main.468dee14.css.map",
-    "main.2beea59f.js.map": "/savings-planner/static/js/main.2beea59f.js.map"
+    "main.c6ac1421.js.map": "/savings-planner/static/js/main.c6ac1421.js.map"
   },
   "entrypoints": [
     "static/css/main.468dee14.css",
-    "static/js/main.2beea59f.js"
+    "static/js/main.c6ac1421.js"
   ]
 }
