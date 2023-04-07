@@ -15,11 +15,11 @@ export class Persistence {
     try {
 
       if (persisted) {
-        this.store.restore(JSON.parse(persisted), false)
+        this.store.restore(JSON.parse(persisted))
       }
 
       this.disposer = reaction(
-        () => JSON.stringify(this.store.toJSON()),
+        () => JSON.stringify(this.store.snapshot),
         (serialized) => localStorage.setItem('store', serialized),
         { fireImmediately: false })
     } catch(e) {

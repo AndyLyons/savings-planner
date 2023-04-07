@@ -1,15 +1,12 @@
 import { AccountBalance, CurrencyPound, Event, EventRepeat, Loop } from '@mui/icons-material'
-import { Deposit, DepositIcon, DepositJSON, RETIREMENT, START } from '../../state/Deposit'
+import { DepositIcon, DepositSnapshotIn, RETIREMENT, START } from '../../state/Deposit'
 import { Period } from '../../utils/date'
 import { useStore } from '../../utils/mobx'
 import { createDialog } from './createDialog'
 
-export const DepositDialog = createDialog<DepositJSON>('deposit schedule', <DepositIcon />, {
-  id: {
-    type: 'generate',
-    generate: () => Deposit.createId()
-  },
-  account: {
+export const DepositDialog = createDialog<DepositSnapshotIn>('deposit schedule', <DepositIcon />, {
+  parentStrategyId: null,
+  accountId: {
     type: 'string',
     label: 'Account',
     icon: <AccountBalance />,

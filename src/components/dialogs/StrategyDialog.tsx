@@ -1,15 +1,11 @@
 import { List, ShortText } from '@mui/icons-material'
 import { Deposit, DepositIcon } from '../../state/Deposit'
 import { DialogType } from '../../state/Dialogs'
-import { Strategy, StrategyIcon, StrategyJSON } from '../../state/Strategy'
+import { StrategyIcon, StrategySnapshotIn } from '../../state/Strategy'
 import { Withdrawal, WithdrawalIcon } from '../../state/Withdrawal'
 import { createDialog } from './createDialog'
 
-export const StrategyDialog = createDialog<StrategyJSON>('strategy', <StrategyIcon />, {
-  id: {
-    type: 'generate',
-    generate: () => Strategy.createId()
-  },
+export const StrategyDialog = createDialog<StrategySnapshotIn>('strategy', <StrategyIcon />, {
   name: {
     autoFocus: true,
     type: 'string',
@@ -23,9 +19,8 @@ export const StrategyDialog = createDialog<StrategyJSON>('strategy', <StrategyIc
     label: 'Deposits',
     icon: <List />,
     itemIcon: <DepositIcon />,
-    getKey: (store, deposit) => deposit.id,
     getLabel: (store, deposit) => {
-      const account = store.accounts.get(deposit.account)
+      const account = store.accounts.get(deposit.accountId)
       return `${account.description} - ${Deposit.getDescription(deposit)}`
     }
   },
@@ -35,9 +30,8 @@ export const StrategyDialog = createDialog<StrategyJSON>('strategy', <StrategyIc
     label: 'Withdrawals',
     icon: <List />,
     itemIcon: <WithdrawalIcon />,
-    getKey: (store, withdrawal) => withdrawal.id,
     getLabel: (store, withdrawal) => {
-      const account = store.accounts.get(withdrawal.account)
+      const account = store.accounts.get(withdrawal.accountId)
       return `${account.description} - ${Withdrawal.getDescription(withdrawal)}`
     }
   }

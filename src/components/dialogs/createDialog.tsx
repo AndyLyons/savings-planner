@@ -40,7 +40,6 @@ type FieldType<T, V> =
     type: 'collection'
     itemIcon: ReactElement
     dialogType: DialogType
-    getKey: (store: Store, entity: U) => string
     getLabel: (store: Store, entity: U) => string
   } :
   never
@@ -549,7 +548,7 @@ export function createDialog<T>(name: string, icon: ReactElement, fields: Fields
                     return (
                       <List dense={isDesktop} sx={{ padding: 0 }}>
                         {items.map((item, i) => (
-                          <ListItemButton key={field.getKey(store, item)} onClick={() => onEdit(item, i)} sx={{ pl: 4, justifyContent: 'flex-start' }}>
+                          <ListItemButton key={i} onClick={() => onEdit(item, i)} sx={{ pl: 4, justifyContent: 'flex-start' }}>
                             <ListItemIcon>{cloneElement(field.itemIcon, { fontSize: 'inherit' })}</ListItemIcon>
                             <ListItemText primary={<Typography component='span'>{field.getLabel(store, item)}</Typography>} />
                           </ListItemButton>

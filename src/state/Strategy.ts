@@ -1,39 +1,41 @@
 import { CurrencyExchange } from '@mui/icons-material';
 import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid';
-import { Collection } from './Collection';
+import { Optional } from '../utils/object';
+import { configureCollection } from './Collection';
 import { Deposit, DepositId } from './Deposit';
 import type { Store } from './Store';
 import { Withdrawal, WithdrawalId } from './Withdrawal';
 
 export type StrategyId = string & { __strategyId__: never }
 
-export type StrategyJSON = typeof Strategy.prototype.json
+export type StrategySnapshotOut = typeof Strategy.prototype.snapshot
+export type StrategySnapshotIn = Optional<StrategySnapshotOut, 'id'>
 
 export const StrategyIcon = CurrencyExchange
 
+const DepositCollection = configureCollection<Deposit, DepositId>({
+  getId: deposit => deposit.id,
+  create: Deposit.create
+})
+
+const WithdrawalCollection = configureCollection<Withdrawal, WithdrawalId>({
+  getId: withdrawal => withdrawal.id,
+  create: Withdrawal.create
+})
+
 export class Strategy {
   store: Store
-  deposits: Collection<Deposit, DepositId> = new Collection({
-    getId: deposit => deposit.id,
-    fromJSON: (json, copy) => Deposit.fromJSON(this.store, this, json, copy),
-    onDelete: () => {},
-    sort: null
-  })
-  withdrawals: Collection<Withdrawal, WithdrawalId> = new Collection({
-    getId: withdrawal => withdrawal.id,
-    fromJSON: (json, copy) => Withdrawal.fromJSON(this.store, this, json, copy),
-    onDelete: () => {},
-    sort: null
-  })
+
+  deposits: InstanceType<typeof DepositCollection>
+  withdrawals: InstanceType<typeof WithdrawalCollection>
 
   id: StrategyId
   name: string
 
   constructor(
     store: Store,
-    { id, name }:
-      Pick<Strategy, 'id' | 'name'>
+    { id = Strategy.createId(), name, deposits, withdrawals }: StrategySnapshotIn
   ) {
     makeAutoObservable(this, { store: false }, { autoBind: true })
 
@@ -41,40 +43,31 @@ export class Strategy {
 
     this.id = id
     this.name = name
+
+    this.deposits = new DepositCollection(store, deposits)
+    this.withdrawals = new WithdrawalCollection(store, withdrawals)
   }
 
   static createId() {
     return nanoid(10) as StrategyId
   }
 
-  static fromJSON(store: Store, json: StrategyJSON, copy?: boolean) {
-    const { id, deposits: depositsJson, withdrawals: withdrawalsJson, ...rest } = json
-
-    const strategy = new Strategy(store, {
-      id: copy ? Strategy.createId() : id,
-      ...rest
-    })
-    strategy.deposits.restore(depositsJson, copy)
-    strategy.withdrawals.restore(withdrawalsJson, copy)
-    return strategy
+  static create(store: Store, snapshot: StrategySnapshotIn) {
+    return new Strategy(store, snapshot)
   }
 
-  restore({ name, deposits, withdrawals }: StrategyJSON, copy?: boolean) {
-    this.name = name
-    this.deposits.restore(deposits, copy)
-    this.withdrawals.restore(withdrawals, copy)
-  }
-
-  get json() {
+  get snapshot() {
     return {
       id: this.id,
       name: this.name,
-      deposits: this.deposits.toJSON(),
-      withdrawals: this.withdrawals.toJSON()
+      deposits: this.deposits.snapshot,
+      withdrawals: this.withdrawals.snapshot
     }
   }
 
-  toJSON() {
-    return this.json
+  restore({ name, deposits, withdrawals }: StrategySnapshotIn) {
+    this.name = name
+    this.deposits.restore(deposits)
+    this.withdrawals.restore(withdrawals)
   }
 }

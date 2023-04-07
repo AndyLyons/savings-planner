@@ -66,7 +66,7 @@ export type V3 = {
   version: 3;
 }
 
-export const isV3 = (json: any): json is V3 => json.version === 3
+export const isV3 = (snapshot: any): snapshot is V3 => snapshot.version === 3
 
 export const migrateV3 = ({ showIncomes, showAges, showMonths, perspective, ...rest }: V2): V3 => {
   return {

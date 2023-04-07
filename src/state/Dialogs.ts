@@ -3,13 +3,20 @@
  */
 
 import { makeAutoObservable } from 'mobx'
-import type { Account, AccountJSON } from './Account'
-import type { Balance, BalanceJSON } from './Balance'
-import type { Deposit, DepositJSON } from './Deposit'
-import type { Person, PersonJSON } from './Person'
+import { ComponentProps } from 'react'
+import { AccountDialog } from '../components/dialogs/AccountDialog'
+import { BalanceDialog } from '../components/dialogs/BalanceDialog'
+import { DepositDialog } from '../components/dialogs/DepositDialog'
+import { PersonDialog } from '../components/dialogs/PersonDialog'
+import { StrategyDialog } from '../components/dialogs/StrategyDialog'
+import { WithdrawalDialog } from '../components/dialogs/WithdrawalDialog'
+import type { Account } from './Account'
+import type { Balance } from './Balance'
+import type { Deposit } from './Deposit'
+import type { Person } from './Person'
 import { Store } from './Store'
-import type { Strategy, StrategyJSON } from './Strategy'
-import type { Withdrawal, WithdrawalJSON } from './Withdrawal'
+import type { Strategy } from './Strategy'
+import type { Withdrawal } from './Withdrawal'
 
 export enum DialogType {
   ACCOUNT = 'ACCOUNT',
@@ -20,26 +27,33 @@ export enum DialogType {
   WITHDRAWAL = 'WITHDRAWAL'
 }
 
-interface GenericDialog<D extends DialogType, T> {
+type DialogComponent = React.ComponentType<{
+  initialValues: any,
+  onClose(): void
+  onDelete?(): void
+  onDone(details: any): void
+}>
+
+interface GenericDialog<D extends DialogType, T extends DialogComponent> {
   type: D
-  initialValues: Partial<T>
-  onDone: (details: T) => void
-  onDelete?: () => void
+  initialValues: ComponentProps<T>['initialValues']
+  onDone: ComponentProps<T>['onDone']
+  onDelete?: ComponentProps<T>['onDelete']
 }
 
-type PersonDialog = GenericDialog<DialogType.PERSON, PersonJSON>
-type AccountDialog = GenericDialog<DialogType.ACCOUNT, AccountJSON>
-type BalanceDialog = GenericDialog<DialogType.BALANCE, BalanceJSON>
-type StrategyDialog = GenericDialog<DialogType.STRATEGY, StrategyJSON>
-type DepositDialog = GenericDialog<DialogType.DEPOSIT, DepositJSON>
-type WithdrawalDialog = GenericDialog<DialogType.WITHDRAWAL, WithdrawalJSON>
+type PersonDialogConfig = GenericDialog<DialogType.PERSON, typeof PersonDialog>
+type AccountDialogConfig = GenericDialog<DialogType.ACCOUNT, typeof AccountDialog>
+type BalanceDialogConfig = GenericDialog<DialogType.BALANCE, typeof BalanceDialog>
+type StrategyDialogConfig = GenericDialog<DialogType.STRATEGY, typeof StrategyDialog>
+type DepositDialogConfig = GenericDialog<DialogType.DEPOSIT, typeof DepositDialog>
+type WithdrawalDialogConfig = GenericDialog<DialogType.WITHDRAWAL, typeof WithdrawalDialog>
 
-type Dialog = PersonDialog | AccountDialog | BalanceDialog | StrategyDialog | DepositDialog | WithdrawalDialog
+type DialogConfig = PersonDialogConfig | AccountDialogConfig | BalanceDialogConfig | StrategyDialogConfig | DepositDialogConfig | WithdrawalDialogConfig
 
 export class Dialogs {
   store: Store
 
-  stack: Array<Dialog> = []
+  stack: Array<DialogConfig> = []
 
   constructor(store: Store) {
     makeAutoObservable(this, { store: false }, { autoBind: true })
@@ -51,11 +65,11 @@ export class Dialogs {
     this.stack.pop()
   }
 
-  open(dialog: Dialog) {
+  open(dialog: DialogConfig) {
     this.stack.push(dialog)
   }
 
-  createPerson(initialValues: PersonDialog['initialValues'] = {}) {
+  createPerson(initialValues: PersonDialogConfig['initialValues'] = {}) {
     this.open({
       type: DialogType.PERSON,
       initialValues,
@@ -63,15 +77,15 @@ export class Dialogs {
     })
   }
 
-  createAccount(initialValues: AccountDialog['initialValues'] = {}) {
+  createAccount(initialValues: AccountDialogConfig['initialValues'] = {}) {
     this.open({
       type: DialogType.ACCOUNT,
       initialValues,
       onDone: this.store.accounts.create
-    } as Dialog)
+    })
   }
 
-  createBalance(account: Account, initialValues: BalanceDialog['initialValues'] = {}) {
+  createBalance(account: Account, initialValues: BalanceDialogConfig['initialValues']) {
     this.open({
       type: DialogType.BALANCE,
       initialValues,
@@ -79,7 +93,7 @@ export class Dialogs {
     })
   }
 
-  createStrategy(initialValues: StrategyDialog['initialValues'] = {}) {
+  createStrategy(initialValues: StrategyDialogConfig['initialValues'] = {}) {
     this.open({
       type: DialogType.STRATEGY,
       initialValues,
@@ -87,7 +101,7 @@ export class Dialogs {
     })
   }
 
-  createDeposit(strategy: Strategy, initialValues: DepositDialog['initialValues'] = {}) {
+  createDeposit(strategy: Strategy, initialValues: DepositDialogConfig['initialValues'] = {}) {
     this.open({
       type: DialogType.DEPOSIT,
       initialValues,
@@ -95,7 +109,7 @@ export class Dialogs {
     })
   }
 
-  createWithdrawal(strategy: Strategy, initialValues: WithdrawalDialog['initialValues'] = {}) {
+  createWithdrawal(strategy: Strategy, initialValues: WithdrawalDialogConfig['initialValues'] = {}) {
     this.open({
       type: DialogType.WITHDRAWAL,
       initialValues,
@@ -106,7 +120,7 @@ export class Dialogs {
   editPerson(person: Person) {
     this.open({
       type: DialogType.PERSON,
-      initialValues: person.toJSON(),
+      initialValues: person.snapshot,
       onDone: person.restore,
       onDelete: () => this.store.people.remove(person)
     })
@@ -115,7 +129,7 @@ export class Dialogs {
   editAccount(account: Account) {
     this.open({
       type: DialogType.ACCOUNT,
-      initialValues: account.toJSON(),
+      initialValues: account.snapshot,
       onDone: account.restore,
       onDelete: () => this.store.accounts.remove(account)
     })
@@ -124,7 +138,7 @@ export class Dialogs {
   editBalance(balance: Balance) {
     this.open({
       type: DialogType.BALANCE,
-      initialValues: balance.toJSON(),
+      initialValues: balance.snapshot,
       onDone: balance.restore,
       onDelete: () => balance.account.balances.remove(balance)
     })
@@ -133,7 +147,7 @@ export class Dialogs {
   editStrategy(strategy: Strategy) {
     this.open({
       type: DialogType.STRATEGY,
-      initialValues: strategy.toJSON(),
+      initialValues: strategy.snapshot,
       onDone: strategy.restore,
       onDelete: () => this.store.strategies.remove(strategy)
     })
@@ -142,7 +156,7 @@ export class Dialogs {
   editDeposit(deposit: Deposit) {
     this.open({
       type: DialogType.DEPOSIT,
-      initialValues: deposit.toJSON(),
+      initialValues: deposit.snapshot,
       onDone: deposit.restore,
       onDelete: () => deposit.strategy.deposits.remove(deposit)
     })
@@ -151,9 +165,9 @@ export class Dialogs {
   editWithdrawal(withdrawal: Withdrawal) {
     this.open({
       type: DialogType.WITHDRAWAL,
-      initialValues: withdrawal.toJSON(),
+      initialValues: withdrawal.snapshot,
       onDone: withdrawal.restore,
-      onDelete: () => withdrawal.strategy.withdrawals.remove(withdrawal)
+      onDelete: () => withdrawal.parentStrategy.withdrawals.remove(withdrawal)
     })
   }
 }

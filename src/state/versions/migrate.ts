@@ -1,10 +1,11 @@
-import { StoreJSON } from '../Store'
+import { StoreSnapshotOut } from '../Store'
 import { isV1 } from './v1'
 import { isV2, migrateV2 } from './v2'
 import { isV3, migrateV3 } from './v3'
+import { isV4, migrateV4 } from './v4'
 
-export function migrate(json: any): StoreJSON {
-  let migrated = json
+export function migrate(snapshot: any): StoreSnapshotOut {
+  let migrated = snapshot
 
   if (isV1(migrated)) {
     migrated = migrateV2(migrated)
@@ -14,8 +15,12 @@ export function migrate(json: any): StoreJSON {
     migrated = migrateV3(migrated)
   }
 
-  if (!isV3(migrated)) {
-    throw Error(`Config is an unrecognised version ${json.version ?? 'none'}`)
+  if (isV3(migrated)) {
+    migrated = migrateV4(migrated)
+  }
+
+  if (!isV4(migrated)) {
+    throw Error(`Config is an unrecognised version ${snapshot.version ?? 'none'}`)
   }
 
   return migrated

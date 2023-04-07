@@ -1,14 +1,11 @@
 import { AccountBalance, CurrencyPound, Event, Loop, Percent, QuestionMark, RadioButtonChecked } from '@mui/icons-material'
-import { RETIREMENT, Withdrawal, WithdrawalIcon, WithdrawalJSON, WithdrawalType } from '../../state/Withdrawal'
+import { RETIREMENT, WithdrawalIcon, WithdrawalSnapshotIn, WithdrawalType } from '../../state/Withdrawal'
 import { useStore } from '../../utils/mobx'
 import { createDialog } from './createDialog'
 
-export const WithdrawalDialog = createDialog<WithdrawalJSON>('withdrawal schedule', <WithdrawalIcon />, {
-  id: {
-    type: 'generate',
-    generate: () => Withdrawal.createId()
-  },
-  account: {
+export const WithdrawalDialog = createDialog<WithdrawalSnapshotIn>('withdrawal schedule', <WithdrawalIcon />, {
+  parentStrategyId: null,
+  accountId: {
     type: 'string',
     label: 'Account',
     icon: <AccountBalance />,

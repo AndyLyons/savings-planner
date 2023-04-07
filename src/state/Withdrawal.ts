@@ -2,9 +2,10 @@ import { makeAutoObservable } from 'mobx';
 import { computedFn } from 'mobx-utils';
 import { nanoid } from 'nanoid';
 import { getMonth, getYear, subMonth, YYYY, YYYYMM } from '../utils/date';
-import type { Account } from './Account';
+import { Optional } from '../utils/object';
+import type { AccountId } from './Account';
 import { Store } from './Store';
-import { Strategy } from './Strategy';
+import type { StrategyId } from './Strategy';
 
 export type WithdrawalId = string & { __withdrawalId__: never }
 
@@ -18,16 +19,17 @@ export enum WithdrawalType {
 
 export const RETIREMENT = '__RETIREMENT__'
 
-export type WithdrawalJSON = typeof Withdrawal.prototype.json
+export type WithdrawalSnapshotOut = typeof Withdrawal.prototype.snapshot
+export type WithdrawalSnapshotIn = Optional<WithdrawalSnapshotOut, 'id'>
 
 export { WithdrawalIcon } from '../components/icons/WithdrawalIcon';
 
 export class Withdrawal {
   store: Store
-  strategy: Strategy
 
   id: WithdrawalId
-  account: Account
+  parentStrategyId: StrategyId
+  accountId: AccountId
   amount: number | null
   type: WithdrawalType
   startDate: YYYYMM | typeof RETIREMENT
@@ -37,17 +39,15 @@ export class Withdrawal {
 
   constructor(
     store: Store,
-    strategy: Strategy,
-    { id, account, amount, type, startDate, repeating, endDate, taxable }:
-      Pick<Withdrawal, 'id' | 'account' | 'amount' | 'type' | 'startDate' | 'repeating' | 'endDate' | 'taxable'>
+    { id = Withdrawal.createId(), parentStrategyId, accountId, amount, type, startDate, repeating, endDate, taxable }: WithdrawalSnapshotIn
   ) {
-    makeAutoObservable(this, { store: false, account: false }, { autoBind: true })
+    makeAutoObservable(this, { store: false }, { autoBind: true })
 
     this.store = store
-    this.strategy = strategy
 
     this.id = id
-    this.account = account
+    this.parentStrategyId = parentStrategyId
+    this.accountId = accountId
     this.amount = amount
     this.type = type
     this.startDate = startDate
@@ -60,17 +60,11 @@ export class Withdrawal {
     return nanoid(10) as WithdrawalId
   }
 
-  static fromJSON(store: Store, strategy: Strategy, json: WithdrawalJSON, copy?: boolean) {
-    const { id, account, ...rest } = json
-
-    return new Withdrawal(store, strategy, {
-      id: copy ? Withdrawal.createId() : id,
-      account: store.accounts.get(account),
-      ...rest
-    })
+  static create(store: Store, snapshot: WithdrawalSnapshotIn) {
+    return new Withdrawal(store, snapshot)
   }
 
-  static getDescription({ type, amount }: Pick<WithdrawalJSON, 'type' | 'amount'>) {
+  static getDescription({ type, amount }: Pick<WithdrawalSnapshotIn, 'type' | 'amount'>) {
     const amountText = amount ?? '<Growth>'
 
     switch(type) {
@@ -87,6 +81,41 @@ export class Withdrawal {
     default:
       return 'Unknown'
     }
+  }
+
+  get snapshot() {
+    return {
+      id: this.id,
+      amount: this.amount,
+      type: this.type,
+      startDate: this.startDate,
+      repeating: this.repeating,
+      endDate: this.endDate,
+      taxable: this.taxable,
+      accountId: this.account.id,
+      parentStrategyId: this.parentStrategyId
+    }
+  }
+
+  restore(snapshot: WithdrawalSnapshotIn) {
+    const { parentStrategyId, accountId, amount, type, startDate, repeating, endDate, taxable } = snapshot
+
+    this.parentStrategyId = parentStrategyId
+    this.accountId = accountId
+    this.amount = amount
+    this.type = type
+    this.startDate = startDate
+    this.repeating = repeating
+    this.endDate = endDate
+    this.taxable = taxable
+  }
+
+  get parentStrategy() {
+    return this.store.strategies.get(this.parentStrategyId)
+  }
+
+  get account() {
+    return this.store.accounts.get(this.accountId)
   }
 
   get startDateValue() {
@@ -138,33 +167,4 @@ export class Withdrawal {
 
     return 0
   })
-
-  restore(json: WithdrawalJSON, copy?: boolean) {
-    const { account, amount, type, startDate, repeating, endDate, taxable } = json
-
-    this.account = this.store.accounts.get(account)
-    this.amount = amount
-    this.type = type
-    this.startDate = startDate
-    this.repeating = repeating
-    this.endDate = endDate
-    this.taxable = taxable
-  }
-
-  get json() {
-    return {
-      id: this.id,
-      amount: this.amount,
-      type: this.type,
-      startDate: this.startDate,
-      repeating: this.repeating,
-      endDate: this.endDate,
-      taxable: this.taxable,
-      account: this.account.id
-    }
-  }
-
-  toJSON() {
-    return this.json
-  }
 }

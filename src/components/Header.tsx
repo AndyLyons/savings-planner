@@ -57,10 +57,9 @@ export const Header = observer(function Header({ sx }: Props) {
 
   const onStrategyChanged = useAction((_, value: string) => {
     if (store.strategies.has(value)) {
-      const strategy = store.strategies.get(value)
-      store.strategy = strategy
+      store.strategyId = value
     } else {
-      store.strategy = null
+      store.strategyId = null
     }
   }, [])
 

@@ -1,16 +1,12 @@
 import { AccessTime, List, Percent, Person, ShortText } from '@mui/icons-material'
-import { Account, AccountIcon, AccountJSON } from '../../state/Account'
+import { AccountIcon, AccountSnapshotIn } from '../../state/Account'
 import { BalanceIcon } from '../../state/Balance'
 import { DialogType } from '../../state/Dialogs'
 import { Period } from '../../utils/date'
 import { useStore } from '../../utils/mobx'
 import { createDialog } from './createDialog'
 
-export const AccountDialog = createDialog<AccountJSON>('account', <AccountIcon />, {
-  id: {
-    type: 'generate',
-    generate: () => Account.createId()
-  },
+export const AccountDialog = createDialog<AccountSnapshotIn>('account', <AccountIcon />, {
   name: {
     autoFocus: true,
     type: 'string',
@@ -18,7 +14,7 @@ export const AccountDialog = createDialog<AccountJSON>('account', <AccountIcon /
     icon: <ShortText />,
     required: true
   },
-  owner: {
+  ownerId: {
     type: 'string',
     label: 'Owner',
     icon: <Person />,
@@ -46,7 +42,6 @@ export const AccountDialog = createDialog<AccountJSON>('account', <AccountIcon /
     type: 'collection',
     dialogType: DialogType.BALANCE,
     label: 'Balances',
-    getKey: (store, balance) => `${balance.date}`,
     getLabel: (store, balance) => `${balance.date} - £${balance.value}`,
     icon: <List />,
     itemIcon: <BalanceIcon />

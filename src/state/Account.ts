@@ -3,12 +3,14 @@ import { makeAutoObservable } from 'mobx'
 import { computedFn } from 'mobx-utils'
 import { nanoid } from 'nanoid'
 import { datesInYear, getMonth, Period, subMonth, YYYYMM, YYYY } from '../utils/date'
-import { Balance } from './Balance'
-import { Collection } from './Collection'
+import { Optional } from '../utils/object'
+import { Balance, BalanceSnapshotIn } from './Balance'
+import { configureCollection } from './Collection'
 import { Deposit } from './Deposit'
-import type { Person, PersonJSON } from './Person'
+import type { PersonId, PersonSnapshotOut } from './Person'
 import type { Store } from './Store'
 
+// TODO tax calculations are currently wrong, tax should be calculated at the person level across all of their accounts
 const TAX_BANDS = [
   { to: 12570, rate: 0 },
   { to: 50270, rate: 0.2 },
@@ -31,58 +33,80 @@ const getTax = (taxable: number): number => {
 
 export type AccountId = string & { __accountId__: never }
 
-export type AccountJSON = typeof Account.prototype.json
+export type AccountSnapshotOut = typeof Account.prototype.snapshot
+export type AccountSnapshotIn = Optional<AccountSnapshotOut, 'id'>
 
 export const AccountIcon = AccountBalance
 
+const Balances = configureCollection<Balance, YYYYMM, BalanceSnapshotIn>({
+  getId: balance => balance.date,
+  create: Balance.create,
+  sort: (a, b) => a.value - b.value
+})
+
 export class Account {
   store: Store
-  balances: Collection<Balance, YYYYMM> = new Collection({
-    getId: balance => balance.date,
-    fromJSON: json => Balance.fromJSON(this.store, this, json),
-    onDelete: () => {},
-    sort: (a, b) => a.value - b.value
-  })
+  balances: InstanceType<typeof Balances>
 
   id: AccountId
   name: string
   growth: number | null
   compoundPeriod: Period
-  owner: Person
+  ownerId: PersonId
 
   constructor(
     store: Store,
-    { id, name, growth, owner, compoundPeriod }:
-      Pick<Account, 'id' | 'name' | 'growth' | 'owner' | 'compoundPeriod'>
+    { id = Account.createId(), name, growth, ownerId, compoundPeriod, balances }: AccountSnapshotIn
   ) {
     makeAutoObservable(this, { store: false }, { autoBind: true })
 
     this.store = store
+    this.balances = new Balances(store, balances)
 
     this.id = id
     this.name = name
     this.growth = growth
     this.compoundPeriod = compoundPeriod
-    this.owner = owner
+    this.ownerId = ownerId
   }
 
   static createId() {
     return nanoid(10) as AccountId
   }
 
-  static fromJSON(store: Store, json: AccountJSON, copy?: boolean) {
-    const { owner, balances, id, ...rest } = json
-    const account = new Account(store, {
-      ...rest,
-      id: copy ? Account.createId() : id,
-      owner: store.people.get(owner)
-    })
-    account.balances.restore(balances, copy)
-    return account
+  static create(store: Store, snapshot: AccountSnapshotIn) {
+    return new Account(store, snapshot)
   }
 
-  static getDescription({ name }: Pick<AccountJSON, 'name'>, { name: ownerName }: Pick<PersonJSON, 'name'>) {
+  static getDescription({ name }: Pick<AccountSnapshotIn, 'name'>, { name: ownerName }: Pick<PersonSnapshotOut, 'name'>) {
     return `${name} (${ownerName})`
+  }
+
+  get snapshot() {
+    return {
+      id: this.id,
+      name: this.name,
+      growth: this.growth,
+      compoundPeriod: this.compoundPeriod,
+      ownerId: this.ownerId,
+      balances: this.balances.snapshot
+    }
+  }
+
+  restore(snapshot: AccountSnapshotIn) {
+    const { name, growth, compoundPeriod, ownerId, balances } = snapshot
+
+    this.name = name
+    this.growth = growth
+    this.compoundPeriod = compoundPeriod
+    this.ownerId = ownerId
+
+    this.balances.restore(balances)
+  }
+
+
+  get owner() {
+    return this.store.people.get(this.ownerId)
   }
 
   get rate() {
@@ -183,32 +207,6 @@ export class Account {
     }
 
     return this.getCalculatedBalance(date)
-  }
-
-  restore(json: AccountJSON, copy?: boolean) {
-    const { name, growth, compoundPeriod, owner: ownerId, balances } = json
-
-    this.name = name
-    this.growth = growth
-    this.compoundPeriod = compoundPeriod
-    this.owner = this.store.people.get(ownerId)
-
-    this.balances.restore(balances, copy)
-  }
-
-  get json() {
-    return {
-      id: this.id,
-      name: this.name,
-      growth: this.growth,
-      compoundPeriod: this.compoundPeriod,
-      owner: this.owner.id,
-      balances: this.balances.toJSON()
-    }
-  }
-
-  toJSON() {
-    return this.json
   }
 }
 

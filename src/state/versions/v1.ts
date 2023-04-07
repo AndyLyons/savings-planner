@@ -64,4 +64,4 @@ export type V1 = {
     }>
 }
 
-export const isV1 = (json: any): json is V1 => !('version' in json)
+export const isV1 = (snapshot: any): snapshot is V1 => !('version' in snapshot)

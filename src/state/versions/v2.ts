@@ -72,16 +72,16 @@ export type V2 = {
 
 const migrateYearToDate = (yyyy: number, isStart: boolean): YYYYMM => Number(`${yyyy}${isStart ? '01' : '12'}`) as YYYYMM
 
-export const isV2 = (json: any): json is V2 => json.version === 2
+export const isV2 = (snapshot: any): snapshot is V2 => snapshot.version === 2
 
-export const migrateV2 = (json: V1): V2 => {
+export const migrateV2 = (snapshot: V1): V2 => {
   return ({
-    ...json,
+    ...snapshot,
     version: 2,
     showMonths: false,
     perspective: null,
 
-    accounts: json.accounts.map(account => ({
+    accounts: snapshot.accounts.map(account => ({
       ...account,
       compoundPeriod: account.compoundPeriod === 1 ? Period.YEAR : Period.MONTH,
 
@@ -91,7 +91,7 @@ export const migrateV2 = (json: V1): V2 => {
       }))
     })),
 
-    strategies: json.strategies.map(strategy => ({
+    strategies: snapshot.strategies.map(strategy => ({
       ...strategy,
 
       deposits: strategy.deposits.map(({ startYear, endYear, ...deposit }) => ({
@@ -107,7 +107,7 @@ export const migrateV2 = (json: V1): V2 => {
       }))
     })),
 
-    people: json.people.map(person => ({
+    people: snapshot.people.map(person => ({
       ...person,
       dob: migrateYearToDate(person.dob, true)
     }))

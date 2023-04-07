@@ -4,7 +4,7 @@ import React from 'react'
 import { compareKeys } from '../utils/compare'
 import { addMonth, getNow, YYYYMM } from '../utils/date'
 import { Account, AccountId } from './Account'
-import { Collection } from './Collection'
+import { configureCollection } from './Collection'
 import { Dialogs } from './Dialogs'
 import { Menu } from './Menu'
 import { Persistence } from './Persistence'
@@ -12,10 +12,47 @@ import { Person, PersonId } from './Person'
 import { Strategy, StrategyId } from './Strategy'
 import { migrate } from './versions/migrate'
 
-export type StoreJSON = typeof Store.prototype.json
+export type StoreSnapshotOut = typeof Store.prototype.snapshot
+export type StoreSnapshotIn = StoreSnapshotOut
+
+const Accounts = configureCollection<Account, AccountId>({
+  getId: account => account.id,
+  create: Account.create,
+  onDelete: (store, account) => {
+    store.strategies.values.forEach(({ deposits, withdrawals }) => {
+      deposits.values.forEach(deposit => {
+        if (deposit.account === account) {
+          deposits.remove(deposit)
+        }
+      })
+
+      withdrawals.values.forEach(withdrawal => {
+        if (withdrawal.account === account) {
+          withdrawals.remove(withdrawal)
+        }
+      })
+    })
+  },
+  sort: compareKeys('owner.name', 'name')
+})
+
+const People = configureCollection<Person, PersonId>({
+  getId: person => person.id,
+  create: Person.create,
+  onDelete: (store, person) => {
+    person.accounts.forEach(account => store.accounts.remove(account))
+  },
+  sort: compareKeys('name')
+})
+
+const Strategies = configureCollection<Strategy, StrategyId>({
+  getId: strategy => strategy.id,
+  create: Strategy.create,
+  sort: compareKeys('name')
+})
 
 export class Store {
-  static version = 3
+  static version = 4
 
   globalGrowth: number = 2
   showAges: boolean = true
@@ -23,48 +60,16 @@ export class Store {
   start: YYYYMM
   end: YYYYMM
   retireOn: YYYYMM
-  strategy: Strategy | null = null
+  strategyId: StrategyId | null = null
   perspective: YYYYMM = getNow()
   showPerspective: boolean = false
 
   dialogs: Dialogs = new Dialogs(this)
   menu: Menu = new Menu(this)
-  accounts: Collection<Account, AccountId> = new Collection({
-    getId: account => account.id,
-    fromJSON: (json, copy) => Account.fromJSON(this, json, copy),
-    onDelete: account => {
-      this.strategies.values.forEach(({ deposits, withdrawals }) => {
-        deposits.values.forEach(deposit => {
-          if (deposit.account === account) {
-            deposits.remove(deposit)
-          }
-        })
 
-        withdrawals.values.forEach(withdrawal => {
-          if (withdrawal.account === account) {
-            withdrawals.remove(withdrawal)
-          }
-        })
-      })
-    },
-    sort: compareKeys('owner.name', 'name')
-  })
-
-  people: Collection<Person, PersonId> = new Collection({
-    getId: person => person.id,
-    fromJSON: (json, copy) => Person.fromJSON(this, json, copy),
-    onDelete: person => {
-      person.accounts.forEach(account => this.accounts.remove(account))
-    },
-    sort: compareKeys('name')
-  })
-
-  strategies: Collection<Strategy, StrategyId> = new Collection({
-    getId: strategy => strategy.id,
-    fromJSON: (json, copy) => Strategy.fromJSON(this, json, copy),
-    onDelete: () => {},
-    sort: compareKeys('name')
-  })
+  accounts: InstanceType<typeof Accounts>
+  people: InstanceType<typeof People>
+  strategies: InstanceType<typeof Strategies>
 
   constructor() {
     makeAutoObservable(this, undefined, { autoBind: true })
@@ -72,6 +77,32 @@ export class Store {
     this.start = 202001 as YYYYMM
     this.end = 208712 as YYYYMM
     this.retireOn = 203704 as YYYYMM
+
+    this.accounts = new Accounts(this)
+    this.people = new People(this)
+    this.strategies = new Strategies(this)
+  }
+
+  get snapshot() {
+    return {
+      globalGrowth: this.globalGrowth,
+      strategyId: this.strategyId,
+      people: this.people.snapshot,
+      accounts: this.accounts.snapshot,
+      strategies: this.strategies.snapshot,
+      version: Store.version
+    }
+  }
+
+  restore(snapshot: StoreSnapshotIn) {
+    const migrated = migrate(snapshot)
+
+    this.globalGrowth = migrated.globalGrowth
+    this.strategyId = migrated.strategyId
+
+    this.people.restore(migrated.people)
+    this.accounts.restore(migrated.accounts)
+    this.strategies.restore(migrated.strategies)
   }
 
   get dates() {
@@ -84,6 +115,10 @@ export class Store {
       dates.push(date)
     }
     return dates
+  }
+
+  get strategy() {
+    return this.strategyId ? this.strategies.get(this.strategyId) : null
   }
 
   getDate = computedFn((index: number) => {
@@ -117,33 +152,6 @@ export class Store {
 
   togglePerspective() {
     this.showPerspective = !this.showPerspective
-  }
-
-  get json() {
-    return {
-      globalGrowth: this.globalGrowth,
-      strategy: this.strategy?.id ?? null,
-      people: this.people.toJSON(),
-      accounts: this.accounts.toJSON(),
-      strategies: this.strategies.toJSON(),
-      version: Store.version
-    }
-  }
-
-  toJSON() {
-    return this.json
-  }
-
-  restore(json: StoreJSON, copy?: boolean) {
-    const migrated = migrate(json)
-
-    this.globalGrowth = migrated.globalGrowth
-
-    this.people.restore(migrated.people, copy)
-    this.accounts.restore(migrated.accounts, copy)
-    this.strategies.restore(migrated.strategies, copy)
-
-    this.strategy = migrated.strategy ? this.strategies.get(migrated.strategy) : null
   }
 }
 

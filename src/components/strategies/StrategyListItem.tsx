@@ -17,12 +17,12 @@ interface Props {
 export const StrategyListItem = observer(function StrategyListItem({ strategy, onClick }: Props) {
   const onClickStrategy = useBind(onClick, strategy)
   const copyStrategy = useAction((store) => {
-    const json = strategy.toJSON()
+    const { id, ...snapshot } = strategy.snapshot
     const copy = {
-      ...json,
-      name: `${json.name} (copy)`
+      ...snapshot,
+      name: `${snapshot.name} (copy)`
     }
-    store.strategies.create(copy, true)
+    store.strategies.create(copy)
   }, [])
 
   return (

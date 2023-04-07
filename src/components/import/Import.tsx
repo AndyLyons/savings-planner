@@ -21,7 +21,7 @@ export const Import = observer(function Import({ sx }: Props) {
     try {
       const decodedImportString = atob(importedString)
       const parsedImportString = JSON.parse(decodedImportString)
-      store.restore(parsedImportString, false)
+      store.restore(parsedImportString)
       setImportedString('')
       setImportSucceeded(true)
     } catch(e) {

@@ -1,12 +1,8 @@
 import { Event, ShortText } from '@mui/icons-material'
-import { Person, PersonIcon, PersonJSON } from '../../state/Person'
+import { PersonIcon, PersonSnapshotIn } from '../../state/Person'
 import { createDialog } from './createDialog'
 
-export const PersonDialog = createDialog<PersonJSON>('person', <PersonIcon />, {
-  id: {
-    type: 'generate',
-    generate: () => Person.createId()
-  },
+export const PersonDialog = createDialog<PersonSnapshotIn>('person', <PersonIcon />, {
   name: {
     autoFocus: true,
     label: 'Name',

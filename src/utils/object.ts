@@ -1,3 +1,5 @@
+export type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>
+
 export type ValueOf<T> = T[keyof T]
 export type KeyValues<T> = { [P in keyof T]: { key: P, value: T[P] } }[keyof T]
 export type KeyValuePairs<T> = { [P in keyof T]: [P, T[P]] }[keyof T]

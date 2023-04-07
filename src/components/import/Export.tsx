@@ -13,7 +13,7 @@ export const Export = observer(function Export({ sx }: Props) {
   const clearCopied = useBind(setCopied, undefined)
   const exportRef = useRef<HTMLInputElement>()
 
-  const serialized = useStore(JSON.stringify)
+  const serialized = useStore(store => JSON.stringify(store.snapshot))
   const exportString = btoa(serialized)
 
   const copyExport = useCallback(async () => {

@@ -137,7 +137,7 @@ const DepositsMenu = observer(function DepositsMenu({ account, date }: { account
 
   const createDeposit = useAction(({ dialogs, strategy }) => {
     if (strategy) {
-      dialogs.createDeposit(strategy, { account: account.id, startDate: date })
+      dialogs.createDeposit(strategy, { accountId: account.id, startDate: date })
     }
   }, [account, date])
 
@@ -166,7 +166,7 @@ const WithdrawalsMenu = observer(function WithdrawalsMenu({ account, date }: { a
 
   const createWithdrawal = useAction(({ dialogs, strategy }) => {
     if (strategy) {
-      dialogs.createWithdrawal(strategy, { account: account.id, startDate: date })
+      dialogs.createWithdrawal(strategy, { accountId: account.id, startDate: date })
     }
   }, [account, date])
 
