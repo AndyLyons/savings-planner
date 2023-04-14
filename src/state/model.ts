@@ -1,52 +1,82 @@
+import { Store } from './Store'
+
 type Constructor<P extends Array<any>, T> = new (...args: P) => T
 
-type JSONAble = {
-  toJSON(): unknown
-}
+const isModel = (thing: any): thing is Model<any, any> => thing instanceof Model
 
-const hasToJSON = (value: any): value is JSONAble =>
-  'toJSON' in value && typeof value.toJSON === 'function'
+type Primitive = string | boolean | number | null | undefined
 
-const isPrimitive = (value: any): value is string | boolean | number | null | undefined => {
+const isPrimitive = (value: any): value is Primitive => {
   const valueType = typeof value
   return valueType === 'string' || valueType === 'number' || valueType === 'boolean' || value == null
 }
 
-export type Snapshot<T> =
-  T extends JSONAble ? ReturnType<T['toJSON']>
-    : T extends Array<infer E> ? Array<Snapshot<E>>
-    : T extends object ? { [K in keyof T]: Snapshot<T[K]> }
-    : T
+type SnapshotValue<T> =
+  T extends Model<any, any> ? T['snapshot']
+  : T extends Primitive ? T
+  : never
 
-const getSnapshot = <T>(value: T): Snapshot<T> => (
-  hasToJSON(value) ? value.toJSON()
-    : isPrimitive(value) ? value
-      : Array.isArray(value) ? value.map(it => getSnapshot(it))
-        : Object.fromEntries(Object.entries(value).map(([key, entry]) => [key, getSnapshot(entry)]))
-) as Snapshot<T>
-
-export interface Model<T, K extends keyof T> {
-  restore(snapshot: Snapshot<Pick<T, K>>): void
-  toJSON(): Snapshot<Pick<T, K>>
+type Snapshot<T, K extends keyof T> = {
+  [P in K]: SnapshotValue<T[P]>
 }
 
-class Test implements Model<Test, 'thing'> {
-  thing: string = ''
-
-  restore(snapshot: { thing: string }): void {
-    this.thing = snapshot.thing
+const getSnapshot = <T>(value: T): SnapshotValue<T> => {
+  if (isModel(value)) {
+    return value.snapshot as SnapshotValue<T>
   }
 
-  toJSON() {
-    return {
-      thing: this.thing
+  if (isPrimitive(value)) {
+    return value as SnapshotValue<T>
+  }
+
+  throw new Error(`Snapshot for value of type ${typeof value} unsupported`)
+}
+
+export const $snapshotKeys = Symbol('snapshotKeys')
+
+export abstract class Model<T extends Model<any, any>, K extends Array<keyof T>> {
+  store: Store
+  [$snapshotKeys]: K
+
+  constructor(store: Store, snapshotKeys: K) {
+    this.store = store
+    this[$snapshotKeys] = snapshotKeys
+  }
+
+  restore(snapshot: SnapshotValue<Pick<T, K[number]>>) {
+    // TODO implement this
+  }
+
+  get snapshot(): Snapshot<T, K[number]> {
+    const keys = this[$snapshotKeys]
+    const snapshot = {} as Snapshot<T, K[number]>
+    for(let key of keys) {
+      const value = this[key as keyof this] as unknown as T[keyof T]
+      snapshot[key] = getSnapshot(value)
     }
+    return snapshot
+  }
+}
+
+class Test extends Model<Test, ['thing']> {
+  thing: string = ''
+  other: number = 2
+
+  constructor(store: Store) {
+    super(store, ['thing'])
+  }
+
+  method() {
+    const x = this.snapshot
+
   }
 }
 
 /**
  * Decorates an existing class with common model behaviour
+ * @deprecated
  */
+/*
 export const createModel = <
   T extends Constructor<Array<any>, any>,
   K extends Array<keyof InstanceType<T>>
@@ -55,7 +85,7 @@ export const createModel = <
   // super/subclasses so we'll just add the relevant model methods to the existing prototype
   Object.assign(model.prototype, {
     toJSON() {
-      const snapshot = {} as { [Key in K[number]]: Snapshot<InstanceType<T>[Key]> }
+      const snapshot = {} as { [Key in K[number]]: SnapshotValue<InstanceType<T>[Key]> }
       for(let key of keys) {
         const value = (this as InstanceType<T>)[key]
         snapshot[key] = getSnapshot(value)
@@ -66,3 +96,4 @@ export const createModel = <
 
   return model as Constructor<ConstructorParameters<T>, Model<InstanceType<T>, K[number]>>
 }
+*/

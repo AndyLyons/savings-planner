@@ -1,5 +1,6 @@
-import { action, computed } from 'mobx'
+import { action, computed, $mobx, isObservable, makeObservable } from 'mobx'
 import { DependencyList, EffectCallback, useContext, useEffect, useMemo } from 'react'
+import { $snapshotKeys } from '../state/model'
 import { Store, StoreContext } from '../state/Store'
 
 export function useStore(): Store
@@ -29,3 +30,42 @@ export const useActionEffect = (
   const cleanup = effect()
   return typeof cleanup === 'function' ? action(cleanup) : cleanup
 }), deps)
+
+
+const annotationsSymbol = Symbol('annotationsSymbol');
+const objectPrototype = Object.prototype;
+const ignoredFields = [$mobx, 'constructor', 'store', $snapshotKeys]
+
+/**
+ * A custom version of `makeAutoObservable` that supports subclasses.
+ *
+ * See https://github.com/mobxjs/mobx/discussions/2850
+ */
+export function makeObservableModel(target: any, overrides: any = {}, options?: any): void {
+  // Make sure nobody called makeObservable/etc. previously (eg in parent constructor)
+  if (isObservable(target)) {
+    throw new Error('Target must not be observable');
+  }
+
+  // Collect all fields from the prototype chain
+  let annotations = target[annotationsSymbol];
+
+  if (!annotations) {
+    annotations = {};
+    let current = target;
+    while (current && current !== objectPrototype) {
+      Reflect.ownKeys(current).forEach((key) => {
+        if (ignoredFields.includes(key)) return
+        annotations[key] = key in overrides ? overrides[key] : true;
+      });
+      current = Object.getPrototypeOf(current);
+    }
+    // Cache if class
+    const proto = Object.getPrototypeOf(target);
+    if (proto && proto !== objectPrototype) {
+      Object.defineProperty(proto, annotationsSymbol, { value: annotations });
+    }
+  }
+
+  return makeObservable(target, annotations, options);
+}
