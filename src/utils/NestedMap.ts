@@ -3,6 +3,8 @@ type Tail<T extends unknown[]> = T extends [infer _, ...infer R] ? R : never
 type Last<T extends unknown[]> = T extends [...infer _, infer R] ? R : never
 /* eslint-enable @typescript-eslint/no-unused-vars */
 
+const NONE = Symbol('NONE')
+
 class NestedMapInternal<K extends unknown[], V, L = Last<K>> {
   private map: Map<K[0], NestedMapInternal<Tail<K>, V, L> | V>
 
@@ -39,14 +41,14 @@ class NestedMapInternal<K extends unknown[], V, L = Last<K>> {
   }
 
   set(keys: K, value: V): void {
-    this._withNestedMap(keys, (map, key) => map.set(key, value))
+    this._withNestedMap(keys, (map, key) => map.set(key, value), NONE)
   }
 
   delete(keys: K): boolean {
     return this._withNestedMap(keys, (map, key) => map.delete(key), false)
   }
 
-  private _withNestedMap<R>(keys: K, handler: (map: Map<L, V>, key: L) => R, notFoundValue?: R): R {
+  private _withNestedMap<R>(keys: K, handler: (map: Map<L, V>, key: L) => R, notFoundValue: R | typeof NONE): R {
     if (keys.length === 0) {
       throw new Error('Keys array must not be empty')
     }
@@ -61,9 +63,9 @@ class NestedMapInternal<K extends unknown[], V, L = Last<K>> {
     let childMap = this.map.get(key)
 
     if (!this.map.has(key)) {
-      // If notFoundValue is provided then we can shortcut return early when the value isn't found.
-      // If it wasn't provided then we want to create all the missing nodes down to the leaf.
-      if (arguments.length === 3) {
+      // If NONE was provided then we want to create all the missing nodes down to the leaf,
+      // otherwise we can shortcut return early when the value isn't found.
+      if (notFoundValue !== NONE) {
         return notFoundValue as R
       }
 

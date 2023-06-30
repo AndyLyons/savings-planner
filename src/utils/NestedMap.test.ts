@@ -92,6 +92,13 @@ describe('NestedMap', () => {
 
       expect(map.get(['foo', 1])).toBe('bar')
     })
+    
+    test('should set the value associated with the specified key three levels deep', () => {
+      const map = new NestedMap<[string, number, boolean], unknown>()
+      map.set(['foo', 1, true], 'bar')
+  
+      expect(map.get(['foo', 1, true])).toBe('bar')
+    })
 
     test('should override the value associated with an existing key', () => {
       const map = new NestedMap<[string, number], unknown>()
