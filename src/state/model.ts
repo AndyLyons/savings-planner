@@ -1,8 +1,7 @@
+import { nanoid } from 'nanoid'
 import { Store } from './Store'
 
-type Constructor<P extends Array<any>, T> = new (...args: P) => T
-
-const isModel = (thing: any): thing is Model<any, any> => thing instanceof Model
+const isModel = (thing: any): thing is Model<any, any, any> => thing instanceof Model
 
 type Primitive = string | boolean | number | null | undefined
 
@@ -12,7 +11,7 @@ const isPrimitive = (value: any): value is Primitive => {
 }
 
 type SnapshotValue<T> =
-  T extends Model<any, any> ? T['snapshot']
+  T extends Model<any, any, any> ? T['snapshot']
   : T extends Primitive ? T
   : never
 
@@ -32,23 +31,46 @@ const getSnapshot = <T>(value: T): SnapshotValue<T> => {
   throw new Error(`Snapshot for value of type ${typeof value} unsupported`)
 }
 
-export const $snapshotKeys = Symbol('snapshotKeys')
+export const $SnapshotKeys = Symbol('snapshotKeys')
 
-export abstract class Model<T extends Model<any, any>, K extends Array<keyof T>> {
+/*
+TODO
+  - Add id property to every model
+  - Support id in snapshots: snapshout out should always have the id, for restore id should only be optional
+  - Static create method?
+  - Constructor takes snapshot to auto populate/initialise keys, inits ID if not provided
+*/
+export abstract class Model<T extends Model<any, any, any>, Id extends string, K extends Array<keyof T>> {
   store: Store
-  [$snapshotKeys]: K
+  id: Id
 
-  constructor(store: Store, snapshotKeys: K) {
+  [$SnapshotKeys]: K
+
+  constructor(store: Store, id: Id | undefined, snapshotKeys: K) {
     this.store = store
-    this[$snapshotKeys] = snapshotKeys
+    this.id = id ?? nanoid(10) as Id
+    this[$SnapshotKeys] = snapshotKeys
   }
 
-  restore(snapshot: SnapshotValue<Pick<T, K[number]>>) {
-    // TODO implement this
+  restore(snapshot: Snapshot<T, K[number]>) {
+    const keys = this[$SnapshotKeys]
+    for(let key of keys) {
+      const model = this as unknown as T
+      const current = model[key]
+      const value = snapshot[key] as unknown as T[keyof T]
+
+      if (isModel(current)) {
+        current.restore(value)
+      } else if (isPrimitive(current)) {
+        model[key] = value
+      } else {
+        throw new Error(`Restoring snapshot to value of type ${typeof current} unsupported`)
+      }
+    }
   }
 
   get snapshot(): Snapshot<T, K[number]> {
-    const keys = this[$snapshotKeys]
+    const keys = this[$SnapshotKeys]
     const snapshot = {} as Snapshot<T, K[number]>
     for(let key of keys) {
       const value = this[key as keyof this] as unknown as T[keyof T]
@@ -58,42 +80,19 @@ export abstract class Model<T extends Model<any, any>, K extends Array<keyof T>>
   }
 }
 
-class Test extends Model<Test, ['thing']> {
+type TestId = string & { _testId_: never }
+
+class Test extends Model<Test, TestId, ['thing']> {
   thing: string = ''
   other: number = 2
 
   constructor(store: Store) {
-    super(store, ['thing'])
+    super(store, undefined, ['thing'])
   }
 
   method() {
     const x = this.snapshot
 
+    this.restore({ thing: 'hi' })
   }
 }
-
-/**
- * Decorates an existing class with common model behaviour
- * @deprecated
- */
-/*
-export const createModel = <
-  T extends Constructor<Array<any>, any>,
-  K extends Array<keyof InstanceType<T>>
->(model: T, keys: K): Constructor<ConstructorParameters<T>, Model<InstanceType<T>, K[number]>> => {
-  // Ideally I'd use inheritance, but MobX doesn't have great support for observables with
-  // super/subclasses so we'll just add the relevant model methods to the existing prototype
-  Object.assign(model.prototype, {
-    toJSON() {
-      const snapshot = {} as { [Key in K[number]]: SnapshotValue<InstanceType<T>[Key]> }
-      for(let key of keys) {
-        const value = (this as InstanceType<T>)[key]
-        snapshot[key] = getSnapshot(value)
-      }
-      return snapshot
-    }
-  })
-
-  return model as Constructor<ConstructorParameters<T>, Model<InstanceType<T>, K[number]>>
-}
-*/

@@ -1,6 +1,6 @@
 import { action, computed, $mobx, isObservable, makeObservable } from 'mobx'
 import { DependencyList, EffectCallback, useContext, useEffect, useMemo } from 'react'
-import { $snapshotKeys } from '../state/model'
+import { $SnapshotKeys } from '../state/model'
 import { Store, StoreContext } from '../state/Store'
 
 export function useStore(): Store
@@ -34,14 +34,18 @@ export const useActionEffect = (
 
 const annotationsSymbol = Symbol('annotationsSymbol');
 const objectPrototype = Object.prototype;
-const ignoredFields = [$mobx, 'constructor', 'store', $snapshotKeys]
+const ignoredFields = [$mobx, 'constructor', 'store', $SnapshotKeys]
 
 /**
- * A custom version of `makeAutoObservable` that supports subclasses.
+ * A custom version of `makeAutoObservable` that supports subclassing.
+ *
+ * This is generally safe to use if you understand the limitations:
+ *   - No calling 'makeAutoObservable' or similar in parent classes, only the child implementation should call it
+ *   - Only use it on simple, known prototype chains, where you definitely want all the fields from parents to be observed
  *
  * See https://github.com/mobxjs/mobx/discussions/2850
  */
-export function makeObservableModel(target: any, overrides: any = {}, options?: any): void {
+export function makeAutoObservable(target: any, overrides: any = {}, options?: any): void {
   // Make sure nobody called makeObservable/etc. previously (eg in parent constructor)
   if (isObservable(target)) {
     throw new Error('Target must not be observable');
