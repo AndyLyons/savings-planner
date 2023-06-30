@@ -38,7 +38,7 @@ export const addMonth = (yyyymm: YYYYMM, numMonths = 1): YYYYMM => {
 export const subMonth = (yyyymm: YYYYMM, numMonths = 1): YYYYMM => addMonth(yyyymm, numMonths * -1)
 
 export const datesInYear = (year: YYYY): Array<YYYYMM> => {
-  let dates = []
+  const dates = []
   for(let month = 1 as MM; month <= 12; ++month) {
     dates.push(getYearMonth(year, month))
   }

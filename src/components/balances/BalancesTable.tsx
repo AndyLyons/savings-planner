@@ -371,7 +371,7 @@ function TableRowWrapper({ index, ...rest }: RowProps) {
   return index === 0 ? null : <TableRow index={index - 1} {...rest} />
 }
 
-const TableBody = forwardRef<HTMLDivElement>(function TableBody({ children, ...rest }, ref) {
+const TableBody = forwardRef<HTMLDivElement, React.PropsWithChildren<unknown>>(function TableBody({ children, ...rest }, ref) {
   return (
     <div ref={ref} {...rest}>
       <TableHeader />

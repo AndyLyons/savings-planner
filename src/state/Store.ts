@@ -54,15 +54,15 @@ const Strategies = configureCollection<Strategy, StrategyId>({
 export class Store {
   static version = 4
 
-  globalGrowth: number = 2
-  showAges: boolean = true
-  showMonths: boolean = false
+  globalGrowth = 2
+  showAges = true
+  showMonths = false
   start: YYYYMM
   end: YYYYMM
   retireOn: YYYYMM
   strategyId: StrategyId | null = null
   perspective: YYYYMM = getNow()
-  showPerspective: boolean = false
+  showPerspective = false
 
   dialogs: Dialogs = new Dialogs(this)
   menu: Menu = new Menu(this)

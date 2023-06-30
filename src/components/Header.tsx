@@ -1,9 +1,9 @@
 import { Close, Menu, ShowChart } from '@mui/icons-material';
-import { DatePicker } from '@mui/lab';
+import { DatePicker } from '@mui/x-date-pickers';
 import {
   AppBar, Hidden, Icon, IconButton,
-  SxProps, TextField, TextFieldProps,
-  Theme, ThemeProvider, Toolbar, Typography
+  SxProps, TextField, Theme,
+  ThemeProvider, Toolbar, Typography
 } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
@@ -12,8 +12,8 @@ import type { ChangeEvent } from '../utils/hooks';
 import { getTargetValue } from '../utils/hooks';
 import { useAction, useStore } from '../utils/mobx';
 import { useNavigateTo } from '../utils/router';
-import { darkTheme } from './App';
 import { SelectField } from './mui';
+import { darkTheme } from './theme';
 
 interface Props {
   sx?: SxProps<Theme>
@@ -88,15 +88,14 @@ export const Header = observer(function Header({ sx }: Props) {
           <DatePicker
             label='Retirement date'
             onChange={onRetireAtChanged}
-            renderInput={(props: TextFieldProps) => (
-              <TextField
-                {...props}
-                error={!retireOn.isValid}
-                fullWidth
-                size='small'
-                sx={{ ml: 1, width: '120px' }}
-              />
-            )}
+            slotProps={{
+              textField: {
+                error: !retireOn.isValid,
+                fullWidth: true,
+                size: 'small',
+                sx: { ml: 1, width: '120px' }
+              }
+            }}
             value={retireOn.value}
             views={['month', 'year']}
           />

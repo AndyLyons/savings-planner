@@ -18,7 +18,7 @@ export function SpeedDial({ children, sx, ...otherProps }: Props) {
     children,
     child =>
       isValidElement(child)
-        ? cloneElement(child, { tooltipOpen: !isDesktop })
+        ? cloneElement(child, { tooltipOpen: !isDesktop } as any)
         : child
   )
 

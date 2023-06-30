@@ -4,7 +4,7 @@ import type { Store } from './Store'
 export class Menu {
   store: Store
 
-  isOpen: boolean = false
+  isOpen = false
 
   constructor(store: Store) {
     makeAutoObservable(this, { store: false }, { autoBind: true })

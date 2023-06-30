@@ -13,7 +13,7 @@ export const compare = (a: any, b: any): number => {
 }
 
 export const compareKeys = <T, Path extends Array<string>>(...paths: Path) => (a: T, b: T) => {
-  for(let path of paths) {
+  for(const path of paths) {
     const compared = compare(pluck(a, path), pluck(b, path))
     if (compared !== 0) return compared
   }

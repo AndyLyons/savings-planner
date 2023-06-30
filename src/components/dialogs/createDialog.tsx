@@ -1,12 +1,14 @@
 import { Add, Delete } from '@mui/icons-material'
-import { DatePicker } from '@mui/lab'
+import { DatePicker } from '@mui/x-date-pickers'
 import {
   Box,
   Button, Checkbox, Dialog as MUIDialog, DialogActions, DialogContent,
-  DialogTitle, FormControl, FormControlLabel, FormLabel, IconButton, List, ListItemButton, ListItemIcon, ListItemText, Radio, RadioGroup, TextField, TextFieldProps, Typography
+  DialogTitle, FormControl, FormControlLabel, FormLabel, IconButton, List,
+  ListItemButton, ListItemIcon, ListItemText, Radio, RadioGroup, TextField,
+  Typography
 } from '@mui/material'
 import { observer } from 'mobx-react-lite'
-import React, { cloneElement, Fragment, ReactElement, useReducer, useState } from 'react'
+import { cloneElement, Fragment, ReactElement, useReducer, useState } from 'react'
 import type { DialogType } from '../../state/Dialogs'
 import type { Store } from '../../state/Store'
 import { useIsDesktop } from '../../utils/breakpoints'
@@ -14,7 +16,8 @@ import { fromYYYY, fromYYYYMM, isDate, toYYYY, toYYYYMM, YYYY, YYYYMM } from '..
 import { entries, KeyValues } from '../../utils/object'
 import { getTargetChecked, getTargetValue, useKeyPress, useStopEvent } from '../../utils/hooks'
 import { useStore } from '../../utils/mobx'
-import { Autocomplete, IconField } from '../mui'
+import { Autocomplete } from '../mui'
+import { FieldWrapper } from './FieldWrapper'
 
 type FieldType<T, V> =
   V extends YYYY ? {
@@ -68,17 +71,6 @@ type Fields<T> = {
 const isGenerateFieldEntry = <T, K extends keyof T>(entry: [K, Field<T, K>]): entry is [K, GenerateField<T[K]>] => {
   const [, field] = entry
   return field !== null && field.type === 'generate'
-}
-
-function FieldWrapper({ children, icon, isVisible }: React.PropsWithChildren<{ icon: ReactElement, isVisible: boolean }>) {
-  return (
-    <IconField
-      icon={icon}
-      sx={isVisible ? {} : { display: 'none' }}
-    >
-      {children}
-    </IconField>
-  )
 }
 
 export function createDialog<T>(name: string, icon: ReactElement, fields: Fields<T>, defaults: Partial<T> = {}) {
@@ -284,20 +276,19 @@ export function createDialog<T>(name: string, icon: ReactElement, fields: Fields
                       <DatePicker
                         disabled={isDisabled}
                         label={label}
-                        onChange={(value) => dispatch({
+                        onChange={(value: unknown) => dispatch({
                           key: name,
                           value: (isDate(value) ? toYYYY(value) : undefined) as unknown as T[keyof T]
                         })}
-                        renderInput={(props: TextFieldProps) => (
-                          <TextField
-                            {...props}
-                            autoFocus={autoFocus}
-                            fullWidth
-                            onKeyDown={onEnterKey}
-                            required={required}
-                            size='small'
-                          />
-                        )}
+                        slotProps={{
+                          textField: {
+                            autoFocus,
+                            fullWidth: true,
+                            onKeyDown: onEnterKey,
+                            required,
+                            size: 'small'
+                          }
+                        }}
                         value={state[name] ? fromYYYY(state[name] as unknown as YYYY) : null}
                         views={['year']}
                       />
@@ -318,20 +309,19 @@ export function createDialog<T>(name: string, icon: ReactElement, fields: Fields
                         <DatePicker
                           disabled={value === valueWhenConstant || isDisabled}
                           label={label}
-                          onChange={(value) => dispatch({
+                          onChange={(value: unknown) => dispatch({
                             key: name,
                             value: (isDate(value) ? toYYYY(value) : undefined) as unknown as T[keyof T]
                           })}
-                          renderInput={(props: TextFieldProps) => (
-                            <TextField
-                              {...props}
-                              autoFocus={autoFocus}
-                              fullWidth
-                              onKeyDown={onEnterKey}
-                              required={required}
-                              size='small'
-                            />
-                          )}
+                          slotProps={{
+                            textField: {
+                              autoFocus,
+                              fullWidth: true,
+                              onKeyDown: onEnterKey,
+                              required,
+                              size: 'small'
+                            }
+                          }}
                           value={value === valueWhenConstant ? fromYYYY(constantValue as unknown as YYYY) : value ? fromYYYY(value as unknown as YYYY) : null}
                           views={['year']}
                         />
@@ -352,20 +342,19 @@ export function createDialog<T>(name: string, icon: ReactElement, fields: Fields
                       <DatePicker
                         disabled={isDisabled}
                         label={label}
-                        onChange={(value) => dispatch({
+                        onChange={(value: unknown) => dispatch({
                           key: name,
                           value: (isDate(value) ? toYYYYMM(value) : undefined) as unknown as T[keyof T]
                         })}
-                        renderInput={(props: TextFieldProps) => (
-                          <TextField
-                            {...props}
-                            autoFocus={autoFocus}
-                            fullWidth
-                            onKeyDown={onEnterKey}
-                            required={required}
-                            size='small'
-                          />
-                        )}
+                        slotProps={{
+                          textField: {
+                            autoFocus,
+                            fullWidth: true,
+                            onKeyDown: onEnterKey,
+                            required,
+                            size: 'small'
+                          }
+                        }}
                         value={state[name] ? fromYYYYMM(state[name] as unknown as YYYYMM) : null}
                         views={['month', 'year']}
                       />
@@ -386,20 +375,19 @@ export function createDialog<T>(name: string, icon: ReactElement, fields: Fields
                         <DatePicker
                           disabled={value === valueWhenConstant || isDisabled}
                           label={label}
-                          onChange={(value) => dispatch({
+                          onChange={(value: unknown) => dispatch({
                             key: name,
                             value: (isDate(value) ? toYYYYMM(value) : undefined) as unknown as T[keyof T]
                           })}
-                          renderInput={(props: TextFieldProps) => (
-                            <TextField
-                              {...props}
-                              autoFocus={autoFocus}
-                              fullWidth
-                              onKeyDown={onEnterKey}
-                              required={required}
-                              size='small'
-                            />
-                          )}
+                          slotProps={{
+                            textField: {
+                              autoFocus,
+                              fullWidth: true,
+                              onKeyDown: onEnterKey,
+                              required,
+                              size: 'small'
+                            }
+                          }}
                           value={value === valueWhenConstant ? fromYYYYMM(constantValue as unknown as YYYYMM) : value ? fromYYYYMM(value as unknown as YYYYMM) : null}
                           views={['month', 'year']}
                         />
@@ -439,20 +427,19 @@ export function createDialog<T>(name: string, icon: ReactElement, fields: Fields
                           <DatePicker
                             disabled={isDisabled}
                             label='End date'
-                            onChange={(value) => dispatch({
+                            onChange={(value: unknown) => dispatch({
                               key: name,
                               value: (isDate(value) ? toYYYY(value) : undefined) as unknown as T[keyof T]
                             })}
-                            renderInput={(props: TextFieldProps) => (
-                              <TextField
-                                {...props}
-                                autoFocus={autoFocus}
-                                fullWidth
-                                onKeyDown={onEnterKey}
-                                required={required}
-                                size='small'
-                              />
-                            )}
+                            slotProps={{
+                              textField: {
+                                autoFocus,
+                                fullWidth: true,
+                                onKeyDown: onEnterKey,
+                                required,
+                                size: 'small'
+                              }
+                            }}
                             value={state[name] ? fromYYYY(state[name] as unknown as YYYY) : null}
                             views={['year']}
                           />

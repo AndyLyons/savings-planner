@@ -44,6 +44,7 @@ const Balances = configureCollection<Balance, YYYYMM, BalanceSnapshotIn>({
   sort: (a, b) => a.value - b.value
 })
 
+/*
 const computedAsyncFn = (getValue) => {
   const cache = new DeepMap()
   return (...params) => {
@@ -88,6 +89,7 @@ const computedAsyncFn = (getValue) => {
     return observableValue.current
   }
 }
+*/
 
 export class Account {
   store: Store

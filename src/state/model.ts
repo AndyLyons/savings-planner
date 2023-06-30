@@ -54,7 +54,7 @@ export abstract class Model<T extends Model<any, any, any>, Id extends string, K
 
   restore(snapshot: Snapshot<T, K[number]>) {
     const keys = this[$SnapshotKeys]
-    for(let key of keys) {
+    for(const key of keys) {
       const model = this as unknown as T
       const current = model[key]
       const value = snapshot[key] as unknown as T[keyof T]
@@ -72,7 +72,7 @@ export abstract class Model<T extends Model<any, any, any>, Id extends string, K
   get snapshot(): Snapshot<T, K[number]> {
     const keys = this[$SnapshotKeys]
     const snapshot = {} as Snapshot<T, K[number]>
-    for(let key of keys) {
+    for(const key of keys) {
       const value = this[key as keyof this] as unknown as T[keyof T]
       snapshot[key] = getSnapshot(value)
     }
@@ -80,11 +80,11 @@ export abstract class Model<T extends Model<any, any, any>, Id extends string, K
   }
 }
 
+/*
 type TestId = string & { _testId_: never }
-
 class Test extends Model<Test, TestId, ['thing']> {
-  thing: string = ''
-  other: number = 2
+  thing = ''
+  other = 2
 
   constructor(store: Store) {
     super(store, undefined, ['thing'])
@@ -96,3 +96,4 @@ class Test extends Model<Test, TestId, ['thing']> {
     this.restore({ thing: 'hi' })
   }
 }
+*/

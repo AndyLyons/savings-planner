@@ -9,9 +9,7 @@ import { useMin } from '../utils/breakpoints';
 import { useStore } from '../utils/mobx';
 import { useLocationChanged } from '../utils/router';
 import { ListItemButtonLink } from './mui/ListItemButtonLink';
-
-export const FULL_MENU_WIDTH = 250
-export const COLLAPSED_MENU_WIDTH = 57
+import { COLLAPSED_MENU_WIDTH, FULL_MENU_WIDTH } from './sizes';
 
 interface Props {
     sx?: SxProps<Theme>

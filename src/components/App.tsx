@@ -1,6 +1,6 @@
-import AdapterDateFns from '@mui/lab/AdapterDateFns';
-import LocalizationProvider from '@mui/lab/LocalizationProvider';
-import { Box, Container, createTheme, CssBaseline, ThemeProvider, Toolbar } from '@mui/material';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { Box, Container, CssBaseline, ThemeProvider, Toolbar } from '@mui/material';
 import { enGB } from 'date-fns/locale';
 import { observer } from 'mobx-react-lite';
 import { HashRouter, Route, Routes } from 'react-router-dom';
@@ -8,22 +8,10 @@ import { useStore } from '../utils/mobx';
 import { Balances } from './balances/Balances';
 import { Dialogs } from './dialogs/Dialogs';
 import { Header } from './Header';
-import { COLLAPSED_MENU_WIDTH, FULL_MENU_WIDTH, Menu } from './Menu';
+import { Menu } from './Menu'
+import { COLLAPSED_MENU_WIDTH, FULL_MENU_WIDTH } from './sizes';
 import { Settings } from './Settings';
-
-export const theme = createTheme({
-  palette: {
-    background: {
-      default: '#f5f5f5'
-    }
-  }
-})
-
-export const darkTheme = createTheme({
-  palette: {
-    mode: 'dark',
-  },
-});
+import { theme } from './theme';
 
 export const App = observer(function App() {
   const store = useStore()
@@ -31,7 +19,7 @@ export const App = observer(function App() {
 
   return (
     <ThemeProvider theme={theme}>
-      <LocalizationProvider dateAdapter={AdapterDateFns} locale={enGB}>
+      <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={enGB}>
         <HashRouter>
           <Box sx={{ display: 'flex', height: '100%' }}>
             <CssBaseline />
