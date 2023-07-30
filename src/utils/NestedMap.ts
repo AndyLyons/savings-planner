@@ -5,6 +5,8 @@ type Last<T extends unknown[]> = T extends [...infer _, infer R] ? R : never
 
 const NONE = Symbol('NONE')
 
+type VerifiedKey<T> = T & { __nestedKey__: never }
+
 class NestedMapInternal<K extends unknown[], V, L = Last<K>> {
   private map: Map<K[0], NestedMapInternal<Tail<K>, V, L> | V>
 
@@ -32,10 +34,12 @@ class NestedMapInternal<K extends unknown[], V, L = Last<K>> {
     this.map.clear()
   }
 
-  has(keys: K): boolean {
+  has(keys: K): keys is VerifiedKey<K> {
     return this._withNestedMap(keys, (map, key) => map.has(key), false)
   }
 
+  get(keys: VerifiedKey<K>): V
+  get(keys: K): V | undefined
   get(keys: K): V | undefined {
     return this._withNestedMap(keys, (map, key) => map.get(key), undefined)
   }
