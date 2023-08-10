@@ -3,9 +3,10 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react-lite'
 import { ShowAgesToggle } from '../common/ShowAgesToggle'
-import './Balances.css'
-import { BalancesTable } from './BalancesTable'
 import { ShowMonthsToggle } from '../common/ShowMonthsToggle'
+import { BalancesTable } from './BalancesTable'
+import { BasicBalancesTable } from './BasicBalancesTable'
+import './Balances.css'
 
 export const Balances = observer(function Balances() {
   return (
@@ -25,8 +26,9 @@ export const Balances = observer(function Balances() {
         <ShowMonthsToggle sx={{ mr: 2 }}  />
         <ShowAgesToggle sx={{ mr: 2 }} />
       </Box>
-      <Box sx={{ flexGrow: 1 }}>
+      <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
         <BalancesTable />
+        {/* <BasicBalancesTable /> */}
       </Box>
     </Paper>
   )

@@ -1,0 +1,12 @@
+tbody .tableColumn__date {
+  white-space: nowrap;
+  text-align: right;
+}
+
+.tableBody--hideAges .tableColumn__age {
+  display: none;
+}
+
+.tableBody--hideMonths .tableRow--midYear {
+  display: none;
+}

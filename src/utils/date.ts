@@ -16,7 +16,7 @@ export const subYear = (yyyy: YYYY, numYears = 1): YYYY => addYear(yyyy, numYear
 
 export const getYear = (yyyymm: YYYYMM): YYYY => Math.trunc(yyyymm / 100) as YYYY
 export const getMonth = (yyyymm: YYYYMM): MM => yyyymm % 100 as MM
-export const getYearMonth = (year: YYYY, month: MM): YYYYMM => year * 100 + month as YYYYMM
+export const getYYYYMM = (year: YYYY, month: MM): YYYYMM => year * 100 + month as YYYYMM
 
 export const getNow = (): YYYYMM => toYYYYMM(new Date())
 
@@ -40,12 +40,12 @@ export const subMonth = (yyyymm: YYYYMM, numMonths = 1): YYYYMM => addMonth(yyyy
 export const datesInYear = (year: YYYY): Array<YYYYMM> => {
   const dates = []
   for(let month = 1 as MM; month <= 12; ++month) {
-    dates.push(getYearMonth(year, month))
+    dates.push(getYYYYMM(year, month))
   }
   return dates
 }
 
-export const toYYYYMM = (date: Date): YYYYMM => getYearMonth(date.getFullYear() as YYYY, date.getMonth() + 1 as MM)
+export const toYYYYMM = (date: Date): YYYYMM => getYYYYMM(date.getFullYear() as YYYY, date.getMonth() + 1 as MM)
 export const fromYYYYMM = (yyyymm: YYYYMM): Date => {
   const date = new Date(0)
   const year = getYear(yyyymm)

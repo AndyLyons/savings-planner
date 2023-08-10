@@ -105,6 +105,14 @@ export class Store {
     this.strategies.restore(migrated.strategies)
   }
 
+  get allDates() {
+    const dates: Array<YYYYMM> = []
+    for (let date = this.start; date <= this.end; date = addMonth(date, 1)) {
+      dates.push(date)
+    }
+    return dates
+  }
+
   get dates() {
     const dates: Array<YYYYMM> = []
     for (
