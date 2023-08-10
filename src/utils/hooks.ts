@@ -1,4 +1,4 @@
-import { DependencyList, useCallback, useRef, useState } from 'react';
+import { DependencyList, useCallback, useEffect, useRef, useState } from 'react';
 
 type Cleanup = () => void
 type CallbackRef<E extends Element> = (element: E) => Cleanup | undefined
@@ -64,6 +64,34 @@ export function useKeyPress<E>(key: string, callback: (event: E) => void) {
       callback(e)
     }
   }, [callback, key])
+}
+
+/**
+ * Simple function debouncer
+ */
+export function useDebounceCallback<P extends readonly any[]>(callback: (...params: P) => void, ms: number): (...params: P) => void {
+  const timeout = useRef(-1)
+
+  const debounced = useCallback((...params: P) => {
+    const currentTimeout = timeout.current
+    if (currentTimeout >= 0) {
+      window.clearTimeout(currentTimeout)
+    }
+    
+    timeout.current = window.setTimeout(() => {
+      timeout.current = -1
+      callback(...params)
+    }, ms)
+  }, [callback, ms])
+  
+  useEffect(() => () => {
+    const currentTimeout = timeout.current
+    if (currentTimeout >= 0) {
+      window.clearTimeout(currentTimeout)
+    }
+  }, [])
+
+  return debounced
 }
 
 export function useBoolean(initialValue: boolean | (() => boolean)) {

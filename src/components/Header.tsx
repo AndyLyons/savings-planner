@@ -6,10 +6,10 @@ import {
   ThemeProvider, Toolbar, Typography
 } from '@mui/material';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { fromYYYYMM, isDate, toYYYYMM } from '../utils/date';
 import type { ChangeEvent } from '../utils/hooks';
-import { getTargetValue } from '../utils/hooks';
+import { getTargetValue, useDebounceCallback } from '../utils/hooks';
 import { useAction, useStore } from '../utils/mobx';
 import { useNavigateTo } from '../utils/router';
 import { SelectField } from './mui';
@@ -34,14 +34,18 @@ export const Header = observer(function Header({ sx }: Props) {
     isValid: true
   })
 
-  const onGrowthChanged = useAction((store, e: ChangeEvent) => {
+  const saveGrowth = useAction(useDebounceCallback((store, growth: number) => {
+    store.globalGrowth = growth
+  }, 200), [])
+
+  const onGrowthChanged = useCallback((e: ChangeEvent) => {
     const value = getTargetValue(e)
     const parsedValue = parseFloat(value)
     const isValid = !Number.isNaN(parsedValue)
     setGrowth({ value, isValid })
 
     if (isValid) {
-      store.globalGrowth = parsedValue
+      saveGrowth(parsedValue)
     }
   }, [])
 
