@@ -1,5 +1,5 @@
-import { SwapHoriz, VisibilityOutlined } from '@mui/icons-material'
-import { Box, Button, Divider, ListSubheader, Menu, MenuItem, SvgIcon, Tooltip } from '@mui/material'
+import { AltRoute, SwapHoriz, VisibilityOutlined } from '@mui/icons-material'
+import { Box, Button, Divider, IconButton, ListItem, ListItemButton, ListSubheader, Menu, MenuItem, SvgIcon, Tooltip } from '@mui/material'
 import classNames from 'classnames'
 import { format } from 'date-fns'
 import { observer } from 'mobx-react-lite'
@@ -122,11 +122,33 @@ const AddBalanceMenu = observer(function AddBalanceMenu({ account, date }: { acc
   )
 })
 
-const EditDepositMenu = observer(function DepositMenu({ deposit }: { deposit: Deposit }) {
+const EditDepositMenu = observer(function DepositMenu({ date, deposit }: { date: YYYYMM, deposit: Deposit }) {
   const editDeposit = useAction(store => store.dialogs.editDeposit(deposit), [deposit])
+  const forkDeposit = useAction(store => {
+    const { strategy } = store
+    if (strategy) {
+      const { id: _, ...depositSnapshot } = deposit.snapshot
+      store.dialogs.createDeposit(
+        strategy,
+        {
+          ...depositSnapshot,
+          startDate: date
+        },
+        () => {
+          deposit.endDate = date
+        }
+      )
+    }
+  }, [deposit])
 
   return (
-    <MenuItem onClick={editDeposit}>{deposit.description}</MenuItem>
+    <ListItem dense disablePadding secondaryAction={
+        <IconButton edge="end" onClick={forkDeposit} size='small'>
+          <AltRoute fontSize='inherit' />
+        </IconButton>
+    }>
+      <ListItemButton onClick={editDeposit}>{deposit.description}</ListItemButton>
+    </ListItem>
   )
 })
 
@@ -144,18 +166,40 @@ const DepositsMenu = observer(function DepositsMenu({ account, date }: { account
   return (
     <>
       {deposits.map(deposit => (
-        <EditDepositMenu key={deposit.id} deposit={deposit} />
+        <EditDepositMenu key={deposit.id} date={date} deposit={deposit} />
       ))}
       <MenuItem disabled={!currentStrategy} onClick={createDeposit}>Add...</MenuItem>
     </>
   )
 })
 
-const EditWithdrawalMenu = observer(function EditWithdrawalMenu({ withdrawal }: { withdrawal: Withdrawal }) {
-  const editDeposit = useAction(store => store.dialogs.editWithdrawal(withdrawal), [withdrawal])
+const EditWithdrawalMenu = observer(function EditWithdrawalMenu({ date, withdrawal }: { date: YYYYMM, withdrawal: Withdrawal }) {
+  const editWithdrawal = useAction(store => store.dialogs.editWithdrawal(withdrawal), [withdrawal])
+  const forkWithdrawal = useAction(store => {
+    const { strategy } = store
+    if (strategy) {
+      const { id: _, ...withdrawalSnapshot } = withdrawal.snapshot
+      store.dialogs.createWithdrawal(
+        strategy,
+        {
+          ...withdrawalSnapshot,
+          startDate: date
+        },
+        () => {
+          withdrawal.endDate = date
+        }
+      )
+    }
+  }, [withdrawal])
 
   return (
-    <MenuItem onClick={editDeposit}>{withdrawal.description}</MenuItem>
+    <ListItem dense disablePadding secondaryAction={
+      <IconButton edge="end" onClick={forkWithdrawal} size='small'>
+        <AltRoute fontSize='inherit' />
+      </IconButton>
+  }>
+    <ListItemButton onClick={editWithdrawal}>{withdrawal.description}</ListItemButton>
+  </ListItem>
   )
 })
 
@@ -173,7 +217,7 @@ const WithdrawalsMenu = observer(function WithdrawalsMenu({ account, date }: { a
   return (
     <>
       {withdrawals.map(withdrawal => (
-        <EditWithdrawalMenu key={withdrawal.id} withdrawal={withdrawal} />
+        <EditWithdrawalMenu key={withdrawal.id} date={date} withdrawal={withdrawal} />
       ))}
       <MenuItem disabled={!currentStrategy} onClick={createWithdrawal}>Add...</MenuItem>
     </>

@@ -7,6 +7,7 @@ import {
   ListItemButton, ListItemIcon, ListItemText, Radio, RadioGroup, TextField,
   Typography
 } from '@mui/material'
+import { runInAction } from 'mobx'
 import { observer } from 'mobx-react-lite'
 import { cloneElement, Fragment, ReactElement, useReducer, useState } from 'react'
 import type { DialogType } from '../../state/Dialogs'
@@ -121,15 +122,19 @@ export function createDialog<T>(name: string, icon: ReactElement, fields: Fields
 
     const onDoneClick = useStopEvent(() => {
       if (isValid) {
-        onDone(state)
-        onClose()
+        runInAction(() => {
+          onDone(state)
+          onClose()
+        })
       }
     })
 
     const onEnterKey = useKeyPress('Enter', onDoneClick)
     const onDeleteClick = useStopEvent(() => {
-      onDelete?.()
-      onClose()
+      runInAction(() => {
+        onDelete?.()
+        onClose()
+      })
     })
 
     return (

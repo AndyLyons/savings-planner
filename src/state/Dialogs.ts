@@ -69,51 +69,69 @@ export class Dialogs {
     this.stack.push(dialog)
   }
 
-  createPerson(initialValues: PersonDialogConfig['initialValues'] = {}) {
+  createPerson(initialValues: PersonDialogConfig['initialValues'] = {}, onCreate?: (person: Person) => void) {
     this.open({
       type: DialogType.PERSON,
       initialValues,
-      onDone: this.store.people.create
+      onDone: (snapshot) => {
+        const person = this.store.people.create(snapshot)
+        onCreate?.(person)
+      }
     })
   }
 
-  createAccount(initialValues: AccountDialogConfig['initialValues'] = {}) {
+  createAccount(initialValues: AccountDialogConfig['initialValues'] = {}, onCreate?: (account: Account) => void) {
     this.open({
       type: DialogType.ACCOUNT,
       initialValues,
-      onDone: this.store.accounts.create
+      onDone: (snapshot) => {
+        const account = this.store.accounts.create(snapshot)
+        onCreate?.(account)
+      }
     })
   }
 
-  createBalance(account: Account, initialValues: BalanceDialogConfig['initialValues']) {
+  createBalance(account: Account, initialValues: BalanceDialogConfig['initialValues'], onCreate?: (balance: Balance) => void) {
     this.open({
       type: DialogType.BALANCE,
       initialValues,
-      onDone: account.balances.create
+      onDone: (snapshot) => {
+        const balance = account.balances.create(snapshot)
+        onCreate?.(balance)
+      }
     })
   }
 
-  createStrategy(initialValues: StrategyDialogConfig['initialValues'] = {}) {
+  createStrategy(initialValues: StrategyDialogConfig['initialValues'] = {}, onCreate?: (strategy: Strategy) => void) {
     this.open({
       type: DialogType.STRATEGY,
       initialValues,
-      onDone: this.store.strategies.create
+      onDone: (snapshot) => {
+        const strategy = this.store.strategies.create(snapshot)
+        onCreate?.(strategy)
+      }
     })
   }
 
-  createDeposit(strategy: Strategy, initialValues: DepositDialogConfig['initialValues'] = {}) {
+  createDeposit(strategy: Strategy, initialValues: DepositDialogConfig['initialValues'] = {}, onCreate?: (deposit: Deposit) => void) {
     this.open({
       type: DialogType.DEPOSIT,
       initialValues,
-      onDone: strategy.deposits.create
+      onDone: (snapshot) => {
+        const deposit = strategy.deposits.create(snapshot)
+        onCreate?.(deposit)
+      }
     })
   }
 
-  createWithdrawal(strategy: Strategy, initialValues: WithdrawalDialogConfig['initialValues'] = {}) {
+  createWithdrawal(strategy: Strategy, initialValues: WithdrawalDialogConfig['initialValues'] = {}, onCreate?: (withdrawal: Withdrawal) => void) {
     this.open({
       type: DialogType.WITHDRAWAL,
       initialValues,
-      onDone: strategy.withdrawals.create
+      onDone: (snapshot) => {
+        const withdrawal = strategy.withdrawals.create(snapshot)
+        onCreate?.(withdrawal)
+      }
     })
   }
 
