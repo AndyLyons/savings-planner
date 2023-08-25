@@ -1,4 +1,4 @@
-import { Close, Menu, ShowChart } from '@mui/icons-material';
+import { Close, Menu, TrendingUp } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers';
 import {
   AppBar, Hidden, Icon, IconButton,
@@ -74,7 +74,7 @@ export const Header = observer(function Header({ sx }: Props) {
           {store.menu.isOpen ? <Close /> : <Menu />}
         </IconButton>
         <Hidden mdDown>
-          <Icon sx={{ mr: 1 }}><ShowChart /></Icon>
+          <Icon sx={{ mr: 1 }}><TrendingUp /></Icon>
           <Typography variant='h5' component='h1' onClick={navigateHome} sx={{ cursor: 'pointer' }}>
             Savings Planner
           </Typography>
