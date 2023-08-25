@@ -94,7 +94,10 @@ export class Dialogs {
   createBalance(account: Account, initialValues: BalanceDialogConfig['initialValues'], onCreate?: (balance: Balance) => void) {
     this.open({
       type: DialogType.BALANCE,
-      initialValues,
+      initialValues: {
+        accountId: account.id,
+        ...initialValues
+      },
       onDone: (snapshot) => {
         const balance = account.balances.create(snapshot)
         onCreate?.(balance)
@@ -116,7 +119,10 @@ export class Dialogs {
   createDeposit(strategy: Strategy, initialValues: DepositDialogConfig['initialValues'] = {}, onCreate?: (deposit: Deposit) => void) {
     this.open({
       type: DialogType.DEPOSIT,
-      initialValues,
+      initialValues: {
+        parentStrategyId: strategy.id,
+        ...initialValues
+      },
       onDone: (snapshot) => {
         const deposit = strategy.deposits.create(snapshot)
         onCreate?.(deposit)
@@ -127,7 +133,10 @@ export class Dialogs {
   createWithdrawal(strategy: Strategy, initialValues: WithdrawalDialogConfig['initialValues'] = {}, onCreate?: (withdrawal: Withdrawal) => void) {
     this.open({
       type: DialogType.WITHDRAWAL,
-      initialValues,
+      initialValues: {
+        parentStrategyId: strategy.id,
+        ...initialValues
+      },
       onDone: (snapshot) => {
         const withdrawal = strategy.withdrawals.create(snapshot)
         onCreate?.(withdrawal)
