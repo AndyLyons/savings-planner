@@ -8,6 +8,8 @@ import { BalancesTable } from './BalancesTable'
 import { BasicBalancesTable } from './BasicBalancesTable'
 import './Balances.css'
 
+const BASIC = false
+
 export const Balances = observer(function Balances() {
   return (
     <Paper sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1, overflow: 'hidden', p: 2 }}>
@@ -27,8 +29,7 @@ export const Balances = observer(function Balances() {
         <ShowAgesToggle sx={{ mr: 2 }} />
       </Box>
       <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
-        <BalancesTable />
-        {/* <BasicBalancesTable /> */}
+        {BASIC ? <BasicBalancesTable /> : <BalancesTable />}
       </Box>
     </Paper>
   )
