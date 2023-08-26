@@ -51,7 +51,7 @@
 }
 
 .table-row__now .table-column--date {
-  background-color: rgba(25, 118, 210, 0.1);
+  background-color: rgb(204, 230, 255);
 }
 
 .table-cell {
