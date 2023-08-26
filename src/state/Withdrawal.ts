@@ -67,19 +67,19 @@ export class Withdrawal {
   static getDescription({ type, amount }: Pick<WithdrawalSnapshotIn, 'type' | 'amount'>) {
     const amountText = amount ?? '<Growth>'
 
-    switch(type) {
-    case WithdrawalType.FIXED_PER_YEAR:
-      return `£${amountText} / year`
-    case WithdrawalType.FIXED_PER_MONTH:
-      return `£${amountText} / month`
-    case WithdrawalType.PERCENTAGE:
-      return `${amountText}% / year`
-    case WithdrawalType.STATIC_PERCENTAGE:
-      return `${amountText}% of initial / year`
-    case WithdrawalType.TAKE_INTEREST:
-      return 'Take interest'
-    default:
-      return 'Unknown'
+    switch (type) {
+      case WithdrawalType.FIXED_PER_YEAR:
+        return `£${amountText} / year`
+      case WithdrawalType.FIXED_PER_MONTH:
+        return `£${amountText} / month`
+      case WithdrawalType.PERCENTAGE:
+        return `${amountText}% / year`
+      case WithdrawalType.STATIC_PERCENTAGE:
+        return `${amountText}% of initial / year`
+      case WithdrawalType.TAKE_INTEREST:
+        return 'Take interest'
+      default:
+        return 'Unknown'
     }
   }
 
@@ -133,7 +133,7 @@ export class Withdrawal {
   isValidOn = computedFn((date: YYYYMM) => {
     const isSingleWithdrawal = !this.repeating && this.startDateValue === date
     const isRepeatingWithdrawal = this.repeating && this.endDate
-      && this.startDateValue <= date && date < this.endDate
+      && this.startDateValue <= date && date <= this.endDate
 
     return isSingleWithdrawal || isRepeatingWithdrawal
   })
@@ -141,7 +141,7 @@ export class Withdrawal {
   isValidIn = computedFn((year: YYYY) => {
     const isSingleWithdrawal = !this.repeating && getYear(this.startDateValue) === year
     const isRepeatingWithdrawal = this.repeating && this.endDate
-      && getYear(this.startDateValue) <= year && year <= getYear(subMonth(this.endDate))
+      && getYear(this.startDateValue) <= year && year <= getYear(this.endDate)
 
     return isSingleWithdrawal || isRepeatingWithdrawal
   })
