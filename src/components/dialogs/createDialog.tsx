@@ -139,7 +139,13 @@ export function createDialog<T>(name: string, icon: ReactElement, fields: Fields
 
     return (
       <MUIDialog fullWidth maxWidth='md' open onClose={onClose}>
-        <DialogTitle sx={{ display: 'flex', alignItems: 'center' }}>{iconWithMargin} {title} {name}</DialogTitle>
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center' }}>
+          {iconWithMargin} {title} {name}
+          {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            isEdit && <Box sx={{ position: 'absolute', right: '1em', color: 'grey', fontSize: 'small' }}>{(state as any).id ?? '<unknown>'}</Box>
+          }
+        </DialogTitle>
         <DialogContent sx={{ display: 'flex', flexDirection: 'column', pb: 0 }}>
           <Box sx={{ mt: 1 }} />
           {
