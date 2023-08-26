@@ -6,12 +6,12 @@ import { observer } from 'mobx-react-lite'
 import { forwardRef, useCallback, useMemo, useRef } from 'react'
 import AutoSizer from 'react-virtualized-auto-sizer'
 import type { ListChildComponentProps, ListItemKeySelector } from 'react-window'
-import { VariableSizeList  } from 'react-window'
+import { VariableSizeList } from 'react-window'
 import type { Account, AccountId } from '../../state/Account'
 import type { Deposit } from '../../state/Deposit'
 import type { PersonId } from '../../state/Person'
 import { Withdrawal } from '../../state/Withdrawal'
-import { fromYYYYMM, getYear, getMonth, subMonth, YYYYMM, getNow } from '../../utils/date'
+import { fromYYYYMM, getYear, getMonth, subMonth, YYYYMM, getNow, toMonth, getYYYYMM } from '../../utils/date'
 import { useBind, useBoolean } from '../../utils/hooks'
 import { useAction, useStore } from '../../utils/mobx'
 
@@ -115,7 +115,10 @@ const EditBalanceMenu = observer(function EditBalanceMenu({ account, date }: { a
 })
 
 const AddBalanceMenu = observer(function AddBalanceMenu({ account, date }: { account: Account, date: YYYYMM }) {
-  const createBalance = useAction(store => store.dialogs.createBalance(account, { date }), [date, account])
+  const createBalance = useAction(({ dialogs, showMonths }) => {
+    const startDate = showMonths ? date : getYYYYMM(getYear(date), toMonth(1))
+    dialogs.createBalance(account, { date: startDate })
+  }, [date, account])
 
   return (
     <MenuItem onClick={createBalance}>Add...</MenuItem>
@@ -124,18 +127,19 @@ const AddBalanceMenu = observer(function AddBalanceMenu({ account, date }: { acc
 
 const EditDepositMenu = observer(function DepositMenu({ date, deposit }: { date: YYYYMM, deposit: Deposit }) {
   const editDeposit = useAction(store => store.dialogs.editDeposit(deposit), [deposit])
-  const forkDeposit = useAction(store => {
-    const { strategy } = store
+  const splitDeposit = useAction(store => {
+    const { showMonths, strategy } = store
     if (strategy) {
       const { id: _, ...depositSnapshot } = deposit.snapshot
+      const startDate = showMonths ? date : getYYYYMM(getYear(date), toMonth(1))
       store.dialogs.createDeposit(
         strategy,
         {
           ...depositSnapshot,
-          startDate: date
+          startDate
         },
         () => {
-          deposit.endDate = date
+          deposit.endDate = subMonth(startDate)
         }
       )
     }
@@ -143,7 +147,7 @@ const EditDepositMenu = observer(function DepositMenu({ date, deposit }: { date:
 
   return (
     <ListItem dense disablePadding secondaryAction={
-      <IconButton edge="end" onClick={forkDeposit} size='small'>
+      <IconButton edge="end" onClick={splitDeposit} size='small'>
         <AltRoute fontSize='inherit' />
       </IconButton>
     }>
@@ -157,9 +161,10 @@ const DepositsMenu = observer(function DepositsMenu({ account, date }: { account
 
   const deposits = showMonths ? account.getDepositsForDate(date) : account.getDepositsForYear(getYear(date))
 
-  const createDeposit = useAction(({ dialogs, strategy }) => {
+  const createDeposit = useAction(({ dialogs, showMonths, strategy }) => {
     if (strategy) {
-      dialogs.createDeposit(strategy, { accountId: account.id, startDate: date })
+      const startDate = showMonths ? date : getYYYYMM(getYear(date), toMonth(1))
+      dialogs.createDeposit(strategy, { accountId: account.id, startDate })
     }
   }, [account, date])
 
@@ -175,18 +180,19 @@ const DepositsMenu = observer(function DepositsMenu({ account, date }: { account
 
 const EditWithdrawalMenu = observer(function EditWithdrawalMenu({ date, withdrawal }: { date: YYYYMM, withdrawal: Withdrawal }) {
   const editWithdrawal = useAction(store => store.dialogs.editWithdrawal(withdrawal), [withdrawal])
-  const forkWithdrawal = useAction(store => {
-    const { strategy } = store
+  const splitWithdrawal = useAction(store => {
+    const { showMonths, strategy } = store
     if (strategy) {
       const { id: _, ...withdrawalSnapshot } = withdrawal.snapshot
+      const startDate = showMonths ? date : getYYYYMM(getYear(date), toMonth(1))
       store.dialogs.createWithdrawal(
         strategy,
         {
           ...withdrawalSnapshot,
-          startDate: date
+          startDate
         },
         () => {
-          withdrawal.endDate = date
+          withdrawal.endDate = subMonth(date)
         }
       )
     }
@@ -194,7 +200,7 @@ const EditWithdrawalMenu = observer(function EditWithdrawalMenu({ date, withdraw
 
   return (
     <ListItem dense disablePadding secondaryAction={
-      <IconButton edge="end" onClick={forkWithdrawal} size='small'>
+      <IconButton edge="end" onClick={splitWithdrawal} size='small'>
         <AltRoute fontSize='inherit' />
       </IconButton>
     }>
@@ -208,9 +214,10 @@ const WithdrawalsMenu = observer(function WithdrawalsMenu({ account, date }: { a
 
   const withdrawals = showMonths ? account.getWithdrawalsForDate(date) : account.getWithdrawalsForYear(getYear(date))
 
-  const createWithdrawal = useAction(({ dialogs, strategy }) => {
+  const createWithdrawal = useAction(({ dialogs, showMonths, strategy }) => {
     if (strategy) {
-      dialogs.createWithdrawal(strategy, { accountId: account.id, startDate: date })
+      const startDate = showMonths ? date : getYYYYMM(getYear(date), toMonth(1))
+      dialogs.createWithdrawal(strategy, { accountId: account.id, startDate })
     }
   }, [account, date])
 

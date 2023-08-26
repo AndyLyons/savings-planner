@@ -1,6 +1,6 @@
 export enum Period {
   MONTH = 'month',
-  YEAR ='year'
+  YEAR = 'year'
 }
 
 // Represents a number representing a month/year
@@ -10,6 +10,16 @@ export type YYYYMM = number & { __yyyymm__: never }
 
 export const isDate = (date: unknown): date is Date =>
   date instanceof Date && !Number.isNaN(date.getTime())
+
+export const toMonth = (month: number): MM => {
+  if (month < 1 || 12 < month) throw Error(`Value <${month}> is not a valid month between 1 and 12`)
+  return month as MM
+}
+
+export const toYear = (year: number): YYYY => {
+  if (year < 1000 || 9999 < year) throw Error(`Value <${year}> is not a valid year between 1000 and 9999`)
+  return year as YYYY
+}
 
 export const addYear = (yyyy: YYYY, numYears = 1): YYYY => yyyy + numYears as YYYY
 export const subYear = (yyyy: YYYY, numYears = 1): YYYY => addYear(yyyy, numYears * -1)
@@ -39,7 +49,7 @@ export const subMonth = (yyyymm: YYYYMM, numMonths = 1): YYYYMM => addMonth(yyyy
 
 export const datesInYear = (year: YYYY): Array<YYYYMM> => {
   const dates = []
-  for(let month = 1 as MM; month <= 12; ++month) {
+  for (let month = 1 as MM; month <= 12; ++month) {
     dates.push(getYYYYMM(year, month))
   }
   return dates

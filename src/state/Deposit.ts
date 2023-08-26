@@ -109,18 +109,18 @@ export class Deposit {
     return Deposit.getDescription(this)
   }
 
-  isValidOn = computedFn((date: YYYYMM): boolean =>{
+  isValidOn = computedFn((date: YYYYMM): boolean => {
     const isSingleDeposit = !this.repeating && this.startDateValue === date
     const isRepeatingDeposit = this.repeating && this.endDateValue
-      && this.startDateValue <= date && date < this.endDateValue
+      && this.startDateValue <= date && date <= this.endDateValue
 
     return Boolean(isSingleDeposit || isRepeatingDeposit)
   })
 
-  isValidIn = computedFn((year: YYYY): boolean =>{
+  isValidIn = computedFn((year: YYYY): boolean => {
     const isSingleDeposit = !this.repeating && getYear(this.startDateValue) === year
     const isRepeatingDeposit = this.repeating && this.endDateValue
-      && getYear(this.startDateValue) <= year && year <= getYear(subMonth(this.endDateValue))
+      && getYear(this.startDateValue) <= year && year <= getYear(this.endDateValue)
 
     return Boolean(isSingleDeposit || isRepeatingDeposit)
   })
