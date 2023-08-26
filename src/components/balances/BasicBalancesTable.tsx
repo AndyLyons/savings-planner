@@ -24,27 +24,27 @@ const HeaderRows = observer(function HeaderRows() {
   const { people, accounts } = useStore()
   
   return (
-      <>
-        <tr>
-          <th className="tableColumn__date"/>
-          {people.values.map(person => (
-            <th key={person.id} className="tableColumn__age" />
-          ))}
-          <th />
-          <th colSpan={accounts.values.length}>Balances</th>
-        </tr>
-        <tr>
-          <th className="tableColumn__date">Date</th>
-          {people.values.map(person => (
-            <Header_PersonAge key={person.id} person={person} />
-          ))}
-          <th>Income</th>
-          <th>Total</th>
-          {accounts.values.map(account => (
-            <Header_AccountBalance key={account.id} account={account} />
-          ))}
-        </tr>
-      </>
+    <>
+      <tr>
+        <th className="tableColumn__date"/>
+        {people.values.map(person => (
+          <th key={person.id} className="tableColumn__age" />
+        ))}
+        <th />
+        <th colSpan={accounts.values.length}>Balances</th>
+      </tr>
+      <tr>
+        <th className="tableColumn__date">Date</th>
+        {people.values.map(person => (
+          <Header_PersonAge key={person.id} person={person} />
+        ))}
+        <th>Income</th>
+        <th>Total</th>
+        {accounts.values.map(account => (
+          <Header_AccountBalance key={account.id} account={account} />
+        ))}
+      </tr>
+    </>
   )
 })
 
@@ -87,7 +87,7 @@ const Row = observer(function Row({ date }: { date: YYYYMM }) {
     <tr className={classNames({
       'tableRow--endOfYear': isYearEnd,
       'tableRow--midYear': !isYearEnd
-      })}>
+    })}>
       <td className="tableColumn__date"><Cell_Date date={date} /></td>
       {people.values.map(person => (
         <td key={person.id} className="tableColumn__age"><Cell_Age date={date} person={person} /></td>

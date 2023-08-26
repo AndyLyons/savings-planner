@@ -51,7 +51,7 @@ export function Autocomplete<T extends string>({
           size='small'
         />
       }
-      value={value!}
+      value={value}
     />
   )
 }

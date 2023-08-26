@@ -28,9 +28,11 @@ export enum DialogType {
 }
 
 type DialogComponent = React.ComponentType<{
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   initialValues: any,
   onClose(): void
   onDelete?(): void
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onDone(details: any): void
 }>
 

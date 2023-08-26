@@ -4,6 +4,7 @@ import { isV2, migrateV2 } from './v2'
 import { isV3, migrateV3 } from './v3'
 import { isV4, migrateV4 } from './v4'
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function migrate(snapshot: any): StoreSnapshotOut {
   let migrated = snapshot
 

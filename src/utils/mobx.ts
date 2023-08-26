@@ -1,6 +1,5 @@
 import { action, computed, $mobx, isObservable, makeObservable } from 'mobx'
 import { DependencyList, EffectCallback, useContext, useEffect, useMemo } from 'react'
-import { $SnapshotKeys } from '../state/model'
 import { Store, StoreContext } from '../state/Store'
 
 export function useStore(): Store
@@ -25,7 +24,7 @@ export const useAction = <T extends Array<unknown>, R>(callback: (store: Store, 
 export const useActionEffect = (
   effect: EffectCallback,
   deps?: DependencyList
-// eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
 ) => useEffect(action(() => {
   const cleanup = effect()
   return typeof cleanup === 'function' ? action(cleanup) : cleanup
@@ -34,7 +33,7 @@ export const useActionEffect = (
 
 const annotationsSymbol = Symbol('annotationsSymbol');
 const objectPrototype = Object.prototype;
-const ignoredFields = [$mobx, 'constructor', 'store', $SnapshotKeys]
+const ignoredFields = [$mobx, 'constructor', 'store']
 
 /**
  * A custom version of `makeAutoObservable` that supports subclassing.
@@ -45,6 +44,7 @@ const ignoredFields = [$mobx, 'constructor', 'store', $SnapshotKeys]
  *
  * See https://github.com/mobxjs/mobx/discussions/2850
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function makeAutoObservable(target: any, overrides: any = {}, options?: any): void {
   // Make sure nobody called makeObservable/etc. previously (eg in parent constructor)
   if (isObservable(target)) {

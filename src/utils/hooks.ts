@@ -13,24 +13,24 @@ export function useCallbackRef<E extends Element>(callback: CallbackRef<E>, deps
 }
 
 export function useBind<
-    B extends readonly any[],
-    P extends readonly any[],
-    R
+  B extends readonly unknown[],
+  P extends readonly unknown[],
+  R
 >(callback: (...params: [...B, ...P]) => R, ...bound: B) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   return useCallback((...params: P) => callback(...bound, ...params), [callback, ...bound])
 }
 
 export function useBindArr<
-  B extends readonly any[],
-  P extends readonly any[],
+  B extends readonly unknown[],
+  P extends readonly unknown[],
   R
 >(callback: (...params: [...B, ...P]) => R, bound: [...B]) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   return useCallback((...params: P) => callback(...bound, ...params), [callback, ...bound])
 }
 
-export function useIf<P extends readonly any[]>(
+export function useIf<P extends readonly unknown[]>(
   predicate: (...params: P) => boolean,
   callback?: (...params: P) => void
 ) {
@@ -69,7 +69,7 @@ export function useKeyPress<E>(key: string, callback: (event: E) => void) {
 /**
  * Simple function debouncer
  */
-export function useDebounceCallback<P extends readonly any[]>(callback: (...params: P) => void, ms: number): (...params: P) => void {
+export function useDebounceCallback<P extends readonly unknown[]>(callback: (...params: P) => void, ms: number): (...params: P) => void {
   const timeout = useRef(-1)
 
   const debounced = useCallback((...params: P) => {
@@ -77,13 +77,13 @@ export function useDebounceCallback<P extends readonly any[]>(callback: (...para
     if (currentTimeout >= 0) {
       window.clearTimeout(currentTimeout)
     }
-    
+
     timeout.current = window.setTimeout(() => {
       timeout.current = -1
       callback(...params)
     }, ms)
   }, [callback, ms])
-  
+
   useEffect(() => () => {
     const currentTimeout = timeout.current
     if (currentTimeout >= 0) {
@@ -102,7 +102,7 @@ export function useBoolean(initialValue: boolean | (() => boolean)) {
 
 type InitialState<T> = T | (() => T)
 
-export function useEventState<T, P extends readonly any[]>(
+export function useEventState<T, P extends readonly unknown[]>(
   initialState: InitialState<T>,
   getEventState: (...params: P) => T | undefined
 ) {

@@ -10,7 +10,7 @@ type YYYYMM = number & { __yyyymm__: never }
 
 enum Period {
   MONTH = 'month',
-  YEAR ='year'
+  YEAR = 'year'
 }
 
 enum WithdrawalType {
@@ -25,9 +25,9 @@ export type V3 = {
   globalGrowth: number;
   strategy: StrategyId | null;
   people: {
-      id: PersonId;
-      name: string;
-      dob: YYYYMM;
+    id: PersonId;
+    name: string;
+    dob: YYYYMM;
   }[];
   accounts: {
     id: AccountId;
@@ -36,21 +36,21 @@ export type V3 = {
     compoundPeriod: Period;
     owner: PersonId;
     balances: {
-        date: YYYYMM;
-        value: number;
+      date: YYYYMM;
+      value: number;
     }[];
   }[];
   strategies: {
     id: StrategyId;
     name: string;
     deposits: {
-        id: DepositId;
-        amount: number;
-        startDate: YYYYMM | '__START__';
-        repeating: boolean;
-        endDate: YYYYMM | '__RETIREMENT__' | null;
-        period: Period;
-        account: AccountId;
+      id: DepositId;
+      amount: number;
+      startDate: YYYYMM | '__START__';
+      repeating: boolean;
+      endDate: YYYYMM | '__RETIREMENT__' | null;
+      period: Period;
+      account: AccountId;
     }[];
     withdrawals: {
       id: WithdrawalId;
@@ -66,8 +66,10 @@ export type V3 = {
   version: 3;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const isV3 = (snapshot: any): snapshot is V3 => snapshot.version === 3
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const migrateV3 = ({ showIncomes, showAges, showMonths, perspective, ...rest }: V2): V3 => {
   return {
     ...rest,

@@ -10,14 +10,14 @@ import { useBind } from '../../utils/hooks'
 import { useAction } from '../../utils/mobx'
 
 interface Props {
-    strategy: Strategy,
-    onClick: (strategy: Strategy) => void
+  strategy: Strategy,
+  onClick: (strategy: Strategy) => void
 }
 
 export const StrategyListItem = observer(function StrategyListItem({ strategy, onClick }: Props) {
   const onClickStrategy = useBind(onClick, strategy)
   const copyStrategy = useAction((store) => {
-    const { id, ...snapshot } = strategy.snapshot
+    const { id: _, ...snapshot } = strategy.snapshot
     const copy = {
       ...snapshot,
       name: `${snapshot.name} (copy)`

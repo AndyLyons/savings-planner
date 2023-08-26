@@ -21,7 +21,7 @@ type Pluck<T, Path extends string> = Path extends `${infer Key}.${infer Next}` ?
 
 export function pluck<T, P extends string>(source: T, path: P): Pluck<T, P> {
   const paths = path.split('.')
-  return paths.reduce((node: any, path) => {
-    return node !== null && node !== undefined ? node[path] : undefined
+  return paths.reduce((node: unknown, path) => {
+    return node !== null && node !== undefined ? (node as Record<string, unknown>)[path] : undefined
   }, source) as unknown as Pluck<T, P>
 }

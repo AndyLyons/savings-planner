@@ -34,9 +34,9 @@ export const Header = observer(function Header({ sx }: Props) {
     isValid: true
   })
 
-  const saveGrowth = useAction(useDebounceCallback((store, growth: number) => {
+  const saveGrowth = useDebounceCallback(useAction((store, growth: number) => {
     store.globalGrowth = growth
-  }, 200), [])
+  }, []), 200)
 
   const onGrowthChanged = useCallback((e: ChangeEvent) => {
     const value = getTargetValue(e)
@@ -47,7 +47,7 @@ export const Header = observer(function Header({ sx }: Props) {
     if (isValid) {
       saveGrowth(parsedValue)
     }
-  }, [])
+  }, [saveGrowth])
 
   const onRetireAtChanged = useAction((_, value: Date | null) => {
     const parsedValue = isDate(value) ? toYYYYMM(value) : null
@@ -111,7 +111,7 @@ export const Header = observer(function Header({ sx }: Props) {
             label='Growth %'
             onChange={onGrowthChanged}
             size='small'
-            sx={{ml: 1, width: '80px' }}
+            sx={{ ml: 1, width: '80px' }}
             type='number'
             value={growth.value}
           />

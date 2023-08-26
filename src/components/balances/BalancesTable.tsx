@@ -143,9 +143,9 @@ const EditDepositMenu = observer(function DepositMenu({ date, deposit }: { date:
 
   return (
     <ListItem dense disablePadding secondaryAction={
-        <IconButton edge="end" onClick={forkDeposit} size='small'>
-          <AltRoute fontSize='inherit' />
-        </IconButton>
+      <IconButton edge="end" onClick={forkDeposit} size='small'>
+        <AltRoute fontSize='inherit' />
+      </IconButton>
     }>
       <ListItemButton onClick={editDeposit}>{deposit.description}</ListItemButton>
     </ListItem>
@@ -197,9 +197,9 @@ const EditWithdrawalMenu = observer(function EditWithdrawalMenu({ date, withdraw
       <IconButton edge="end" onClick={forkWithdrawal} size='small'>
         <AltRoute fontSize='inherit' />
       </IconButton>
-  }>
-    <ListItemButton onClick={editWithdrawal}>{withdrawal.description}</ListItemButton>
-  </ListItem>
+    }>
+      <ListItemButton onClick={editWithdrawal}>{withdrawal.description}</ListItemButton>
+    </ListItem>
   )
 })
 

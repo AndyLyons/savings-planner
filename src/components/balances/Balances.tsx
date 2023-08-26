@@ -25,7 +25,7 @@ export const Balances = observer(function Balances() {
         mb: 1,
         mt: 1
       }}>
-        <ShowMonthsToggle sx={{ mr: 2 }}  />
+        <ShowMonthsToggle sx={{ mr: 2 }} />
         <ShowAgesToggle sx={{ mr: 2 }} />
       </Box>
       <Box sx={{ flexGrow: 1, overflow: 'auto' }}>

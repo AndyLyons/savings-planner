@@ -10,7 +10,7 @@ type YYYYMM = number & { __yyyymm__: never }
 
 enum Period {
   MONTH = 'month',
-  YEAR ='year'
+  YEAR = 'year'
 }
 
 enum WithdrawalType {
@@ -29,9 +29,9 @@ export type V2 = {
   perspective: YYYYMM | null;
   strategy: StrategyId | null;
   people: {
-      id: PersonId;
-      name: string;
-      dob: YYYYMM;
+    id: PersonId;
+    name: string;
+    dob: YYYYMM;
   }[];
   accounts: {
     id: AccountId;
@@ -40,21 +40,21 @@ export type V2 = {
     compoundPeriod: Period;
     owner: PersonId;
     balances: {
-        date: YYYYMM;
-        value: number;
+      date: YYYYMM;
+      value: number;
     }[];
   }[];
   strategies: {
     id: StrategyId;
     name: string;
     deposits: {
-        id: DepositId;
-        amount: number;
-        startDate: YYYYMM | '__START__';
-        repeating: boolean;
-        endDate: YYYYMM | '__RETIREMENT__' | null;
-        period: Period;
-        account: AccountId;
+      id: DepositId;
+      amount: number;
+      startDate: YYYYMM | '__START__';
+      repeating: boolean;
+      endDate: YYYYMM | '__RETIREMENT__' | null;
+      period: Period;
+      account: AccountId;
     }[];
     withdrawals: {
       id: WithdrawalId;
@@ -72,6 +72,7 @@ export type V2 = {
 
 const migrateYearToDate = (yyyy: number, isStart: boolean): YYYYMM => Number(`${yyyy}${isStart ? '01' : '12'}`) as YYYYMM
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const isV2 = (snapshot: any): snapshot is V2 => snapshot.version === 2
 
 export const migrateV2 = (snapshot: V1): V2 => {

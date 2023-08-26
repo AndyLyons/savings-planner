@@ -518,6 +518,7 @@ export function createDialog<T>(name: string, icon: ReactElement, fields: Fields
                     const isDesktop = useIsDesktop()
                     const items = (state[name] ?? []) as unknown as Array<unknown>
 
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const onEdit = (item: any, index: number) => store.dialogs.open({
                       type: field.dialogType,
                       initialValues: item,

@@ -18,6 +18,7 @@ export function SpeedDial({ children, sx, ...otherProps }: Props) {
     children,
     child =>
       isValidElement(child)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ? cloneElement(child, { tooltipOpen: !isDesktop } as any)
         : child
   )

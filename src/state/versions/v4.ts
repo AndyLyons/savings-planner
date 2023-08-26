@@ -10,7 +10,7 @@ type YYYYMM = number & { __yyyymm__: never }
 
 enum Period {
   MONTH = 'month',
-  YEAR ='year'
+  YEAR = 'year'
 }
 
 enum WithdrawalType {
@@ -69,6 +69,7 @@ export type V4 = {
   version: 4;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const isV4 = (snapshot: any): snapshot is V4 => snapshot.version === 4
 
 export const migrateV4 = ({ strategy, ...snapshot }: V3): V4 => {
