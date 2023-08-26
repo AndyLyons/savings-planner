@@ -1,5 +1,8 @@
 # TODO List
 
+* Use the 'payout annuity' formula to add an 'empty account in X years' option to withdrawals
+  * https://ua.pressbooks.pub/collegealgebraformanagerialscience/chapter/8-3-payout-annuities
+  * This would only work if no other deposits/withdrawals occur - I think that's OK, it can still be an option but other deposits/withdrawals will mess up the numbers
 * Adding an item to a Collection should also set the ID of the parent on the child
   * currently this is handled by Dialogs.ts initial values, but this feels a bit messy
 * Variable support
