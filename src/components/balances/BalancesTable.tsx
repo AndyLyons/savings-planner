@@ -1,4 +1,4 @@
-import { AltRoute, SwapHoriz, VisibilityOutlined } from '@mui/icons-material'
+import { AltRoute, Close, SwapHoriz, VisibilityOutlined } from '@mui/icons-material'
 import { Box, Button, Divider, IconButton, ListItem, ListItemButton, ListSubheader, Menu, MenuItem, SvgIcon, Tooltip } from '@mui/material'
 import classNames from 'classnames'
 import { format } from 'date-fns'
@@ -127,6 +127,7 @@ const AddBalanceMenu = observer(function AddBalanceMenu({ account, date }: { acc
 
 const EditDepositMenu = observer(function DepositMenu({ date, deposit }: { date: YYYYMM, deposit: Deposit }) {
   const editDeposit = useAction(store => store.dialogs.editDeposit(deposit), [deposit])
+
   const splitDeposit = useAction(store => {
     const { showMonths, strategy } = store
     if (strategy) {
@@ -145,13 +146,22 @@ const EditDepositMenu = observer(function DepositMenu({ date, deposit }: { date:
     }
   }, [deposit])
 
+  const stopDeposit = useAction(({ showMonths }) => {
+    deposit.endDate = showMonths ? subMonth(date) : subMonth(getYYYYMM(getYear(date), toMonth(1)))
+  }, [])
+
   return (
     <ListItem dense disablePadding secondaryAction={
-      <IconButton edge="end" onClick={splitDeposit} size='small'>
-        <AltRoute fontSize='inherit' />
-      </IconButton>
+      <>
+        <IconButton edge="end" onClick={splitDeposit} size='small'>
+          <AltRoute fontSize='inherit' />
+        </IconButton>
+        <IconButton edge="end" onClick={stopDeposit} size='small'>
+          <Close fontSize='inherit' />
+        </IconButton>
+      </>
     }>
-      <ListItemButton onClick={editDeposit}>{deposit.description}</ListItemButton>
+      <ListItemButton onClick={editDeposit} sx={{ paddingRight: '70px !important' }}>{deposit.description}</ListItemButton>
     </ListItem>
   )
 })
@@ -180,6 +190,7 @@ const DepositsMenu = observer(function DepositsMenu({ account, date }: { account
 
 const EditWithdrawalMenu = observer(function EditWithdrawalMenu({ date, withdrawal }: { date: YYYYMM, withdrawal: Withdrawal }) {
   const editWithdrawal = useAction(store => store.dialogs.editWithdrawal(withdrawal), [withdrawal])
+
   const splitWithdrawal = useAction(store => {
     const { showMonths, strategy } = store
     if (strategy) {
@@ -198,13 +209,22 @@ const EditWithdrawalMenu = observer(function EditWithdrawalMenu({ date, withdraw
     }
   }, [withdrawal])
 
+  const stopWithdrawal = useAction(({ showMonths }) => {
+    withdrawal.endDate = showMonths ? subMonth(date) : subMonth(getYYYYMM(getYear(date), toMonth(1)))
+  }, [])
+
   return (
     <ListItem dense disablePadding secondaryAction={
-      <IconButton edge="end" onClick={splitWithdrawal} size='small'>
-        <AltRoute fontSize='inherit' />
-      </IconButton>
+      <>
+        <IconButton edge="end" onClick={splitWithdrawal} size='small'>
+          <AltRoute fontSize='inherit' />
+        </IconButton>
+        <IconButton edge="end" onClick={stopWithdrawal} size='small'>
+          <Close fontSize='inherit' />
+        </IconButton>
+      </>
     }>
-      <ListItemButton onClick={editWithdrawal}>{withdrawal.description}</ListItemButton>
+      <ListItemButton onClick={editWithdrawal} sx={{ paddingRight: '70px !important' }}>{withdrawal.description}</ListItemButton>
     </ListItem>
   )
 })
