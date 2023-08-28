@@ -1,8 +1,7 @@
 import { makeAutoObservable } from 'mobx'
-import { computedFn } from 'mobx-utils'
 import React from 'react'
 import { compareKeys } from '../utils/compare'
-import { addMonth, getNow, YYYYMM } from '../utils/date'
+import { addMonth, getNow, asYear, YYYY, YYYYMM, getYearStart, getYearEnd, getMonth } from '../utils/date'
 import { Account, AccountId } from './Account'
 import { configureCollection } from './Collection'
 import { Dialogs } from './Dialogs'
@@ -52,14 +51,14 @@ const Strategies = configureCollection<Strategy, StrategyId>({
 })
 
 export class Store {
-  static version = 4
+  static version = 5
 
   globalGrowth = 2
   showAges = true
   showMonths = false
-  start: YYYYMM
-  end: YYYYMM
-  retireOn: YYYYMM
+  start: YYYY
+  end: YYYY
+  retireOn: YYYY
   strategyId: StrategyId | null = null
   perspective: YYYYMM = getNow()
   showPerspective = false
@@ -74,9 +73,9 @@ export class Store {
   constructor() {
     makeAutoObservable(this, undefined, { autoBind: true })
 
-    this.start = 202001 as YYYYMM
-    this.end = 208712 as YYYYMM
-    this.retireOn = 203704 as YYYYMM
+    this.start = asYear(2020)
+    this.end = asYear(2087)
+    this.retireOn = asYear(2037)
 
     this.accounts = new Accounts(this)
     this.people = new People(this)
@@ -107,31 +106,19 @@ export class Store {
 
   get allDates() {
     const dates: Array<YYYYMM> = []
-    for (let date = this.start; date <= this.end; date = addMonth(date, 1)) {
+    for (let date = getYearStart(this.start); date <= getYearEnd(this.end); date = addMonth(date, 1)) {
       dates.push(date)
     }
     return dates
   }
 
-  get dates() {
-    const dates: Array<YYYYMM> = []
-    for (
-      let date = this.showMonths ? this.start : addMonth(this.start, 11);
-      date <= this.end;
-      date = addMonth(date, this.showMonths ? 1 : 12)
-    ) {
-      dates.push(date)
-    }
-    return dates
+  get visibleDates() {
+    return this.showMonths ? this.allDates : this.allDates.filter(date => getMonth(date) === 12)
   }
 
   get strategy() {
     return this.strategyId ? this.strategies.get(this.strategyId) : null
   }
-
-  getDate = computedFn((index: number) => {
-    return addMonth(this.start, index)
-  })
 
   get globalRate() {
     return this.globalGrowth / 100

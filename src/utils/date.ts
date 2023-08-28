@@ -11,12 +11,12 @@ export type YYYYMM = number & { __yyyymm__: never }
 export const isDate = (date: unknown): date is Date =>
   date instanceof Date && !Number.isNaN(date.getTime())
 
-export const toMonth = (month: number): MM => {
+export const asMonth = (month: number): MM => {
   if (month < 1 || 12 < month) throw Error(`Value <${month}> is not a valid month between 1 and 12`)
   return month as MM
 }
 
-export const toYear = (year: number): YYYY => {
+export const asYear = (year: number): YYYY => {
   if (year < 1000 || 9999 < year) throw Error(`Value <${year}> is not a valid year between 1000 and 9999`)
   return year as YYYY
 }
@@ -29,6 +29,8 @@ export const getMonth = (yyyymm: YYYYMM): MM => yyyymm % 100 as MM
 export const getYYYYMM = (year: YYYY, month: MM): YYYYMM => year * 100 + month as YYYYMM
 
 export const getNow = (): YYYYMM => toYYYYMM(new Date())
+export const getYearStart = (year: YYYY) => getYYYYMM(year, asMonth(1))
+export const getYearEnd = (year: YYYY) => getYYYYMM(year, asMonth(12))
 
 // mod operator but supports negative numbers
 const mod = (value: number, modulus: number) => ((value % modulus) + modulus) % modulus

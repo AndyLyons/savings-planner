@@ -1,7 +1,7 @@
 import { makeAutoObservable } from 'mobx';
 import { computedFn } from 'mobx-utils';
 import { nanoid } from 'nanoid';
-import { getYear, YYYY, YYYYMM } from '../utils/date';
+import { getMonth, getYear, YYYY, YYYYMM } from '../utils/date';
 import { Period } from '../utils/date';
 import { Optional } from '../utils/object';
 import type { AccountId } from './Account';
@@ -23,12 +23,12 @@ export class Deposit {
 
   accountId: AccountId
   amount: number
-  endDate: YYYYMM | typeof RETIREMENT | null
+  endDate: YYYY | typeof RETIREMENT | null
   id: DepositId
   parentStrategyId: StrategyId
   period: Period
   repeating: boolean
-  startDate: YYYYMM | typeof START
+  startDate: YYYY | typeof START
 
   constructor(
     store: Store,
@@ -109,24 +109,25 @@ export class Deposit {
     return Deposit.getDescription(this)
   }
 
-  isValidOn = computedFn((date: YYYYMM): boolean => {
-    const isSingleDeposit = !this.repeating && this.startDateValue === date
-    const isRepeatingDeposit = this.repeating && this.endDateValue
-      && this.startDateValue <= date && date <= this.endDateValue
+  isValidIn = computedFn((year: YYYY): boolean => {
+    const isSingleDeposit = !this.repeating && this.startDateValue === year
+    const isRepeatingDeposit = this.repeating && this.endDateValue !== null
+      && this.startDateValue <= year && year <= this.endDateValue
 
-    return Boolean(isSingleDeposit || isRepeatingDeposit)
+    return isSingleDeposit || isRepeatingDeposit
   })
 
-  isValidIn = computedFn((year: YYYY): boolean => {
-    const isSingleDeposit = !this.repeating && getYear(this.startDateValue) === year
-    const isRepeatingDeposit = this.repeating && this.endDateValue
-      && getYear(this.startDateValue) <= year && year <= getYear(this.endDateValue)
+  isValidOn = computedFn((date: YYYYMM): boolean => {
+    const isValidMonth = this.period === Period.MONTH || getMonth(date) === 12
 
-    return Boolean(isSingleDeposit || isRepeatingDeposit)
+    return this.isValidIn(getYear(date)) && isValidMonth
   })
 
   getValue = computedFn((date: YYYYMM) => {
     if (!this.isValidOn(date)) return 0
+
+    console.log('*** Deposit get', date);
+
 
     return this.period === Period.YEAR ? this.amount / 12 : this.amount
   })

@@ -1,4 +1,4 @@
-import { AccessTime, List, Percent, Person, ShortText } from '@mui/icons-material'
+import { AccessTime, CurrencyPound, List, Percent, Person, ShortText } from '@mui/icons-material'
 import { AccountIcon, AccountSnapshotIn } from '../../state/Account'
 import { BalanceIcon } from '../../state/Balance'
 import { DialogType } from '../../state/Dialogs'
@@ -38,6 +38,12 @@ export const AccountDialog = createDialog<AccountSnapshotIn>('account', <Account
     useOptions: () => [{ id: Period.MONTH, label: 'Monthly' }, { id: Period.YEAR, label: 'Yearly' }],
     required: true
   },
+  startingBalance: {
+    type: 'number',
+    label: 'Starting balance',
+    icon: <CurrencyPound />,
+    required: true
+  },
   balances: {
     type: 'collection',
     dialogType: DialogType.BALANCE,
@@ -49,5 +55,6 @@ export const AccountDialog = createDialog<AccountSnapshotIn>('account', <Account
 }, {
   balances: [],
   growth: null,
-  compoundPeriod: Period.YEAR
+  compoundPeriod: Period.YEAR,
+  startingBalance: 0
 })

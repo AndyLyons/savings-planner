@@ -2,7 +2,7 @@ import { AccountBalance } from '@mui/icons-material'
 import { makeAutoObservable } from 'mobx'
 import { computedFn } from 'mobx-utils'
 import { nanoid } from 'nanoid'
-import { datesInYear, getMonth, Period, subMonth, YYYYMM, YYYY } from '../utils/date'
+import { datesInYear, getMonth, Period, subMonth, YYYYMM, YYYY, getYear } from '../utils/date'
 import { Optional } from '../utils/object'
 import { Balance, BalanceSnapshotIn } from './Balance'
 import { configureCollection } from './Collection'
@@ -28,7 +28,7 @@ const getTax = (taxable: number): number => {
     const untaxed = taxableAtBand - alreadyTaxed
     alreadyTaxed += untaxed
     return sum + (untaxed * rate)
-  },  0)
+  }, 0)
 }
 
 export type AccountId = string & { __accountId__: never }
@@ -53,10 +53,11 @@ export class Account {
   growth: number | null
   compoundPeriod: Period
   ownerId: PersonId
+  startingBalance: number
 
   constructor(
     store: Store,
-    { id = Account.createId(), name, growth, ownerId, compoundPeriod, balances }: AccountSnapshotIn
+    { id = Account.createId(), name, growth, ownerId, compoundPeriod, startingBalance, balances }: AccountSnapshotIn
   ) {
     makeAutoObservable(this, { store: false }, { autoBind: true })
 
@@ -67,6 +68,7 @@ export class Account {
     this.name = name
     this.growth = growth
     this.compoundPeriod = compoundPeriod
+    this.startingBalance = startingBalance
     this.ownerId = ownerId
   }
 
@@ -88,17 +90,19 @@ export class Account {
       name: this.name,
       growth: this.growth,
       compoundPeriod: this.compoundPeriod,
+      startingBalance: this.startingBalance,
       ownerId: this.ownerId,
       balances: this.balances.snapshot
     }
   }
 
   restore(snapshot: AccountSnapshotIn) {
-    const { name, growth, compoundPeriod, ownerId, balances } = snapshot
+    const { name, growth, compoundPeriod, startingBalance, ownerId, balances } = snapshot
 
     this.name = name
     this.growth = growth
     this.compoundPeriod = compoundPeriod
+    this.startingBalance = startingBalance
     this.ownerId = ownerId
 
     this.balances.restore(balances)
@@ -166,8 +170,8 @@ export class Account {
 
   getIncomeTotal = (date: YYYYMM): number => {
     const total = this.getWithdrawalsTotal(date)
-    const tax = this.getTax(date)
-    return total - tax
+    // const tax = this.getTax(date) // TODO fix and reenable later
+    return total
   }
 
   getYearInterestTotal = (year: YYYY): number => {
@@ -187,7 +191,7 @@ export class Account {
   }
 
   getCalculatedBalance = computedFn((date: YYYYMM): number => {
-    if (date < this.store.start) return 0
+    if (getYear(date) < this.store.start) return this.startingBalance
 
     const total = this.getBalance(subMonth(date)) + this.getInterestTotal(date) + this.getDepositsTotal(date) - this.getWithdrawalsTotal(date)
 

@@ -30,7 +30,7 @@ export const WithdrawalDialog = createDialog<WithdrawalSnapshotIn>('withdrawal s
     autoFocus: true,
     type: 'number',
     label: (state) => [WithdrawalType.PERCENTAGE, WithdrawalType.STATIC_PERCENTAGE, WithdrawalType.TAKE_INTEREST].includes(state.type) ? 'Percentage' : 'Amount',
-    icon: (state) => [WithdrawalType.PERCENTAGE, WithdrawalType.STATIC_PERCENTAGE, WithdrawalType.TAKE_INTEREST].includes(state.type) ? <Percent /> :  <CurrencyPound />,
+    icon: (state) => [WithdrawalType.PERCENTAGE, WithdrawalType.STATIC_PERCENTAGE, WithdrawalType.TAKE_INTEREST].includes(state.type) ? <Percent /> : <CurrencyPound />,
     required: state => state.type !== WithdrawalType.TAKE_INTEREST,
     getVisible: state => state.type !== WithdrawalType.TAKE_INTEREST,
     useConstantOption: () => {
@@ -45,8 +45,8 @@ export const WithdrawalDialog = createDialog<WithdrawalSnapshotIn>('withdrawal s
     required: true
   },
   startDate: {
-    type: 'yyyymm',
-    label: (state) => state.repeating ? 'From' : 'In',
+    type: 'yyyy',
+    label: 'In',
     icon: <Event />,
     required: true,
     useConstantOption: () => {
@@ -61,7 +61,7 @@ export const WithdrawalDialog = createDialog<WithdrawalSnapshotIn>('withdrawal s
     required: false
   },
   endDate: {
-    type: 'yyyymm',
+    type: 'yyyy',
     label: 'Until',
     icon: <Event />,
     getVisible: (state) => state.repeating === true,

@@ -3,6 +3,7 @@ import { isV1 } from './v1'
 import { isV2, migrateV2 } from './v2'
 import { isV3, migrateV3 } from './v3'
 import { isV4, migrateV4 } from './v4'
+import { isV5, migrateV5 } from './v5'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function migrate(snapshot: any): StoreSnapshotOut {
@@ -20,7 +21,11 @@ export function migrate(snapshot: any): StoreSnapshotOut {
     migrated = migrateV4(migrated)
   }
 
-  if (!isV4(migrated)) {
+  if (isV4(migrated)) {
+    migrated = migrateV5(migrated)
+  }
+
+  if (!isV5(migrated)) {
     throw Error(`Config is an unrecognised version ${snapshot.version ?? 'none'}`)
   }
 

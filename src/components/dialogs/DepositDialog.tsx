@@ -29,8 +29,8 @@ export const DepositDialog = createDialog<DepositSnapshotIn>('deposit schedule',
     required: true
   },
   startDate: {
-    type: 'yyyymm',
-    label: 'On',
+    type: 'yyyy',
+    label: 'In',
     icon: <Event />,
     required: true,
     useConstantOption: () => {
@@ -45,7 +45,7 @@ export const DepositDialog = createDialog<DepositSnapshotIn>('deposit schedule',
     required: false
   },
   endDate: {
-    type: 'yyyymm',
+    type: 'yyyy',
     label: 'Until',
     icon: <Event />,
     getVisible: (state) => state.repeating === true,
