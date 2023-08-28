@@ -1,4 +1,4 @@
-import { AltRoute, Close, SwapHoriz, VisibilityOutlined } from '@mui/icons-material'
+import { AltRoute, SwapHoriz, VerticalAlignBottom, VisibilityOutlined } from '@mui/icons-material'
 import { Box, Button, Divider, IconButton, ListItem, ListItemButton, ListSubheader, Menu, MenuItem, SvgIcon, Tooltip } from '@mui/material'
 import classNames from 'classnames'
 import { format } from 'date-fns'
@@ -150,14 +150,17 @@ const EditDepositMenu = observer(function DepositMenu({ date, deposit }: { date:
     deposit.endDate = showMonths ? subMonth(date) : subMonth(getYYYYMM(getYear(date), toMonth(1)))
   }, [])
 
+  const { showMonths } = useStore()
+  const isStartDate = showMonths ? date === deposit.startDateValue : getYear(date) === getYear(deposit.startDateValue)
+
   return (
     <ListItem dense disablePadding secondaryAction={
       <>
-        <IconButton edge="end" onClick={splitDeposit} size='small'>
+        <IconButton disabled={isStartDate} edge="end" onClick={splitDeposit} size='small'>
           <AltRoute fontSize='inherit' />
         </IconButton>
-        <IconButton edge="end" onClick={stopDeposit} size='small'>
-          <Close fontSize='inherit' />
+        <IconButton disabled={isStartDate} edge="end" onClick={stopDeposit} size='small'>
+          <VerticalAlignBottom fontSize='inherit' />
         </IconButton>
       </>
     }>
@@ -213,14 +216,17 @@ const EditWithdrawalMenu = observer(function EditWithdrawalMenu({ date, withdraw
     withdrawal.endDate = showMonths ? subMonth(date) : subMonth(getYYYYMM(getYear(date), toMonth(1)))
   }, [])
 
+  const { showMonths } = useStore()
+  const isStartDate = showMonths ? date === withdrawal.startDateValue : getYear(date) === getYear(withdrawal.startDateValue)
+
   return (
     <ListItem dense disablePadding secondaryAction={
       <>
-        <IconButton edge="end" onClick={splitWithdrawal} size='small'>
+        <IconButton disabled={isStartDate} edge="end" onClick={splitWithdrawal} size='small'>
           <AltRoute fontSize='inherit' />
         </IconButton>
-        <IconButton edge="end" onClick={stopWithdrawal} size='small'>
-          <Close fontSize='inherit' />
+        <IconButton disabled={isStartDate} edge="end" onClick={stopWithdrawal} size='small'>
+          <VerticalAlignBottom fontSize='inherit' />
         </IconButton>
       </>
     }>
