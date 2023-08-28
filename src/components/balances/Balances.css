@@ -125,6 +125,10 @@
   padding: 0;
 }
 
+.table-header .table-column--account-balance:hover {
+  cursor: pointer;
+}
+
 .account-breakdown--date,
 .income-breakdown--date {
   list-style-type: '';

@@ -412,7 +412,7 @@ const TableRow = observer(function TableRow(props: RowProps) {
 })
 
 const TableHeader = observer(function TableHeader() {
-  const { people, accounts, togglePerspective } = useStore()
+  const { dialogs, people, accounts, togglePerspective } = useStore()
   const numAccounts = accounts.keys.length
 
   const sxIncomes = useMemo(() => ({ width: '110px' }), [])
@@ -436,7 +436,13 @@ const TableHeader = observer(function TableHeader() {
         <div className='table-cell table-column--total'>Total (£)</div>
         <div className='table-cell table-column--total'>Total (£)</div>
         {accounts.values.map(account => (
-          <div key={account.id} className='table-cell table-column--account-balance'>{account.description}</div>
+          <div
+            key={account.id}
+            className='table-cell table-column--account-balance'
+            onClick={() => dialogs.editAccount(account)}
+          >
+            {account.description}
+          </div>
         ))}
       </div>
     </div>
