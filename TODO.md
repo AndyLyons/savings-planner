@@ -14,3 +14,5 @@
   * But does this work on mobile???
 * Remove MUI - it feels bulky and I don't like it
 * Investigate replacing computedFn with an array of actual entities for each date, to see if it helps performance (have seen some potential slowness with the deep maps in computedFn and caching of params)
+* Plus sign to the right of the account headers to add a new account column
+* Better mobile table view - don't use a full screen table, each column takes the whole screen and there are 'right' and 'left' arrow buttons to let the user switch to the next column (maybe also swipe left/right gestures)
