@@ -22,6 +22,7 @@ export const WithdrawalDialog = createDialog<WithdrawalSnapshotIn>('withdrawal s
       { id: WithdrawalType.FIXED_PER_YEAR, label: '£ / year' },
       { id: WithdrawalType.PERCENTAGE, label: '% / year' },
       { id: WithdrawalType.TAKE_INTEREST, label: 'Take interest' },
+      { id: WithdrawalType.EMPTY_ACCOUNT, label: 'Empty account' },
       { id: WithdrawalType.STATIC_PERCENTAGE, label: '% of initial / year' }
     ],
     required: true
@@ -29,10 +30,26 @@ export const WithdrawalDialog = createDialog<WithdrawalSnapshotIn>('withdrawal s
   amount: {
     autoFocus: true,
     type: 'number',
-    label: (state) => [WithdrawalType.PERCENTAGE, WithdrawalType.STATIC_PERCENTAGE, WithdrawalType.TAKE_INTEREST].includes(state.type) ? 'Percentage' : 'Amount',
-    icon: (state) => [WithdrawalType.PERCENTAGE, WithdrawalType.STATIC_PERCENTAGE, WithdrawalType.TAKE_INTEREST].includes(state.type) ? <Percent /> : <CurrencyPound />,
-    required: state => state.type !== WithdrawalType.TAKE_INTEREST,
-    getVisible: state => state.type !== WithdrawalType.TAKE_INTEREST,
+    label: (state) => {
+      switch (state.type) {
+        case WithdrawalType.PERCENTAGE:
+        case WithdrawalType.STATIC_PERCENTAGE:
+          return 'Percentage'
+        default:
+          return 'Amount'
+      }
+    },
+    icon: (state) => {
+      switch (state.type) {
+        case WithdrawalType.PERCENTAGE:
+        case WithdrawalType.STATIC_PERCENTAGE:
+          return <Percent />
+        default:
+          return <CurrencyPound />
+      }
+    },
+    required: state => ![WithdrawalType.TAKE_INTEREST, WithdrawalType.EMPTY_ACCOUNT].includes(state.type),
+    getVisible: state => ![WithdrawalType.TAKE_INTEREST, WithdrawalType.EMPTY_ACCOUNT].includes(state.type),
     useConstantOption: () => {
       const constantValue = useStore(store => store.globalGrowth)
       return { label: 'Use market growth?', constantValue, value: null }

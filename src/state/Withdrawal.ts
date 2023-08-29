@@ -1,7 +1,7 @@
 import { makeAutoObservable } from 'mobx';
 import { computedFn } from 'mobx-utils';
 import { nanoid } from 'nanoid';
-import { getMonth, getYear, getEndOfYear, subMonth, YYYY, YYYYMM } from '../utils/date';
+import { getMonth, getYear, getEndOfYear, subMonth, YYYY, YYYYMM, Period, subYear } from '../utils/date';
 import { Optional } from '../utils/object';
 import type { AccountId } from './Account';
 import { Store } from './Store';
@@ -10,6 +10,7 @@ import type { StrategyId } from './Strategy';
 export type WithdrawalId = string & { __withdrawalId__: never }
 
 export enum WithdrawalType {
+  EMPTY_ACCOUNT = 'EMPTY_ACCOUNT',
   FIXED_PER_YEAR = 'FIXED_PER_YEAR',
   FIXED_PER_MONTH = 'FIXED_PER_MONTH',
   PERCENTAGE = 'PERCENTAGE',
@@ -68,6 +69,8 @@ export class Withdrawal {
     const amountText = amount ?? '<Growth>'
 
     switch (type) {
+      case WithdrawalType.EMPTY_ACCOUNT:
+        return 'Empty account'
       case WithdrawalType.FIXED_PER_YEAR:
         return `£${amountText} / year`
       case WithdrawalType.FIXED_PER_MONTH:
@@ -144,6 +147,8 @@ export class Withdrawal {
     switch (this.type) {
       case WithdrawalType.FIXED_PER_MONTH:
         return true
+      case WithdrawalType.EMPTY_ACCOUNT:
+        return this.account.compoundPeriod === Period.MONTH || getMonth(date) === 12
       case WithdrawalType.FIXED_PER_YEAR:
       case WithdrawalType.PERCENTAGE:
       case WithdrawalType.STATIC_PERCENTAGE:
@@ -170,6 +175,17 @@ export class Withdrawal {
       case WithdrawalType.FIXED_PER_MONTH:
       case WithdrawalType.FIXED_PER_YEAR:
         return this.amountValue
+      case WithdrawalType.EMPTY_ACCOUNT: {
+        // Formula from https://ua.pressbooks.pub/collegealgebraformanagerialscience/chapter/8-3-payout-annuities/
+        const P_startBalance = this.account.getBalance(getEndOfYear(subYear(this.startDateValue)))
+        const R_interestRate = this.account.rate
+        const K_compoundsPerYear = this.account.compoundPeriod === Period.MONTH ? 12 : 1
+        const T_numYears = this.repeating && this.endDate !== null ? (this.endDate - this.startDateValue) + 1 : 1
+
+        const RK_ratePerMonth = R_interestRate / K_compoundsPerYear
+
+        return (P_startBalance * (RK_ratePerMonth)) / (1 - Math.pow(1 + RK_ratePerMonth, -1 * K_compoundsPerYear * T_numYears))
+      }
       default:
         return 0
     }
