@@ -182,7 +182,7 @@ const EditDepositMenu = observer(function EditDepositMenu({ year, deposit }: { y
         </IconButton>
       </>
     }>
-      <ListItemButton onClick={editDeposit} sx={{ textDecoration: deposit.hidden ? 'line-through' : '', paddingRight: '70px !important' }}>{deposit.description}</ListItemButton>
+      <ListItemButton onClick={editDeposit} sx={{ textDecoration: deposit.hidden ? 'line-through' : '', paddingRight: '95px !important' }}>{deposit.description}</ListItemButton>
     </ListItem>
   )
 })
@@ -232,7 +232,7 @@ const EditWithdrawalMenu = observer(function EditWithdrawalMenu({ year, withdraw
   }, [])
 
   const isStartDate = year === withdrawal.startDateValue
-  const isSingleYear = !withdrawal.repeating || withdrawal.startDateValue === withdrawal.endDate
+  const isSingleYear = !withdrawal.repeating || withdrawal.startDateValue === withdrawal.endDateValue
 
   return (
     <ListItem dense disablePadding secondaryAction={

@@ -126,9 +126,7 @@ export class Deposit {
   }
 
   isValidOn = (date: YYYYMM): boolean => {
-    const isValidMonth = this.period === Period.MONTH || getMonth(date) === 12
-
-    return this.isValidIn(getYear(date)) && isValidMonth
+    return this.isValidIn(getYear(date))
   }
 
   getValue = computedFn((date: YYYYMM) => {
