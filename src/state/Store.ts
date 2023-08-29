@@ -1,7 +1,7 @@
 import { makeAutoObservable } from 'mobx'
 import React from 'react'
 import { compareKeys } from '../utils/compare'
-import { addMonth, getNow, asYear, YYYY, YYYYMM, getYearStart, getYearEnd, getMonth } from '../utils/date'
+import { addMonth, getNow, asYear, YYYY, YYYYMM, getStartOfYear, getEndOfYear, getMonth } from '../utils/date'
 import { Account, AccountId } from './Account'
 import { configureCollection } from './Collection'
 import { Dialogs } from './Dialogs'
@@ -106,7 +106,7 @@ export class Store {
 
   get allDates() {
     const dates: Array<YYYYMM> = []
-    for (let date = getYearStart(this.start); date <= getYearEnd(this.end); date = addMonth(date, 1)) {
+    for (let date = getStartOfYear(this.start); date <= getEndOfYear(this.end); date = addMonth(date, 1)) {
       dates.push(date)
     }
     return dates

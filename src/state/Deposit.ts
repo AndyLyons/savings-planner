@@ -126,9 +126,6 @@ export class Deposit {
   getValue = computedFn((date: YYYYMM) => {
     if (!this.isValidOn(date)) return 0
 
-    console.log('*** Deposit get', date);
-
-
     return this.period === Period.YEAR ? this.amount / 12 : this.amount
   })
 }

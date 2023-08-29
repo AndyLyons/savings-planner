@@ -29,8 +29,8 @@ export const getMonth = (yyyymm: YYYYMM): MM => yyyymm % 100 as MM
 export const getYYYYMM = (year: YYYY, month: MM): YYYYMM => year * 100 + month as YYYYMM
 
 export const getNow = (): YYYYMM => toYYYYMM(new Date())
-export const getYearStart = (year: YYYY) => getYYYYMM(year, asMonth(1))
-export const getYearEnd = (year: YYYY) => getYYYYMM(year, asMonth(12))
+export const getStartOfYear = (year: YYYY) => getYYYYMM(year, asMonth(1))
+export const getEndOfYear = (year: YYYY) => getYYYYMM(year, asMonth(12))
 
 // mod operator but supports negative numbers
 const mod = (value: number, modulus: number) => ((value % modulus) + modulus) % modulus

@@ -1,4 +1,4 @@
-import { AltRoute, SwapHoriz, VerticalAlignBottom, VisibilityOutlined } from '@mui/icons-material'
+import { AltRoute, SwapHoriz, StopCircleOutlined, VisibilityOutlined } from '@mui/icons-material'
 import { Box, Button, Divider, IconButton, ListItem, ListItemButton, ListSubheader, Menu, MenuItem, SvgIcon, Tooltip } from '@mui/material'
 import classNames from 'classnames'
 import { format } from 'date-fns'
@@ -11,7 +11,7 @@ import type { Account, AccountId } from '../../state/Account'
 import type { Deposit } from '../../state/Deposit'
 import type { PersonId } from '../../state/Person'
 import { Withdrawal } from '../../state/Withdrawal'
-import { fromYYYYMM, getYear, getMonth, subMonth, YYYYMM, getNow, asMonth, getYYYYMM, subYear } from '../../utils/date'
+import { fromYYYYMM, getYear, getMonth, subMonth, YYYYMM, getNow, asMonth, getYYYYMM, subYear, YYYY } from '../../utils/date'
 import { useBind, useBoolean } from '../../utils/hooks'
 import { useAction, useStore } from '../../utils/mobx'
 
@@ -125,14 +125,14 @@ const AddBalanceMenu = observer(function AddBalanceMenu({ account, date }: { acc
   )
 })
 
-const EditDepositMenu = observer(function DepositMenu({ date, deposit }: { date: YYYYMM, deposit: Deposit }) {
+const EditDepositMenu = observer(function EditDepositMenu({ year, deposit }: { year: YYYY, deposit: Deposit }) {
   const editDeposit = useAction(store => store.dialogs.editDeposit(deposit), [deposit])
 
   const splitDeposit = useAction(store => {
     const { strategy } = store
     if (strategy) {
       const { id: _, ...depositSnapshot } = deposit.snapshot
-      const startDate = getYear(date)
+      const startDate = year
       store.dialogs.createDeposit(
         strategy,
         {
@@ -147,16 +147,17 @@ const EditDepositMenu = observer(function DepositMenu({ date, deposit }: { date:
   }, [deposit])
 
   const stopDeposit = useAction(() => {
-    deposit.endDate = getYear(date)
+    deposit.endDate = year
   }, [])
 
-  const isStartDate = getYear(date) === deposit.startDateValue
+  const isStartDate = year === deposit.startDateValue
+  const isSingleYear = !deposit.repeating || deposit.startDateValue === deposit.endDateValue
 
   return (
     <ListItem dense disablePadding secondaryAction={
       <>
-        <IconButton edge="end" onClick={stopDeposit} size='small'>
-          <VerticalAlignBottom fontSize='inherit' />
+        <IconButton disabled={isSingleYear} edge="end" onClick={stopDeposit} size='small'>
+          <StopCircleOutlined fontSize='inherit' />
         </IconButton>
         <IconButton disabled={isStartDate} edge="end" onClick={splitDeposit} size='small'>
           <AltRoute fontSize='inherit' />
@@ -168,35 +169,33 @@ const EditDepositMenu = observer(function DepositMenu({ date, deposit }: { date:
   )
 })
 
-const DepositsMenu = observer(function DepositsMenu({ account, date }: { account: Account, date: YYYYMM }) {
-  const { strategy: currentStrategy, showMonths } = useStore()
-
-  const deposits = showMonths ? account.getDepositsForDate(date) : account.getDepositsForYear(getYear(date))
+const DepositsMenu = observer(function DepositsMenu({ account, year }: { account: Account, year: YYYY }) {
+  const { strategy: currentStrategy } = useStore()
 
   const createDeposit = useAction(({ dialogs, strategy }) => {
     if (strategy) {
-      dialogs.createDeposit(strategy, { accountId: account.id, startDate: getYear(date) })
+      dialogs.createDeposit(strategy, { accountId: account.id, startDate: year })
     }
-  }, [account, date])
+  }, [account, year])
 
   return (
     <>
-      {deposits.map(deposit => (
-        <EditDepositMenu key={deposit.id} date={date} deposit={deposit} />
+      {account.getDepositsForYear(year).map(deposit => (
+        <EditDepositMenu key={deposit.id} year={year} deposit={deposit} />
       ))}
       <MenuItem disabled={!currentStrategy} onClick={createDeposit}>Add...</MenuItem>
     </>
   )
 })
 
-const EditWithdrawalMenu = observer(function EditWithdrawalMenu({ date, withdrawal }: { date: YYYYMM, withdrawal: Withdrawal }) {
+const EditWithdrawalMenu = observer(function EditWithdrawalMenu({ year, withdrawal }: { year: YYYY, withdrawal: Withdrawal }) {
   const editWithdrawal = useAction(store => store.dialogs.editWithdrawal(withdrawal), [withdrawal])
 
   const splitWithdrawal = useAction(store => {
     const { strategy } = store
     if (strategy) {
       const { id: _, ...withdrawalSnapshot } = withdrawal.snapshot
-      const startDate = getYear(date)
+      const startDate = year
       store.dialogs.createWithdrawal(
         strategy,
         {
@@ -211,16 +210,17 @@ const EditWithdrawalMenu = observer(function EditWithdrawalMenu({ date, withdraw
   }, [withdrawal])
 
   const stopWithdrawal = useAction(() => {
-    withdrawal.endDate = getYear(date)
+    withdrawal.endDate = year
   }, [])
 
-  const isStartDate = getYear(date) === withdrawal.startDateValue
+  const isStartDate = year === withdrawal.startDateValue
+  const isSingleYear = !withdrawal.repeating || withdrawal.startDateValue === withdrawal.endDate
 
   return (
     <ListItem dense disablePadding secondaryAction={
       <>
-        <IconButton edge="end" onClick={stopWithdrawal} size='small'>
-          <VerticalAlignBottom fontSize='inherit' />
+        <IconButton disabled={isSingleYear} edge="end" onClick={stopWithdrawal} size='small'>
+          <StopCircleOutlined fontSize='inherit' />
         </IconButton>
         <IconButton disabled={isStartDate} edge="end" onClick={splitWithdrawal} size='small'>
           <AltRoute fontSize='inherit' />
@@ -232,21 +232,19 @@ const EditWithdrawalMenu = observer(function EditWithdrawalMenu({ date, withdraw
   )
 })
 
-const WithdrawalsMenu = observer(function WithdrawalsMenu({ account, date }: { account: Account, date: YYYYMM }) {
-  const { strategy: currentStrategy, showMonths } = useStore()
-
-  const withdrawals = showMonths ? account.getWithdrawalsForDate(date) : account.getWithdrawalsForYear(getYear(date))
+const WithdrawalsMenu = observer(function WithdrawalsMenu({ account, year }: { account: Account, year: YYYY }) {
+  const { strategy: currentStrategy } = useStore()
 
   const createWithdrawal = useAction(({ dialogs, strategy }) => {
     if (strategy) {
-      dialogs.createWithdrawal(strategy, { accountId: account.id, startDate: getYear(date) })
+      dialogs.createWithdrawal(strategy, { accountId: account.id, startDate: year })
     }
-  }, [account, date])
+  }, [account, year])
 
   return (
     <>
-      {withdrawals.map(withdrawal => (
-        <EditWithdrawalMenu key={withdrawal.id} date={date} withdrawal={withdrawal} />
+      {account.getWithdrawalsForYear(year).map(withdrawal => (
+        <EditWithdrawalMenu key={withdrawal.id} year={year} withdrawal={withdrawal} />
       ))}
       <MenuItem disabled={!currentStrategy} onClick={createWithdrawal}>Add...</MenuItem>
     </>
@@ -304,6 +302,7 @@ const AccountBalanceCell = observer(function AccountBalanceCell({ date, accountI
   const { accounts } = useStore()
   const account = accounts.get(accountId)
   const hasBalance = account.hasBalance(date)
+  const year = getYear(date)
 
   const [isMenuOpen, showMenu, hideMenu] = useBoolean(false)
 
@@ -331,13 +330,13 @@ const AccountBalanceCell = observer(function AccountBalanceCell({ date, accountI
 
         <Divider />
 
-        <ListSubheader sx={sxLineHeight}>Deposits</ListSubheader>
-        <DepositsMenu account={account} date={date} />
+        <ListSubheader sx={sxLineHeight}>Deposits ({year})</ListSubheader>
+        <DepositsMenu account={account} year={year} />
 
         <Divider />
 
-        <ListSubheader sx={sxLineHeight}>Withdrawals</ListSubheader>
-        <WithdrawalsMenu account={account} date={date} />
+        <ListSubheader sx={sxLineHeight}>Withdrawals ({year})</ListSubheader>
+        <WithdrawalsMenu account={account} year={year} />
       </Menu>
     </div>
   )

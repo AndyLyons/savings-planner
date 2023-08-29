@@ -1,7 +1,7 @@
 import { makeAutoObservable } from 'mobx';
 import { computedFn } from 'mobx-utils';
 import { nanoid } from 'nanoid';
-import { getMonth, getYear, getYearEnd, subMonth, subYear, YYYY, YYYYMM } from '../utils/date';
+import { getMonth, getYear, getEndOfYear, subMonth, YYYY, YYYYMM } from '../utils/date';
 import { Optional } from '../utils/object';
 import type { AccountId } from './Account';
 import { Store } from './Store';
@@ -143,8 +143,8 @@ export class Withdrawal {
 
     switch (this.type) {
       case WithdrawalType.FIXED_PER_MONTH:
-      case WithdrawalType.FIXED_PER_YEAR: // fixed per year is still applied every month
         return true
+      case WithdrawalType.FIXED_PER_YEAR:
       case WithdrawalType.PERCENTAGE:
       case WithdrawalType.STATIC_PERCENTAGE:
       case WithdrawalType.TAKE_INTEREST:
@@ -157,16 +157,18 @@ export class Withdrawal {
   getValue = computedFn((date: YYYYMM) => {
     if (!this.isValidOn(date)) return 0
 
+    const getBalanceBeforeWithdrawal = (target: YYYYMM) =>
+      this.account.getBalance(subMonth(target)) + this.account.getInterestTotal(target) + this.account.getDepositsTotal(target)
+
     switch (this.type) {
       case WithdrawalType.PERCENTAGE:
-        return this.account.getBalance(subMonth(date)) * this.amountValue / 100
+        return getBalanceBeforeWithdrawal(date) * this.amountValue / 100
       case WithdrawalType.STATIC_PERCENTAGE:
-        return this.account.getBalance(getYearEnd(subYear(this.startDateValue))) * this.amountValue / 100
+        return getBalanceBeforeWithdrawal(getEndOfYear(this.startDateValue)) * this.amountValue / 100
       case WithdrawalType.TAKE_INTEREST:
         return this.account.getYearInterestTotal(getYear(date))
-      case WithdrawalType.FIXED_PER_YEAR:
-        return this.amountValue / 12
       case WithdrawalType.FIXED_PER_MONTH:
+      case WithdrawalType.FIXED_PER_YEAR:
         return this.amountValue
       default:
         return 0
