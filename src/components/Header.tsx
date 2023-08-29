@@ -6,7 +6,7 @@ import {
   ThemeProvider, Toolbar, Typography
 } from '@mui/material';
 import { observer } from 'mobx-react-lite';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { fromYYYY, isDate, toYYYY } from '../utils/date';
 import type { ChangeEvent } from '../utils/hooks';
 import { getTargetValue, useDebounceCallback } from '../utils/hooks';
@@ -37,6 +37,20 @@ export const Header = observer(function Header({ sx }: Props) {
   const saveGrowth = useDebounceCallback(useAction((store, growth: number) => {
     store.globalGrowth = growth
   }, []), 200)
+
+  useEffect(() => {
+    setGrowth({
+      value: `${store.globalGrowth}`,
+      isValid: true
+    })
+  }, [store.globalGrowth])
+
+  useEffect(() => {
+    setRetireOn({
+      value: fromYYYY(store.retireOn),
+      isValid: true
+    })
+  }, [store.retireOn])
 
   const onGrowthChanged = useCallback((e: ChangeEvent) => {
     const value = getTargetValue(e)
@@ -101,7 +115,7 @@ export const Header = observer(function Header({ sx }: Props) {
               }
             }}
             value={retireOn.value}
-            views={['month', 'year']}
+            views={['year']}
           />
           <TextField
             InputLabelProps={{
