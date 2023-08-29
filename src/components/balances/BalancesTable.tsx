@@ -275,6 +275,7 @@ const AccountBalanceButton = observer(forwardRef<HTMLButtonElement, { account: A
         open={isTooltipOpen}
         onOpen={showTooltip}
         onClose={hideTooltip}
+        onMouseLeave={hideTooltip}
         placement='bottom'
         title={<AccountBreakdown account={account} date={date} />}
       >
