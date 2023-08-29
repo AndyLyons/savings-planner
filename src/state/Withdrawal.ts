@@ -176,15 +176,18 @@ export class Withdrawal {
       case WithdrawalType.FIXED_PER_YEAR:
         return this.amountValue
       case WithdrawalType.EMPTY_ACCOUNT: {
-        // Formula from https://ua.pressbooks.pub/collegealgebraformanagerialscience/chapter/8-3-payout-annuities/
         const P_startBalance = this.account.getBalance(getEndOfYear(subYear(this.startDateValue)))
         const R_interestRate = this.account.rate
         const K_compoundsPerYear = this.account.compoundPeriod === Period.MONTH ? 12 : 1
         const T_numYears = this.repeating && this.endDate !== null ? (this.endDate - this.startDateValue) + 1 : 1
 
-        const RK_ratePerMonth = R_interestRate / K_compoundsPerYear
+        if (R_interestRate === 0) {
+          return P_startBalance / (T_numYears * K_compoundsPerYear)
+        }
 
-        return (P_startBalance * (RK_ratePerMonth)) / (1 - Math.pow(1 + RK_ratePerMonth, -1 * K_compoundsPerYear * T_numYears))
+        // Formula from https://ua.pressbooks.pub/collegealgebraformanagerialscience/chapter/8-3-payout-annuities/
+        const RK_ratePerMonth = R_interestRate / K_compoundsPerYear
+        return (P_startBalance * RK_ratePerMonth) / (1 - Math.pow(1 + RK_ratePerMonth, -1 * K_compoundsPerYear * T_numYears))
       }
       default:
         return 0
