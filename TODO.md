@@ -1,9 +1,10 @@
 # TODO List
 
-* Variable support
-  * Allow users to define values that are derived from other values
 * Fix tax calculations - these should be calculated per _person_ not per _account_
   * Maybe also consider some benefits for couples? E.g. can they share allowances?
+* Dialog autofocus not working?
+* Variable support
+  * Allow users to define values that are derived from other values
 * Adding an item to a Collection should also set the ID of the parent on the child
   * currently this is handled by Dialogs.ts initial values, but this feels a bit messy
   * this might be trickier than planned as parent IDs are currently required by children and can't be null'd
