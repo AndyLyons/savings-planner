@@ -106,7 +106,7 @@ export class Deposit {
   }
 
   get endDateValue() {
-    return this.endDate === RETIREMENT ? this.store.retireOn : this.endDate
+    return this.endDate === RETIREMENT ? this.store.retireOn : this.endDate ?? this.store.end
   }
 
   get description() {
@@ -119,8 +119,7 @@ export class Deposit {
 
   isValidIn = (year: YYYY): boolean => {
     const isSingleDeposit = !this.repeating && this.startDateValue === year
-    const isRepeatingDeposit = this.repeating && this.endDateValue !== null
-      && this.startDateValue <= year && year <= this.endDateValue
+    const isRepeatingDeposit = this.repeating && this.startDateValue <= year && year <= this.endDateValue
 
     return isSingleDeposit || isRepeatingDeposit
   }

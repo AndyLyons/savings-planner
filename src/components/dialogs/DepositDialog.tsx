@@ -49,7 +49,7 @@ export const DepositDialog = createDialog<DepositSnapshotIn>('deposit schedule',
     label: 'Until',
     icon: <Event />,
     getVisible: (state) => state.repeating === true,
-    required: true,
+    required: false,
     useConstantOption: () => {
       const { retireOn } = useStore()
       return { label: 'Retirement', value: RETIREMENT, constantValue: retireOn }

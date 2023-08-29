@@ -129,6 +129,10 @@ export class Withdrawal {
     return this.startDate === RETIREMENT ? this.store.retireOn : this.startDate
   }
 
+  get endDateValue() {
+    return this.endDate ?? this.store.end
+  }
+
   get amountValue() {
     return this.amount === null ? this.store.globalGrowth : this.amount
   }
@@ -143,8 +147,7 @@ export class Withdrawal {
 
   isValidIn = (year: YYYY): boolean => {
     const isSingleWithdrawal = !this.repeating && this.startDateValue === year
-    const isRepeatingWithdrawal = this.repeating && this.endDate !== null
-      && this.startDateValue <= year && year <= this.endDate
+    const isRepeatingWithdrawal = this.repeating && this.startDateValue <= year && year <= this.endDateValue
 
     return isSingleWithdrawal || isRepeatingWithdrawal
   }
@@ -187,7 +190,7 @@ export class Withdrawal {
         const P_startBalance = this.account.getBalance(getEndOfYear(subYear(this.startDateValue)))
         const R_interestRate = this.account.rate
         const K_compoundsPerYear = this.account.compoundPeriod === Period.MONTH ? 12 : 1
-        const T_numYears = this.repeating && this.endDate !== null ? (this.endDate - this.startDateValue) + 1 : 1
+        const T_numYears = this.repeating ? (this.endDateValue - this.startDateValue) + 1 : 1
 
         if (R_interestRate === 0) {
           return P_startBalance / (T_numYears * K_compoundsPerYear)

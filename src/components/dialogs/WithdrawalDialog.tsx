@@ -82,7 +82,7 @@ export const WithdrawalDialog = createDialog<WithdrawalSnapshotIn>('withdrawal s
     label: 'Until',
     icon: <Event />,
     getVisible: (state) => state.repeating === true,
-    required: true
+    required: false
   },
   hidden: {
     type: 'boolean',
