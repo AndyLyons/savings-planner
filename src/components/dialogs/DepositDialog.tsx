@@ -1,4 +1,4 @@
-import { AccountBalance, CurrencyPound, Event, EventRepeat, Loop } from '@mui/icons-material'
+import { AccountBalance, CurrencyPound, Event, EventRepeat, Loop, VisibilityOff } from '@mui/icons-material'
 import { DepositIcon, DepositSnapshotIn, RETIREMENT, START } from '../../state/Deposit'
 import { Period } from '../../utils/date'
 import { useStore } from '../../utils/mobx'
@@ -54,9 +54,16 @@ export const DepositDialog = createDialog<DepositSnapshotIn>('deposit schedule',
       const { retireOn } = useStore()
       return { label: 'Retirement', value: RETIREMENT, constantValue: retireOn }
     }
+  },
+  hidden: {
+    type: 'boolean',
+    label: 'Hidden',
+    icon: <VisibilityOff />,
+    required: false
   }
 }, {
   period: Period.MONTH,
   repeating: true,
-  startDate: START
+  startDate: START,
+  hidden: false
 })

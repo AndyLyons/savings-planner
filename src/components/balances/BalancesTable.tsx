@@ -1,5 +1,5 @@
-import { AltRoute, SwapHoriz, StopCircleOutlined, VisibilityOutlined } from '@mui/icons-material'
-import { Box, Button, Divider, IconButton, ListItem, ListItemButton, ListSubheader, Menu, MenuItem, SvgIcon, Tooltip } from '@mui/material'
+import { AltRoute, SwapHoriz, StopCircleOutlined, VisibilityOutlined, VisibilityOff, Visibility } from '@mui/icons-material'
+import { Box, Button, Divider, Icon, IconButton, ListItem, ListItemButton, ListSubheader, Menu, MenuItem, SvgIcon, Tooltip } from '@mui/material'
 import classNames from 'classnames'
 import { format } from 'date-fns'
 import { observer } from 'mobx-react-lite'
@@ -101,6 +101,21 @@ const getActionIcon = (showMonths: boolean, account: Account, date: YYYYMM) => {
     return <ArrowLeft className='withdrawal-icon' />
   }
 
+  // Use empty icon to reserve space in DOM
+  return <Icon />
+}
+
+const getHiddenIcon = (showMonths: boolean, account: Account, date: YYYYMM) => {
+  const deposits = showMonths ? account.getDepositsForDate(date) : account.getDepositsForYear(getYear(date))
+  const withdrawals = showMonths ? account.getWithdrawalsForDate(date) : account.getWithdrawalsForYear(getYear(date))
+
+  const isHiddenDeposits = deposits.length > 0 && deposits.some(deposit => deposit.hidden)
+  const isHiddenWithdrawals = withdrawals.length > 0 && withdrawals.some(withdrawal => withdrawal.hidden)
+
+  if (isHiddenDeposits || isHiddenWithdrawals) {
+    return <VisibilityOff className='table--hidden-icon' />
+  }
+
   return null
 }
 
@@ -156,6 +171,9 @@ const EditDepositMenu = observer(function EditDepositMenu({ year, deposit }: { y
   return (
     <ListItem dense disablePadding secondaryAction={
       <>
+        <IconButton edge="end" onClick={deposit.toggleHidden} size='small'>
+          {deposit.hidden ? <VisibilityOff fontSize='inherit' /> : <Visibility fontSize='inherit' />}
+        </IconButton>
         <IconButton disabled={isSingleYear} edge="end" onClick={stopDeposit} size='small'>
           <StopCircleOutlined fontSize='inherit' />
         </IconButton>
@@ -164,7 +182,7 @@ const EditDepositMenu = observer(function EditDepositMenu({ year, deposit }: { y
         </IconButton>
       </>
     }>
-      <ListItemButton onClick={editDeposit} sx={{ paddingRight: '70px !important' }}>{deposit.description}</ListItemButton>
+      <ListItemButton onClick={editDeposit} sx={{ textDecoration: deposit.hidden ? 'line-through' : '', paddingRight: '70px !important' }}>{deposit.description}</ListItemButton>
     </ListItem>
   )
 })
@@ -219,6 +237,9 @@ const EditWithdrawalMenu = observer(function EditWithdrawalMenu({ year, withdraw
   return (
     <ListItem dense disablePadding secondaryAction={
       <>
+        <IconButton edge="end" onClick={withdrawal.toggleHidden} size='small'>
+          {withdrawal.hidden ? <VisibilityOff fontSize='inherit' /> : <Visibility fontSize='inherit' />}
+        </IconButton>
         <IconButton disabled={isSingleYear} edge="end" onClick={stopWithdrawal} size='small'>
           <StopCircleOutlined fontSize='inherit' />
         </IconButton>
@@ -227,7 +248,7 @@ const EditWithdrawalMenu = observer(function EditWithdrawalMenu({ year, withdraw
         </IconButton>
       </>
     }>
-      <ListItemButton onClick={editWithdrawal} sx={{ paddingRight: '70px !important' }}>{withdrawal.description}</ListItemButton>
+      <ListItemButton onClick={editWithdrawal} sx={{ textDecoration: withdrawal.hidden ? 'line-through' : '', paddingRight: '95px !important' }}>{withdrawal.description}</ListItemButton>
     </ListItem>
   )
 })
@@ -287,7 +308,12 @@ const AccountBalanceButton = observer(forwardRef<HTMLButtonElement, { account: A
             'table-column--account_edit-balance--down': isDown
           })}
           onClick={onClickInternal}
-          startIcon={getActionIcon(showMonths, account, date)}
+          startIcon={
+            <>
+              {getActionIcon(showMonths, account, date)}
+              {getHiddenIcon(showMonths, account, date)}
+            </>
+          }
           size='small'
           variant='contained'
           ref={ref}

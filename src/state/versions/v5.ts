@@ -57,6 +57,7 @@ export type V5 = {
       period: Period;
       accountId: AccountId;
       parentStrategyId: StrategyId;
+      hidden: boolean;
     }[];
     withdrawals: {
       id: WithdrawalId;
@@ -68,6 +69,7 @@ export type V5 = {
       taxable: boolean;
       accountId: AccountId;
       parentStrategyId: StrategyId;
+      hidden: boolean;
     }[];
   }[];
   version: 5;
@@ -89,12 +91,14 @@ export const migrateV5 = (snapshot: V4): V5 => {
       deposits: strategy.deposits.map((deposit) => ({
         ...deposit,
         startDate: typeof deposit.startDate === 'string' ? deposit.startDate : migrateYYYYMM(deposit.startDate),
-        endDate: typeof deposit.endDate === 'string' || deposit.endDate === null ? deposit.endDate : migrateYYYYMM(deposit.endDate)
+        endDate: typeof deposit.endDate === 'string' || deposit.endDate === null ? deposit.endDate : migrateYYYYMM(deposit.endDate),
+        hidden: false
       })),
       withdrawals: strategy.withdrawals.map((withdrawal) => ({
         ...withdrawal,
         startDate: typeof withdrawal.startDate === 'string' ? withdrawal.startDate : migrateYYYYMM(withdrawal.startDate),
-        endDate: withdrawal.endDate === null ? withdrawal.endDate : migrateYYYYMM(withdrawal.endDate)
+        endDate: withdrawal.endDate === null ? withdrawal.endDate : migrateYYYYMM(withdrawal.endDate),
+        hidden: false
       }))
     }))
   }

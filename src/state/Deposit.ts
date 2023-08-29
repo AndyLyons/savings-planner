@@ -24,6 +24,7 @@ export class Deposit {
   accountId: AccountId
   amount: number
   endDate: YYYY | typeof RETIREMENT | null
+  hidden: boolean
   id: DepositId
   parentStrategyId: StrategyId
   period: Period
@@ -32,7 +33,7 @@ export class Deposit {
 
   constructor(
     store: Store,
-    { id = Deposit.createId(), accountId, amount, startDate, repeating, endDate, period, parentStrategyId }: DepositSnapshotIn
+    { id = Deposit.createId(), accountId, amount, startDate, repeating, endDate, period, parentStrategyId, hidden }: DepositSnapshotIn
   ) {
     makeAutoObservable(this, { store: false }, { autoBind: true })
 
@@ -42,6 +43,7 @@ export class Deposit {
     this.parentStrategyId = parentStrategyId
     this.accountId = accountId
     this.amount = amount
+    this.hidden = hidden
     this.startDate = startDate
     this.period = period
     this.repeating = repeating
@@ -65,6 +67,7 @@ export class Deposit {
       accountId: this.accountId,
       amount: this.amount,
       endDate: this.endDate,
+      hidden: this.hidden,
       id: this.id,
       parentStrategyId: this.parentStrategyId,
       period: this.period,
@@ -74,11 +77,12 @@ export class Deposit {
   }
 
   restore(snapshot: DepositSnapshotIn) {
-    const { parentStrategyId, accountId, amount, startDate, repeating, endDate, period } = snapshot
+    const { parentStrategyId, accountId, amount, startDate, repeating, endDate, period, hidden } = snapshot
 
     this.accountId = accountId
     this.amount = amount
     this.endDate = endDate
+    this.hidden = hidden
     this.parentStrategyId = parentStrategyId
     this.period = period
     this.repeating = repeating
@@ -109,22 +113,26 @@ export class Deposit {
     return Deposit.getDescription(this)
   }
 
-  isValidIn = computedFn((year: YYYY): boolean => {
+  toggleHidden = () => {
+    this.hidden = !this.hidden
+  }
+
+  isValidIn = (year: YYYY): boolean => {
     const isSingleDeposit = !this.repeating && this.startDateValue === year
     const isRepeatingDeposit = this.repeating && this.endDateValue !== null
       && this.startDateValue <= year && year <= this.endDateValue
 
     return isSingleDeposit || isRepeatingDeposit
-  })
+  }
 
-  isValidOn = computedFn((date: YYYYMM): boolean => {
+  isValidOn = (date: YYYYMM): boolean => {
     const isValidMonth = this.period === Period.MONTH || getMonth(date) === 12
 
     return this.isValidIn(getYear(date)) && isValidMonth
-  })
+  }
 
   getValue = computedFn((date: YYYYMM) => {
-    if (!this.isValidOn(date)) return 0
+    if (!this.isValidOn(date) || this.hidden) return 0
 
     return this.period === Period.YEAR ? this.amount / 12 : this.amount
   })

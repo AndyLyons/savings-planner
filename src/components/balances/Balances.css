@@ -90,6 +90,11 @@
   flex-shrink: 0;
 }
 
+.table--hidden-icon {
+  fill: grey !important;
+  width: 14px !important;
+}
+
 .table-column--date--perspective-icon .MuiSvgIcon-root {
   font-size: 14px;
 }

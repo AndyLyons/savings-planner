@@ -37,10 +37,11 @@ export class Withdrawal {
   repeating: boolean
   endDate: YYYY | null
   taxable: boolean
+  hidden: boolean
 
   constructor(
     store: Store,
-    { id = Withdrawal.createId(), parentStrategyId, accountId, amount, type, startDate, repeating, endDate, taxable }: WithdrawalSnapshotIn
+    { id = Withdrawal.createId(), parentStrategyId, accountId, amount, type, startDate, repeating, endDate, taxable, hidden }: WithdrawalSnapshotIn
   ) {
     makeAutoObservable(this, { store: false }, { autoBind: true })
 
@@ -55,6 +56,7 @@ export class Withdrawal {
     this.repeating = repeating
     this.endDate = endDate
     this.taxable = taxable
+    this.hidden = hidden
   }
 
   static createId() {
@@ -96,12 +98,13 @@ export class Withdrawal {
       endDate: this.endDate,
       taxable: this.taxable,
       accountId: this.account.id,
-      parentStrategyId: this.parentStrategyId
+      parentStrategyId: this.parentStrategyId,
+      hidden: this.hidden
     }
   }
 
   restore(snapshot: WithdrawalSnapshotIn) {
-    const { parentStrategyId, accountId, amount, type, startDate, repeating, endDate, taxable } = snapshot
+    const { parentStrategyId, accountId, amount, type, startDate, repeating, endDate, taxable, hidden } = snapshot
 
     this.parentStrategyId = parentStrategyId
     this.accountId = accountId
@@ -111,6 +114,7 @@ export class Withdrawal {
     this.repeating = repeating
     this.endDate = endDate
     this.taxable = taxable
+    this.hidden = hidden
   }
 
   get parentStrategy() {
@@ -133,15 +137,19 @@ export class Withdrawal {
     return Withdrawal.getDescription(this)
   }
 
-  isValidIn = computedFn((year: YYYY): boolean => {
+  toggleHidden = () => {
+    this.hidden = !this.hidden
+  }
+
+  isValidIn = (year: YYYY): boolean => {
     const isSingleWithdrawal = !this.repeating && this.startDateValue === year
     const isRepeatingWithdrawal = this.repeating && this.endDate !== null
       && this.startDateValue <= year && year <= this.endDate
 
     return isSingleWithdrawal || isRepeatingWithdrawal
-  })
+  }
 
-  isValidOn = computedFn((date: YYYYMM): boolean => {
+  isValidOn = (date: YYYYMM): boolean => {
     if (!this.isValidIn(getYear(date))) return false
 
     switch (this.type) {
@@ -157,10 +165,10 @@ export class Withdrawal {
       default:
         return false
     }
-  })
+  }
 
   getValue = computedFn((date: YYYYMM) => {
-    if (!this.isValidOn(date)) return 0
+    if (!this.isValidOn(date) || this.hidden) return 0
 
     const getBalanceBeforeWithdrawal = (target: YYYYMM) =>
       this.account.getBalance(subMonth(target)) + this.account.getInterestTotal(target) + this.account.getDepositsTotal(target)

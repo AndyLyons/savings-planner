@@ -1,4 +1,4 @@
-import { AccountBalance, CurrencyPound, Event, Loop, Percent, QuestionMark, RadioButtonChecked } from '@mui/icons-material'
+import { AccountBalance, CurrencyPound, Event, Loop, Percent, QuestionMark, RadioButtonChecked, VisibilityOff } from '@mui/icons-material'
 import { RETIREMENT, WithdrawalIcon, WithdrawalSnapshotIn, WithdrawalType } from '../../state/Withdrawal'
 import { useStore } from '../../utils/mobx'
 import { createDialog } from './createDialog'
@@ -83,8 +83,15 @@ export const WithdrawalDialog = createDialog<WithdrawalSnapshotIn>('withdrawal s
     icon: <Event />,
     getVisible: (state) => state.repeating === true,
     required: true
+  },
+  hidden: {
+    type: 'boolean',
+    label: 'Hidden',
+    icon: <VisibilityOff />,
+    required: false
   }
 }, {
   type: WithdrawalType.FIXED_PER_MONTH,
-  taxable: true
+  taxable: true,
+  hidden: false
 })
