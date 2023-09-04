@@ -141,6 +141,12 @@
   text-decoration: underline;
 }
 
+.income-breakdown--name {
+  list-style-type: '';
+  font-weight: bold;
+  margin-top: 1px;
+}
+
 .account-breakdown,
 .income-breakdown {
   list-style-position: inside;

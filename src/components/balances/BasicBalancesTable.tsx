@@ -22,11 +22,11 @@ const Header_AccountBalance = observer(function Header_AccountBalance({ account 
 
 const HeaderRows = observer(function HeaderRows() {
   const { people, accounts } = useStore()
-  
+
   return (
     <>
       <tr>
-        <th className="tableColumn__date"/>
+        <th className="tableColumn__date" />
         {people.values.map(person => (
           <th key={person.id} className="tableColumn__age" />
         ))}
@@ -70,10 +70,10 @@ const formatter = new Intl.NumberFormat()
 const formatNumber = (value: number) => formatter.format(Math.floor(value))
 
 const Cell_Income = observer(function Cell_Income({ date }: { date: YYYYMM }) {
-  const { accounts } = useStore()
+  const { people } = useStore()
 
-  const income = accounts.values
-    .map(account => account.getIncomeTotal(date))
+  const income = people.values
+    .map(person => person.getIncome(date))
     .reduce((sum, value) => sum + value, 0)
 
   return income ? formatNumber(income) : ''

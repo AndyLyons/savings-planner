@@ -14,6 +14,26 @@ export type PersonSnapshotIn = Optional<PersonSnapshotOut, 'id'>
 
 export const PersonIcon = MUIPersonIcon
 
+const TAX_BANDS = [
+  { to: 12570, rate: 0 },
+  { to: 50270, rate: 0.2 },
+  { to: 100000, rate: 0.4 },
+  // The 0.6 band accounts for the reduction in personal allowance at 100k
+  { to: 125140, rate: 0.6 },
+  { to: 150000, rate: 0.4 },
+  { to: Infinity, rate: 0.45 }
+]
+
+const getTax = (taxable: number): number => {
+  let alreadyTaxed = 0
+  return TAX_BANDS.reduce((sum, { to, rate }) => {
+    const taxableAtBand = Math.min(taxable, to)
+    const untaxed = taxableAtBand - alreadyTaxed
+    alreadyTaxed += untaxed
+    return sum + (untaxed * rate)
+  }, 0)
+}
+
 export class Person {
   store: Store
 
@@ -67,5 +87,19 @@ export class Person {
 
   get dobAsDate() {
     return fromYYYYMM(this.dob)
+  }
+
+  getWithdrawals = (date: YYYYMM): number => {
+    return this.accounts.map(account => account.getWithdrawalsTotal(date)).reduce((sum, value) => sum + value, 0)
+  }
+
+  getTax = (date: YYYYMM): number => {
+    const taxableWithdrawals = this.accounts.flatMap(account => account.withdrawals.filter(withdrawal => withdrawal.taxable))
+    const taxableWithdrawalsValue = taxableWithdrawals.reduce((sum, withdrawal) => sum + withdrawal.getValue(date), 0)
+    return getTax(taxableWithdrawalsValue)
+  }
+
+  getIncome = (date: YYYYMM) => {
+    return this.getWithdrawals(date) - this.getTax(date)
   }
 }

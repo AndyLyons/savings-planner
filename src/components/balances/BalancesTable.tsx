@@ -9,9 +9,9 @@ import type { ListChildComponentProps, ListItemKeySelector } from 'react-window'
 import { VariableSizeList } from 'react-window'
 import type { Account, AccountId } from '../../state/Account'
 import type { Deposit } from '../../state/Deposit'
-import type { PersonId } from '../../state/Person'
+import type { Person, PersonId } from '../../state/Person'
 import { Withdrawal } from '../../state/Withdrawal'
-import { fromYYYYMM, getYear, getMonth, subMonth, YYYYMM, getNow, asMonth, getYYYYMM, subYear, YYYY } from '../../utils/date'
+import { fromYYYYMM, getYear, getMonth, subMonth, YYYYMM, getNow, asMonth, getYYYYMM, subYear, YYYY, datesInYear } from '../../utils/date'
 import { useBind, useBoolean } from '../../utils/hooks'
 import { useAction, useStore } from '../../utils/mobx'
 
@@ -45,24 +45,38 @@ const AccountBreakdown = observer(function AccountBreakdown({ account, date }: {
   )
 })
 
+const IncomeBreakdownPerPerson = observer(function IncomeBreakdownPerPerson({ date, person }: { date: YYYYMM, person: Person }) {
+  const { showMonths } = useStore()
+
+  const dates = showMonths ? [date] : datesInYear(getYear(date))
+  const withdrawals = dates.map(date => person.getWithdrawals(date)).reduce((sum, value) => sum + value, 0)
+  const tax = dates.map(date => person.getTax(date)).reduce((sum, value) => sum + value, 0)
+
+  return (
+    <>
+      <li className='income-breakdown--name'>{person.name}</li>
+      <li className='income-breakdown--add'>£{formatNumber(withdrawals)} w/d</li>
+      <li className='income-breakdown--subtract'>£{formatNumber(tax)} tax ({formatNumber(tax / withdrawals * 100)}%)</li>
+    </>
+  )
+})
+
 const IncomeBreakdown = observer(function IncomeBreakdown({ date }: { date: YYYYMM }) {
-  const { accounts, showMonths } = useStore()
+  const { people, showMonths } = useStore()
 
-  const withdrawals = accounts.values
-    .map(account => showMonths ? account.getWithdrawalsTotal(date) : account.getYearWithdrawalsTotal(getYear(date)))
+  const dates = showMonths ? [date] : datesInYear(getYear(date))
+
+  const income = people.values
+    .flatMap(person => dates.map(date => person.getIncome(date)))
     .reduce((sum, value) => sum + value, 0)
-
-  const income = accounts.values
-    .map(account => showMonths ? account.getIncomeTotal(date) : account.getYearIncomeTotal(getYear(date)))
-    .reduce((sum, value) => sum + value, 0)
-
-  const tax = withdrawals - income
 
   return (
     <ul className='income-breakdown'>
       <li className='income-breakdown--date'>{format(fromYYYYMM(date), showMonths ? 'MMM yyyy' : 'yyyy')}</li>
-      <li className='income-breakdown--add'>£{formatNumber(withdrawals)} w/d</li>
-      <li className='income-breakdown--subtract'>£{formatNumber(tax)} tax</li>
+      {people.values.map(person => (
+        <IncomeBreakdownPerPerson key={person.id} date={date} person={person} />
+      ))}
+      <li className='income-breakdown--name'>Total</li>
       <li className='income-breakdown--total'>£{formatNumber(income)}</li>
       <li className='income-breakdown--total'>£{formatNumber(income / 12)} / month</li>
     </ul>
@@ -382,9 +396,12 @@ const TotalBalanceCell = observer(function TotalBalanceCell({ date }: { date: YY
 })
 
 const TotalIncomeCell = observer(function TotalIncomeCell({ date }: { date: YYYYMM }) {
-  const { accounts, showMonths } = useStore()
-  const income = accounts.values
-    .map(account => showMonths ? account.getIncomeTotal(date) : account.getYearIncomeTotal(getYear(date)))
+  const { people, showMonths } = useStore()
+
+  const dates = showMonths ? [date] : datesInYear(getYear(date))
+
+  const income = people.values
+    .flatMap(person => dates.map(date => person.getIncome(date)))
     .reduce((sum, value) => sum + value, 0)
 
   return (

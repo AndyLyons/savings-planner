@@ -1,7 +1,7 @@
 import { makeAutoObservable } from 'mobx';
 import { computedFn } from 'mobx-utils';
 import { nanoid } from 'nanoid';
-import { getMonth, getYear, YYYY, YYYYMM } from '../utils/date';
+import { getYear, YYYY, YYYYMM } from '../utils/date';
 import { Period } from '../utils/date';
 import { Optional } from '../utils/object';
 import type { AccountId } from './Account';

@@ -10,27 +10,6 @@ import { Deposit } from './Deposit'
 import type { PersonId, PersonSnapshotOut } from './Person'
 import type { Store } from './Store'
 
-// TODO tax calculations are currently wrong, tax should be calculated at the person level across all of their accounts
-const TAX_BANDS = [
-  { to: 12570, rate: 0 },
-  { to: 50270, rate: 0.2 },
-  { to: 100000, rate: 0.4 },
-  // The 0.6 band accounts for the reduction in personal allowance at 100k
-  { to: 125140, rate: 0.6 },
-  { to: 150000, rate: 0.4 },
-  { to: Infinity, rate: 0.45 }
-]
-
-const getTax = (taxable: number): number => {
-  let alreadyTaxed = 0
-  return TAX_BANDS.reduce((sum, { to, rate }) => {
-    const taxableAtBand = Math.min(taxable, to)
-    const untaxed = taxableAtBand - alreadyTaxed
-    alreadyTaxed += untaxed
-    return sum + (untaxed * rate)
-  }, 0)
-}
-
 export type AccountId = string & { __accountId__: never }
 
 export type AccountSnapshotOut = typeof Account.prototype.snapshot
@@ -162,18 +141,6 @@ export class Account {
     return Math.min(withdrawals, balanceBeforeWithdrawal)
   }
 
-  getTax = (date: YYYYMM): number => {
-    const withdrawals = this.getWithdrawalsTotal(date)
-    const taxFreeWithdrawals = this.withdrawals.reduce((sum, withdrawal) => !withdrawal.taxable ? sum + withdrawal.getValue(date) : sum, 0)
-    return getTax(withdrawals - taxFreeWithdrawals)
-  }
-
-  getIncomeTotal = (date: YYYYMM): number => {
-    const total = this.getWithdrawalsTotal(date)
-    // const tax = this.getTax(date) // TODO fix and reenable later
-    return total
-  }
-
   getYearInterestTotal = (year: YYYY): number => {
     return datesInYear(year).reduce((sum, date) => sum + this.getInterestTotal(date), 0)
   }
@@ -184,10 +151,6 @@ export class Account {
 
   getYearWithdrawalsTotal = (year: YYYY): number => {
     return datesInYear(year).reduce((sum, date) => sum + this.getWithdrawalsTotal(date), 0)
-  }
-
-  getYearIncomeTotal = (year: YYYY): number => {
-    return datesInYear(year).reduce((sum, date) => sum + this.getIncomeTotal(date), 0)
   }
 
   getCalculatedBalance = computedFn((date: YYYYMM): number => {

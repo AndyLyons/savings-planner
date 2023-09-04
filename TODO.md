@@ -1,8 +1,7 @@
 # TODO List
 
-* Fix tax calculations - these should be calculated per _person_ not per _account_
-  * Maybe also consider some benefits for couples? E.g. can they share allowances?
 * Dialog autofocus not working?
+* Is `createDialogs` a good pattern? Maybe these should just be standard React components that you can quickly compose to build a dialog
 * Variable support
   * Allow users to define values that are derived from other values
 * Adding an item to a Collection should also set the ID of the parent on the child
