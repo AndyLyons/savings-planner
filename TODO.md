@@ -1,9 +1,12 @@
 # TODO List
 
-* Dialog autofocus not working?
-* Is `createDialogs` a good pattern? Maybe these should just be standard React components that you can quickly compose to build a dialog
+* Month year only needs to support a single year at a time
+  * Expand/collapse button next to years in table
+  * When expanded a year you can see its balances
 * Variable support
   * Allow users to define values that are derived from other values
+* Dialog autofocus not working?
+* Is `createDialogs` a good pattern? Maybe these should just be standard React components that you can quickly compose to build a dialog
 * Adding an item to a Collection should also set the ID of the parent on the child
   * currently this is handled by Dialogs.ts initial values, but this feels a bit messy
   * this might be trickier than planned as parent IDs are currently required by children and can't be null'd
