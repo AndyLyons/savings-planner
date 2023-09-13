@@ -6,9 +6,9 @@ import { formatNumber } from "../../../../utils/format"
 import { useStore } from "../../../../utils/mobx"
 
 const IncomeBreakdownPerPerson = observer(function IncomeBreakdownPerPerson({ date, person }: { date: YYYYMM, person: Person }) {
-  const { showMonths } = useStore()
+  const { isDateInExpandedYear } = useStore()
 
-  const dates = showMonths ? [date] : datesInYear(getYear(date))
+  const dates = isDateInExpandedYear(date) ? [date] : datesInYear(getYear(date))
   const withdrawals = dates.map(date => person.getWithdrawals(date)).reduce((sum, value) => sum + value, 0)
   const tax = dates.map(date => person.getTax(date)).reduce((sum, value) => sum + value, 0)
 
@@ -22,9 +22,10 @@ const IncomeBreakdownPerPerson = observer(function IncomeBreakdownPerPerson({ da
 })
 
 export const IncomeBreakdown = observer(function IncomeBreakdown({ date }: { date: YYYYMM }) {
-  const { people, showMonths } = useStore()
+  const { people, isDateInExpandedYear } = useStore()
 
-  const dates = showMonths ? [date] : datesInYear(getYear(date))
+  const isExpanded = isDateInExpandedYear(date)
+  const dates = isExpanded ? [date] : datesInYear(getYear(date))
 
   const income = people.values
     .flatMap(person => dates.map(date => person.getIncome(date)))
@@ -32,7 +33,7 @@ export const IncomeBreakdown = observer(function IncomeBreakdown({ date }: { dat
 
   return (
     <ul className='income-breakdown'>
-      <li className='income-breakdown--date'>{format(fromYYYYMM(date), showMonths ? 'MMM yyyy' : 'yyyy')}</li>
+      <li className='income-breakdown--date'>{format(fromYYYYMM(date), isExpanded ? 'MMM yyyy' : 'yyyy')}</li>
       {people.values.map(person => (
         <IncomeBreakdownPerPerson key={person.id} date={date} person={person} />
       ))}

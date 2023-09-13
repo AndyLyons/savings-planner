@@ -3,12 +3,13 @@ import { observer } from "mobx-react-lite";
 import { ComponentProps, useMemo } from "react";
 import { Account } from "../../../../state/Account";
 import { YYYYMM, getYear } from "../../../../utils/date";
-import { EditDeposit } from "./EditDeposit";
-import { EditBalance } from "./EditBalance";
+import { useStore } from "../../../../utils/mobx";
 import { AddBalance } from "./AddBalance";
 import { AddDeposit } from "./AddDeposit";
-import { EditWithdrawal } from "./EditWithdrawal";
 import { AddWithdrawal } from "./AddWithdrawal";
+import { EditBalance } from "./EditBalance";
+import { EditDeposit } from "./EditDeposit";
+import { EditWithdrawal } from "./EditWithdrawal";
 
 interface AccountMenuProps {
   account: Account
@@ -19,8 +20,11 @@ interface AccountMenuProps {
 }
 
 export const AccountMenu = observer(function AccountMenu({ account, anchorEl, date, isOpen, onClose }: AccountMenuProps) {
+  const { isDateInExpandedYear } = useStore()
+  const isExpanded = isDateInExpandedYear(date)
   const year = getYear(date)
-  const hasBalance = account.hasBalance(date)
+  const balances = isExpanded ? account.getBalancesForDate(date) : account.getBalancesForYear(year)
+  const canAddBalance = isExpanded && balances.length < 1 || !isExpanded && balances.length < 12
 
   const sxLineHeight = useMemo(() => ({ lineHeight: '20px' }), [])
 
@@ -32,8 +36,10 @@ export const AccountMenu = observer(function AccountMenu({ account, anchorEl, da
       onClose={onClose}
     >
       <ListSubheader sx={sxLineHeight}>Balance</ListSubheader>
-      {hasBalance && <EditBalance account={account} date={date} />}
-      {!hasBalance && <AddBalance account={account} date={date} />}
+      {balances.map(balance => (
+        <EditBalance balance={balance} showMonth={!isExpanded} />
+      ))}
+      {canAddBalance && <AddBalance account={account} date={date} />}
 
       <Divider />
 

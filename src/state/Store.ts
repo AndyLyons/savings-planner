@@ -1,7 +1,7 @@
 import { makeAutoObservable } from 'mobx'
 import React from 'react'
 import { compareKeys } from '../utils/compare'
-import { addMonth, getNow, asYear, YYYY, YYYYMM, getStartOfYear, getEndOfYear, getMonth } from '../utils/date'
+import { getNow, asYear, YYYY, YYYYMM, getEndOfYear, addYear, getYear, asMonth, getYYYYMM } from '../utils/date'
 import { Account, AccountId } from './Account'
 import { configureCollection } from './Collection'
 import { Dialogs } from './Dialogs'
@@ -55,7 +55,7 @@ export class Store {
 
   globalGrowth = 2
   showAges = true
-  showMonths = false
+  expandedYear: YYYY | null = null
   start: YYYY
   end: YYYY
   retireOn: YYYY
@@ -104,16 +104,18 @@ export class Store {
     this.strategies.restore(migrated.strategies)
   }
 
-  get allDates() {
+  get dates() {
     const dates: Array<YYYYMM> = []
-    for (let date = getStartOfYear(this.start); date <= getEndOfYear(this.end); date = addMonth(date, 1)) {
-      dates.push(date)
+    for (let year = this.start; year <= this.end; year = addYear(year, 1)) {
+      if (this.expandedYear === year) {
+        for (let month = asMonth(1); month <= 12; ++month) {
+          dates.push(getYYYYMM(year, month))
+        }
+      } else {
+        dates.push(getEndOfYear(year))
+      }
     }
     return dates
-  }
-
-  get visibleDates() {
-    return this.showMonths ? this.allDates : this.allDates.filter(date => getMonth(date) === 12)
   }
 
   get strategy() {
@@ -128,12 +130,8 @@ export class Store {
     return (this.globalRate * 100).toFixed(2).replace(/\.?0+$/, '')
   }
 
-  toggleShowAges() {
-    this.showAges = !this.showAges
-  }
-
-  toggleShowMonths() {
-    this.showMonths = !this.showMonths
+  isDateInExpandedYear(date: YYYYMM) {
+    return this.expandedYear !== null && getYear(date) === this.expandedYear
   }
 
   setPerspective(date: YYYYMM) {
@@ -145,8 +143,16 @@ export class Store {
     }
   }
 
+  toggleExpandedYear(year: YYYY) {
+    this.expandedYear = this.expandedYear === year ? null : year
+  }
+
   togglePerspective() {
     this.showPerspective = !this.showPerspective
+  }
+
+  toggleShowAges() {
+    this.showAges = !this.showAges
   }
 }
 

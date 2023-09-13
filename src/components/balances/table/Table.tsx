@@ -22,7 +22,7 @@ const getItemSize = (index: number) => index === 0 ? 84 : 24
 const getKey: ListItemKeySelector<Array<YYYYMM>> = (index, dates) => index === 0 ? '__HEADER__' : dates[index - 1]
 
 const TableInner = observer(function TableInner({ height, width }: { height: number, width: number }) {
-  const { visibleDates, showAges, showPerspective } = useStore()
+  const { dates, showAges, showPerspective } = useStore()
 
   return (
     <VariableSizeList
@@ -32,8 +32,8 @@ const TableInner = observer(function TableInner({ height, width }: { height: num
       })}
       height={height}
       width={width}
-      itemCount={visibleDates.length + 1} // +1 for header row
-      itemData={visibleDates}
+      itemCount={dates.length + 1} // +1 for header row
+      itemData={dates}
       innerElementType={TableBody}
       itemKey={getKey}
       itemSize={getItemSize}

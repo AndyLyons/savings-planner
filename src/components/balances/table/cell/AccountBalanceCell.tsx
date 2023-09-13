@@ -13,9 +13,9 @@ import { ArrowRight } from "../../../icons/ArrowRight"
 import { AccountMenu } from "../menu/AccountMenu"
 import { AccountBreakdown } from "../tooltip/AccountBreakdown"
 
-const getActionIcon = (showMonths: boolean, account: Account, date: YYYYMM) => {
-  const hasDeposit = showMonths ? account.getDepositsTotal(date) !== 0 : account.getYearDepositsTotal(getYear(date)) !== 0
-  const hasWithdrawal = showMonths ? account.getWithdrawalsTotal(date) !== 0 : account.getYearWithdrawalsTotal(getYear(date)) !== 0
+const getActionIcon = (isExpanded: boolean, account: Account, date: YYYYMM) => {
+  const hasDeposit = isExpanded ? account.getDepositsTotal(date) !== 0 : account.getYearDepositsTotal(getYear(date)) !== 0
+  const hasWithdrawal = isExpanded ? account.getWithdrawalsTotal(date) !== 0 : account.getYearWithdrawalsTotal(getYear(date)) !== 0
 
   if (hasDeposit && hasWithdrawal) {
     return <SwapHoriz />
@@ -33,9 +33,9 @@ const getActionIcon = (showMonths: boolean, account: Account, date: YYYYMM) => {
   return <Icon />
 }
 
-const getHiddenIcon = (showMonths: boolean, account: Account, date: YYYYMM) => {
-  const deposits = showMonths ? account.getDepositsForDate(date) : account.getDepositsForYear(getYear(date))
-  const withdrawals = showMonths ? account.getWithdrawalsForDate(date) : account.getWithdrawalsForYear(getYear(date))
+const getHiddenIcon = (isExpanded: boolean, account: Account, date: YYYYMM) => {
+  const deposits = isExpanded ? account.getDepositsForDate(date) : account.getDepositsForYear(getYear(date))
+  const withdrawals = isExpanded ? account.getWithdrawalsForDate(date) : account.getWithdrawalsForYear(getYear(date))
 
   const isHiddenDeposits = deposits.length > 0 && deposits.some(deposit => deposit.hidden)
   const isHiddenWithdrawals = withdrawals.length > 0 && withdrawals.some(withdrawal => withdrawal.hidden)
@@ -49,7 +49,8 @@ const getHiddenIcon = (showMonths: boolean, account: Account, date: YYYYMM) => {
 
 const AccountBalanceButton = observer(forwardRef<HTMLButtonElement, { account: Account, date: YYYYMM, onClick: () => void }>(
   function AccountBalanceButton({ account, date, onClick }, ref) {
-    const { showMonths } = useStore()
+    const { isDateInExpandedYear } = useStore()
+    const isExpanded = isDateInExpandedYear(date)
     const [isTooltipOpen, showTooltip, hideTooltip] = useBoolean(false)
 
     const hasBalance = account.hasBalance(date)
@@ -85,8 +86,8 @@ const AccountBalanceButton = observer(forwardRef<HTMLButtonElement, { account: A
           onClick={onClickInternal}
           startIcon={
             <>
-              {getActionIcon(showMonths, account, date)}
-              {getHiddenIcon(showMonths, account, date)}
+              {getActionIcon(isExpanded, account, date)}
+              {getHiddenIcon(isExpanded, account, date)}
             </>
           }
           size='small'

@@ -6,7 +6,3 @@ tbody .tableColumn__date {
 .tableBody--hideAges .tableColumn__age {
   display: none;
 }
-
-.tableBody--hideMonths .tableRow--midYear {
-  display: none;
-}

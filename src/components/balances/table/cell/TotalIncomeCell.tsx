@@ -6,9 +6,9 @@ import { useStore } from "../../../../utils/mobx"
 import { IncomeBreakdown } from "../tooltip/IncomeBreakdown"
 
 export const TotalIncomeCell = observer(function TotalIncomeCell({ date }: { date: YYYYMM }) {
-  const { people, showMonths } = useStore()
+  const { people, isDateInExpandedYear } = useStore()
 
-  const dates = showMonths ? [date] : datesInYear(getYear(date))
+  const dates = isDateInExpandedYear(date) ? [date] : datesInYear(getYear(date))
 
   const income = people.values
     .flatMap(person => dates.map(date => person.getIncome(date)))

@@ -7,6 +7,7 @@ import { Optional } from '../utils/object'
 import { Balance, BalanceSnapshotIn } from './Balance'
 import { configureCollection } from './Collection'
 import { Deposit } from './Deposit'
+import { Withdrawal } from './Withdrawal'
 import type { PersonId, PersonSnapshotOut } from './Person'
 import type { Store } from './Store'
 
@@ -119,37 +120,63 @@ export class Account {
     return Account.getDescription(this, this.owner)
   }
 
-  getDepositsForDate = computedFn((date: YYYYMM): Array<Deposit> => this.deposits.filter(deposit => deposit.isValidOn(date)))
-  getDepositsForYear = computedFn((year: YYYY): Array<Deposit> => this.deposits.filter(deposit => deposit.isValidIn(year)))
+  getBalancesForDate(date: YYYYMM) {
+    return this.balances.has(date) ? [this.balances.get(date)] : []
+  }
 
-  getWithdrawalsForDate = computedFn((date: YYYYMM) => this.withdrawals.filter(withdrawal => withdrawal.isValidOn(date)))
-  getWithdrawalsForYear = computedFn((year: YYYY) => this.withdrawals.filter(withdrawal => withdrawal.isValidIn(year)))
+  getBalancesForYear(year: YYYY) {
+    console.log('*** balances for year', { year })
+    const yearDates = datesInYear(year)
+    const yearBalances = []
+    for (const date of yearDates) {
+      if (this.balances.has(date)) {
+        yearBalances.push(this.balances.get(date))
+      }
+    }
+    return yearBalances
+  }
 
-  getInterestTotal = (date: YYYYMM): number => {
+  getDepositsForDate(date: YYYYMM): Array<Deposit> {
+    return this.deposits.filter(deposit => deposit.isValidOn(date))
+  }
+
+  getDepositsForYear(year: YYYY): Array<Deposit> {
+    return this.deposits.filter(deposit => deposit.isValidIn(year))
+  }
+
+  getWithdrawalsForDate(date: YYYYMM): Array<Withdrawal> {
+    return this.withdrawals.filter(withdrawal => withdrawal.isValidOn(date))
+  }
+
+  getWithdrawalsForYear(year: YYYY): Array<Withdrawal> {
+    return this.withdrawals.filter(withdrawal => withdrawal.isValidIn(year))
+  }
+
+  getInterestTotal(date: YYYYMM): number {
     if (this.compoundPeriod === Period.YEAR && getMonth(date) !== 12) return 0
 
     return this.getBalance(subMonth(date)) * this.monthlyRate
   }
 
-  getDepositsTotal = (date: YYYYMM): number => {
+  getDepositsTotal(date: YYYYMM): number {
     return this.deposits.reduce((sum, deposit) => sum + deposit.getValue(date), 0)
   }
 
-  getWithdrawalsTotal = (date: YYYYMM): number => {
+  getWithdrawalsTotal(date: YYYYMM): number {
     const balanceBeforeWithdrawal = this.getBalance(subMonth(date)) + this.getInterestTotal(date) + this.getDepositsTotal(date)
     const withdrawals = this.withdrawals.reduce((sum, withdrawal) => sum + withdrawal.getValue(date), 0)
     return Math.min(withdrawals, balanceBeforeWithdrawal)
   }
 
-  getYearInterestTotal = (year: YYYY): number => {
+  getYearInterestTotal(year: YYYY): number {
     return datesInYear(year).reduce((sum, date) => sum + this.getInterestTotal(date), 0)
   }
 
-  getYearDepositsTotal = (year: YYYY): number => {
+  getYearDepositsTotal(year: YYYY): number {
     return datesInYear(year).reduce((sum, date) => sum + this.getDepositsTotal(date), 0)
   }
 
-  getYearWithdrawalsTotal = (year: YYYY): number => {
+  getYearWithdrawalsTotal(year: YYYY): number {
     return datesInYear(year).reduce((sum, date) => sum + this.getWithdrawalsTotal(date), 0)
   }
 
@@ -162,12 +189,12 @@ export class Account {
     return total < 1 ? 0 : total
   }, true)
 
-  hasBalance = (date: YYYYMM): boolean => {
+  hasBalance(date: YYYYMM): boolean {
     const inPerspective = !this.store.showPerspective || date <= this.store.perspective
     return (inPerspective || this.balances.last?.date === date) && this.balances.has(date)
   }
 
-  getBalance = (date: YYYYMM): number => {
+  getBalance(date: YYYYMM): number {
     if (this.hasBalance(date)) {
       return this.balances.get(date).value
     }

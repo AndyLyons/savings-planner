@@ -1,8 +1,6 @@
 # TODO List
 
-* Month year only needs to support a single year at a time
-  * Expand/collapse button next to years in table
-  * When expanded a year you can see its balances
+* (Do we need month view at all? Can month balances just be entered via the year display? Do we need to view inter-year data to see if we're on track?)
 * Variable support
   * Allow users to define values that are derived from other values
 * Dialog autofocus not working?

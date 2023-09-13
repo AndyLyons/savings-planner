@@ -5,10 +5,10 @@
 import classNames from "classnames";
 import { format } from "date-fns";
 import { observer } from "mobx-react-lite";
-import { useStore } from "../../utils/mobx";
-import { Person } from "../../state/Person";
-import { Account } from "../../state/Account";
-import { YYYYMM, fromYYYYMM, getMonth, getYear } from "../../utils/date";
+import { useStore } from "../../../utils/mobx";
+import { Person } from "../../../state/Person";
+import { Account } from "../../../state/Account";
+import { YYYYMM, fromYYYYMM, getMonth, getYear } from "../../../utils/date";
 
 import './BasicBalances.css'
 
@@ -49,10 +49,11 @@ const HeaderRows = observer(function HeaderRows() {
 })
 
 const Cell_Date = observer(function Cell_Date({ date }: { date: YYYYMM }) {
-  const { showMonths } = useStore()
+  const { isDateInExpandedYear } = useStore()
+  const isExpanded = isDateInExpandedYear(date)
   const year = getYear(date)
 
-  if (!showMonths) {
+  if (!isExpanded) {
     return year
   }
 
@@ -98,24 +99,22 @@ const Row = observer(function Row({ date }: { date: YYYYMM }) {
 })
 
 const Rows = observer(function Rows() {
-  const { allDates } = useStore()
+  const { dates } = useStore()
 
   return (
-    allDates.map(date => (
+    dates.map(date => (
       <Row key={date} date={date} />
     ))
   )
 })
 
 export const BasicBalancesTable = observer(function BasicBalancesTable() {
-  const { showAges, showMonths } = useStore()
+  const { showAges } = useStore()
 
   return (
     <table className={classNames({
       'tableBody--showAges': showAges,
-      'tableBody--hideAges': !showAges,
-      'tableBody--showMonths': showMonths,
-      'tableBody--hideMonths': !showMonths,
+      'tableBody--hideAges': !showAges
     })}>
       <thead>
         <HeaderRows />

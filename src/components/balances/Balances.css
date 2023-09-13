@@ -30,7 +30,6 @@
   width: max-content !important;
 }
 
-.table__show-perspective .table-row__in-perspective .table-column--date--perspective-icon,
 .table__show-perspective .table-row--headers .table-column--date .MuiSvgIcon-root {
   visibility: visible;
 }
@@ -39,10 +38,6 @@
   visibility: hidden;
   font-size: 14px;
   margin-right: 4px;
-}
-
-.table-row--headers .table-column--date {
-  cursor: pointer;
 }
 
 .table__show-perspective .table-row--headers .table-column--date,
@@ -73,16 +68,12 @@
 .table-column--date {
   position: sticky;
   left: 0;
-  justify-content: left;
+  justify-content: center;
   width: 120px;
   z-index: 1;
 }
 
-.table-body .table-column--date {
-  cursor: pointer;
-}
-
-.table-column--date--perspective-icon {
+.table-column--date--expand-icon {
   visibility: hidden;
   display: flex;
   width: 20px;
@@ -95,19 +86,33 @@
   width: 14px !important;
 }
 
-.table-column--date--perspective-icon .MuiSvgIcon-root {
-  font-size: 14px;
-}
-
 .table-column--date_year {
+  display: inline-block;
   margin-left: 10px;
   width: 32px;
   flex-grow: 0;
   flex-shrink: 0;
+  visibility: hidden;
+
+  flex-shrink: 0;
+}
+
+.table-row__is-year-header .table-column--date_year,
+.table-row__is-year-header .table-cell:hover .table-column--date--expand-icon {
+  visibility: visible;
 }
 
 .table-column--date_month {
+  display: inline-block;
+  visibility: hidden;
   margin-left: 10px;
+  width: 25px;
+
+  flex-shrink: 0;
+}
+
+.table-row__is-expanded .table-column--date_month {
+  visibility: visible;
 }
 
 .table-column--age {
