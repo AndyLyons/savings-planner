@@ -4,7 +4,7 @@ import classNames from "classnames"
 import { observer } from "mobx-react-lite"
 import { forwardRef, useCallback, useRef } from "react"
 import { Account, AccountId } from "../../../../state/Account"
-import { YYYYMM, getYear } from "../../../../utils/date"
+import { YYYYMM, getMonth, getYear } from "../../../../utils/date"
 import { formatNumber } from "../../../../utils/format"
 import { useBoolean } from "../../../../utils/hooks"
 import { useStore } from "../../../../utils/mobx"
@@ -51,6 +51,7 @@ const AccountBalanceButton = observer(forwardRef<HTMLButtonElement, { account: A
   function AccountBalanceButton({ account, date, onClick }, ref) {
     const { isDateInExpandedYear } = useStore()
     const isExpanded = isDateInExpandedYear(date)
+    const isFaded = isExpanded && getMonth(date) !== 12
     const [isTooltipOpen, showTooltip, hideTooltip] = useBoolean(false)
 
     const hasBalance = account.hasBalance(date)
@@ -81,7 +82,8 @@ const AccountBalanceButton = observer(forwardRef<HTMLButtonElement, { account: A
             'table-column--account_add-balance': !hasBalance,
             'table-column--account_edit-balance': hasBalance,
             'table-column--account_edit-balance--up': isUp,
-            'table-column--account_edit-balance--down': isDown
+            'table-column--account_edit-balance--down': isDown,
+            'table-cell__faded': isFaded
           })}
           onClick={onClickInternal}
           startIcon={

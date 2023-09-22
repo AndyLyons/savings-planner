@@ -182,9 +182,6 @@
 
 .table-column--total {
   font-weight: 600;
-}
-
-.table-column--total {
   border-left: 1px solid rgba(224, 224, 224, 1);
 }
 
@@ -209,6 +206,11 @@
   box-shadow: none !important;
   color: rgba(0, 0, 0, 0.87);
   font-weight: 400;
+}
+
+.table-cell__faded,
+.table-cell__faded.MuiButton-root {
+  color: gray;
 }
 
 .table-column--account_edit-balance.table-column--account_edit-balance--up.MuiButton-root {

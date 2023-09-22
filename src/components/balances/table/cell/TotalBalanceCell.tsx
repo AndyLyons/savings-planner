@@ -1,9 +1,13 @@
 import { observer } from "mobx-react-lite"
-import { YYYYMM } from "../../../../utils/date"
+import { YYYYMM, getMonth } from "../../../../utils/date"
 import { formatNumber } from "../../../../utils/format"
 import { useStore } from "../../../../utils/mobx"
+import classNames from "classnames"
 
 export const TotalBalanceCell = observer(function TotalBalanceCell({ date }: { date: YYYYMM }) {
+  const { isDateInExpandedYear } = useStore()
+  const isFaded = isDateInExpandedYear(date) && getMonth(date) !== 12
+
   const total = useStore(store =>
     store.accounts.values
       .map(account => account.getBalance(date))
@@ -11,6 +15,8 @@ export const TotalBalanceCell = observer(function TotalBalanceCell({ date }: { d
   )
 
   return (
-    <div className='table-cell table-column--total'>{total ? formatNumber(total) : ''}</div>
+    <div className={classNames('table-cell table-column--total', {
+      'table-cell__faded': isFaded
+    })}>{total ? formatNumber(total) : ''}</div>
   )
 })
