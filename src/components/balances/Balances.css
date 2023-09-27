@@ -230,3 +230,8 @@
 .table-column--account_add-balance.MuiButton-root {
   background-color: white;
 }
+
+.table-column--add-account {
+  display: flex;
+  align-items: center;
+}

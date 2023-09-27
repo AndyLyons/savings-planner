@@ -1,8 +1,8 @@
-import { Box } from "@mui/material"
+import { Box, IconButton } from "@mui/material"
 import { observer } from "mobx-react-lite"
 import { useMemo } from "react"
-import { useStore } from "../../../utils/mobx"
-import { VisibilityOutlined } from "@mui/icons-material"
+import { useAction, useStore } from "../../../utils/mobx"
+import { Add, VisibilityOutlined } from "@mui/icons-material"
 
 export const Header = observer(function Header() {
   const { dialogs, people, accounts, togglePerspective } = useStore()
@@ -10,6 +10,8 @@ export const Header = observer(function Header() {
 
   const sxIncomes = useMemo(() => ({ width: '110px' }), [])
   const sxBalances = useMemo(() => ({ width: `${110 + (numAccounts * 110)}px` }), [numAccounts])
+
+  const onAddAccountClicked = useAction(store => store.dialogs.createAccount(), [])
 
   return (
     <div className="table-header">
@@ -37,6 +39,11 @@ export const Header = observer(function Header() {
             {account.description}
           </div>
         ))}
+        <div className='table-column--add-account'>
+          <IconButton title="Add account" onClick={onAddAccountClicked}>
+            <Add />
+          </IconButton>
+        </div>
       </div>
     </div>
   )
