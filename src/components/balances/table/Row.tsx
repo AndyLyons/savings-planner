@@ -1,29 +1,24 @@
-import { Expand } from "@mui/icons-material"
-import { IconButton } from "@mui/material"
 import classNames from "classnames"
-import { format } from "date-fns"
 import { observer } from "mobx-react-lite"
 import { ListChildComponentProps } from "react-window"
-import { YYYYMM, fromYYYYMM, getMonth, getNow, getYear } from "../../../utils/date"
-import { useBind } from "../../../utils/hooks"
+import { YYYYMM, getMonth, getNow, getYear } from "../../../utils/date"
 import { useStore } from "../../../utils/mobx"
 import { AccountBalanceCell } from "./cell/AccountBalanceCell"
 import { AgeCell } from "./cell/AgeCell"
 import { TotalBalanceCell } from "./cell/TotalBalanceCell"
 import { TotalIncomeCell } from "./cell/TotalIncomeCell"
+import { DateCell } from "./cell/DateCell"
 
 type RowProps = ListChildComponentProps<Array<YYYYMM>>
 
 const RowInner = observer(function RowInner(props: RowProps) {
   const { data, index, style } = props
-  const { accounts, people, perspective, isDateInExpandedYear, toggleExpandedYear } = useStore()
+  const { accounts, people, perspective, isDateInExpandedYear } = useStore()
 
   const date = data[index]
   const now = getNow()
   const isExpanded = isDateInExpandedYear(date)
   const isYearHeader = !isExpanded || getMonth(date) === 1
-
-  const onClickExpand = useBind(toggleExpandedYear, getYear(date))
 
   return (
     <div className={classNames('table-body table-row', {
@@ -32,18 +27,7 @@ const RowInner = observer(function RowInner(props: RowProps) {
       'table-row__is-year-header': isYearHeader,
       'table-row__is-expanded': isExpanded
     })} style={style}>
-      <div className='table-cell table-column--date'>
-        <IconButton
-          className="table-column--date--expand-icon"
-          onClick={onClickExpand}
-          size="small"
-          sx={{ marginLeft: '5px' }}
-        >
-          <Expand fontSize="inherit" />
-        </IconButton>
-        <span className='table-column--date_year'>{getYear(date)}</span>
-        <span className='table-column--date_month'>{format(fromYYYYMM(date), 'MMM')}</span>
-      </div>
+      <DateCell date={date} />
       {people.keys.map(personId => (
         <AgeCell key={personId} date={date} personId={personId} />
       ))}
